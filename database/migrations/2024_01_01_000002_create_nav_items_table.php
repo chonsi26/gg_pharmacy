@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('nav_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('parent_id')
+                  ->nullable()
+                  ->constrained('nav_items')
+                  ->nullOnDelete();        // top-level items have parent_id = null
+            $table->string('label');
+            $table->string('href')->default('#');
+            $table->boolean('is_active')->default(false);
+            $table->integer('sort_order')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void { Schema::dropIfExists('nav_items'); }
+};
