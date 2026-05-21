@@ -246,6 +246,11 @@
   .textarea-icon-wrap textarea { padding-left: 36px; }
 
   @media (max-width: 560px) { .modal-fields-row { grid-template-columns: 1fr; } }
+
+  /* FORM VALIDATION STYLES */
+  .input-error { border-color: var(--red) !important; background: #fff5f5 !important; }
+  .modal-alert-error { background: #fff0f0; border: 1px solid #ffc5c5; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: var(--red); display: flex; flex-direction: column; gap: 4px; }
+  .modal-alert-error i { margin-right: 5px; }
   @media (max-height: 680px) {
     .modal-box.wide { padding: 20px 28px 18px; }
     .reg-avatar-ring { width: 70px; height: 70px; }
@@ -347,9 +352,22 @@
   <span class="sep">|</span>
   <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
   <span class="sep">|</span>
-  <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
-  <span class="sep">|</span>
-  <a href="#" id="registerBtn"><i class="fas fa-user-plus"></i> REGISTER</a>
+  @guest
+    <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
+    <span class="sep">|</span>
+    <a href="#" id="registerBtn"><i class="fas fa-user-plus"></i> REGISTER</a>
+  @else
+    <span style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
+      <i class="fas fa-user-circle"></i> {{ Auth::user()->full_name }}
+    </span>
+    <span class="sep">|</span>
+    <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
+      @csrf
+      <a href="#" onclick="event.preventDefault();document.getElementById('logoutForm').submit();" style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
+        <i class="fas fa-sign-out-alt"></i> LOG OUT
+      </a>
+    </form>
+  @endguest
   <div class="social">
     <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
     <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
@@ -810,20 +828,38 @@ showSlide(currentIndex); autoplay();
 <!-- LOGIN MODAL -->
 <div class="modal-overlay" id="loginModal">
   <div class="modal-box">
-    <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+    <button class="modal-close" id="modalClose" aria-label="Close" type="button">&times;</button>
     <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'GG PHARMACY') }}</span></div>
     <div class="modal-title">Welcome Back!</div>
     <div class="modal-subtitle">Sign in to your account to continue</div>
-    <div class="modal-field">
-      <label for="loginEmail">Email Address</label>
-      <input type="email" id="loginEmail" placeholder="Enter your email address">
-    </div>
-    <div class="modal-field">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter your password">
-    </div>
-    <div class="modal-forgot"><a href="#">Forgot Password?</a></div>
-    <button class="modal-login-btn">LOG IN</button>
+
+    @if($errors->hasBag('login'))
+      <div class="modal-alert-error">
+        @foreach($errors->getBag('login')->all() as $err)
+          <div><i class="fas fa-exclamation-circle"></i> {{ $err }}</div>
+        @endforeach
+      </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
+      @csrf
+      <div class="modal-field">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" name="email"
+               placeholder="Enter your email address"
+               value="{{ old('email') }}"
+               class="{{ $errors->getBag('login')->has('email') ? 'input-error' : '' }}">
+      </div>
+      <div class="modal-field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" name="password"
+               placeholder="Enter your password"
+               class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
+      </div>
+      <div class="modal-forgot"><a href="#">Forgot Password?</a></div>
+      <button type="submit" class="modal-login-btn">LOG IN</button>
+    </form>
+
     <div class="modal-divider"><hr><span>Don't have an account?</span><hr></div>
     <div class="modal-register">New to {{ $settings['site_name'] ?? 'GG Pharmacy' }}? <a href="#" id="switchToRegister">Register here</a></div>
   </div>
@@ -832,62 +868,118 @@ showSlide(currentIndex); autoplay();
 <!-- REGISTER MODAL -->
 <div class="modal-overlay" id="registerModal">
   <div class="modal-box wide">
-    <button class="modal-close" id="registerModalClose" aria-label="Close">&times;</button>
+    <button class="modal-close" id="registerModalClose" aria-label="Close" type="button">&times;</button>
     <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'GG PHARMACY') }}</span></div>
     <div class="modal-title">Create an Account</div>
     <div class="modal-subtitle">Join {{ $settings['site_name'] ?? 'GG Pharmacy' }} and start shopping today</div>
-    <div class="reg-avatar-block">
-      <label for="profilePicInput" style="cursor:pointer;">
-        <div class="reg-avatar-ring" id="avatarPreview">
-          <i class="fas fa-user"></i>
-          <img id="avatarImg" src="" alt="Preview">
-          <span class="reg-cam-badge"><i class="fas fa-camera"></i></span>
-        </div>
-      </label>
-      <input type="file" id="profilePicInput" accept="image/*">
-      <div class="reg-avatar-label">Profile Photo</div>
-      <div class="reg-avatar-hint">JPG, PNG or GIF · Max 2MB</div>
-    </div>
-    <div class="reg-section-label">Personal Information</div>
-    <div class="modal-field">
-      <label for="regFullName">Full Name</label>
-      <div class="input-icon-wrap">
-        <i class="fas fa-user"></i>
-        <input type="text" id="regFullName" placeholder="Juan dela Cruz">
+
+    @if($errors->hasBag('register'))
+      <div class="modal-alert-error">
+        @foreach($errors->getBag('register')->all() as $err)
+          <div><i class="fas fa-exclamation-circle"></i> {{ $err }}</div>
+        @endforeach
       </div>
-    </div>
-    <div class="modal-fields-row">
+    @endif
+
+    <form method="POST" action="{{ route('register') }}" id="registerForm" enctype="multipart/form-data" novalidate>
+      @csrf
+
+      <div class="reg-avatar-block">
+        <label for="profilePicInput" style="cursor:pointer;">
+          <div class="reg-avatar-ring" id="avatarPreview">
+            <i class="fas fa-user"></i>
+            <img id="avatarImg" src="" alt="Preview">
+            <span class="reg-cam-badge"><i class="fas fa-camera"></i></span>
+          </div>
+        </label>
+        <input type="file" id="profilePicInput" name="profile_picture" accept="image/*">
+        <div class="reg-avatar-label">Profile Photo</div>
+        <div class="reg-avatar-hint">JPG, PNG or GIF · Max 2MB</div>
+      </div>
+
+      <div class="reg-section-label">Personal Information</div>
+
+      <div class="modal-fields-row">
+        <div class="modal-field">
+          <label for="regFirstName">First Name</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-user"></i>
+            <input type="text" id="regFirstName" name="first_name"
+                   placeholder="Juan"
+                   value="{{ old('first_name') }}"
+                   class="{{ $errors->getBag('register')->has('first_name') ? 'input-error' : '' }}">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="regLastName">Last Name</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-user"></i>
+            <input type="text" id="regLastName" name="last_name"
+                   placeholder="dela Cruz"
+                   value="{{ old('last_name') }}"
+                   class="{{ $errors->getBag('register')->has('last_name') ? 'input-error' : '' }}">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-fields-row">
+        <div class="modal-field">
+          <label for="regEmail">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="regEmail" name="email"
+                   placeholder="you@example.com"
+                   value="{{ old('email') }}"
+                   class="{{ $errors->getBag('register')->has('email') ? 'input-error' : '' }}">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="regContact">Contact Number</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-phone-alt"></i>
+            <input type="tel" id="regContact" name="contact_number"
+                   placeholder="09XXXXXXXXX"
+                   value="{{ old('contact_number') }}"
+                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
+          </div>
+        </div>
+      </div>
+
       <div class="modal-field">
-        <label for="regEmail">Email Address</label>
-        <div class="input-icon-wrap">
-          <i class="fas fa-envelope"></i>
-          <input type="email" id="regEmail" placeholder="you@example.com">
+        <label for="regAddress">Address</label>
+        <div class="textarea-icon-wrap">
+          <i class="fas fa-map-marker-alt"></i>
+          <textarea id="regAddress" name="address" rows="2"
+                    placeholder="House No., Street, Barangay, City/Municipality, Province"
+                    class="{{ $errors->getBag('register')->has('address') ? 'input-error' : '' }}">{{ old('address') }}</textarea>
         </div>
       </div>
-      <div class="modal-field">
-        <label for="regContact">Contact Number</label>
-        <div class="input-icon-wrap">
-          <i class="fas fa-phone-alt"></i>
-          <input type="tel" id="regContact" placeholder="09XXXXXXXXX">
+
+      <div class="reg-section-label">Security</div>
+
+      <div class="modal-fields-row">
+        <div class="modal-field">
+          <label for="regPassword">Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="regPassword" name="password"
+                   placeholder="Create a strong password"
+                   class="{{ $errors->getBag('register')->has('password') ? 'input-error' : '' }}">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="regPasswordConfirm">Confirm Password</label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="regPasswordConfirm" name="password_confirmation"
+                   placeholder="Repeat your password">
+          </div>
         </div>
       </div>
-    </div>
-    <div class="modal-field">
-      <label for="regAddress">Address</label>
-      <div class="textarea-icon-wrap">
-        <i class="fas fa-map-marker-alt"></i>
-        <textarea id="regAddress" rows="2" placeholder="House No., Street, Barangay, City/Municipality, Province"></textarea>
-      </div>
-    </div>
-    <div class="reg-section-label">Security</div>
-    <div class="modal-field">
-      <label for="regPassword">Password</label>
-      <div class="input-icon-wrap">
-        <i class="fas fa-lock"></i>
-        <input type="password" id="regPassword" placeholder="Create a strong password">
-      </div>
-    </div>
-    <button class="modal-login-btn" style="margin-top:8px;">CREATE ACCOUNT</button>
+
+      <button type="submit" class="modal-login-btn" style="margin-top:8px;">CREATE ACCOUNT</button>
+    </form>
+
     <div class="modal-divider"><hr><span>Already have an account?</span><hr></div>
     <div class="modal-register">Already registered? <a href="#" id="switchToLogin">Log in here</a></div>
   </div>
@@ -919,40 +1011,64 @@ showSlide(currentIndex); autoplay();
   updateCountdown();
   setInterval(updateCountdown, 1000);
 
-  const loginBtn = document.getElementById('loginBtn');
-  const loginModal = document.getElementById('loginModal');
-  const modalClose = document.getElementById('modalClose');
-  loginBtn.addEventListener('click', e => { e.preventDefault(); loginModal.classList.add('open'); });
-  modalClose.addEventListener('click', () => loginModal.classList.remove('open'));
-  loginModal.addEventListener('click', e => { if (e.target === loginModal) loginModal.classList.remove('open'); });
-
-  const registerBtn = document.getElementById('registerBtn');
+  // ── Modal helpers ──────────────────────────────────────────────────────────
+  const loginModal    = document.getElementById('loginModal');
   const registerModal = document.getElementById('registerModal');
+
+  function openModal(modal)  { modal && modal.classList.add('open'); }
+  function closeModal(modal) { modal && modal.classList.remove('open'); }
+
+  // Trigger buttons (only present for guests)
+  const loginBtn    = document.getElementById('loginBtn');
+  const registerBtn = document.getElementById('registerBtn');
+  if (loginBtn)    loginBtn.addEventListener('click',    e => { e.preventDefault(); openModal(loginModal); });
+  if (registerBtn) registerBtn.addEventListener('click', e => { e.preventDefault(); openModal(registerModal); });
+
+  // Close buttons
+  const modalClose         = document.getElementById('modalClose');
   const registerModalClose = document.getElementById('registerModalClose');
-  registerBtn.addEventListener('click', e => { e.preventDefault(); registerModal.classList.add('open'); });
-  registerModalClose.addEventListener('click', () => registerModal.classList.remove('open'));
-  registerModal.addEventListener('click', e => { if (e.target === registerModal) registerModal.classList.remove('open'); });
+  if (modalClose)         modalClose.addEventListener('click',         () => closeModal(loginModal));
+  if (registerModalClose) registerModalClose.addEventListener('click', () => closeModal(registerModal));
 
-  document.getElementById('switchToLogin').addEventListener('click', e => { e.preventDefault(); registerModal.classList.remove('open'); loginModal.classList.add('open'); });
-  document.getElementById('switchToRegister').addEventListener('click', e => { e.preventDefault(); loginModal.classList.remove('open'); registerModal.classList.add('open'); });
+  // Click-outside to close
+  if (loginModal)    loginModal.addEventListener('click',    e => { if (e.target === loginModal)    closeModal(loginModal); });
+  if (registerModal) registerModal.addEventListener('click', e => { if (e.target === registerModal) closeModal(registerModal); });
 
+  // Switch links
+  const switchToLogin    = document.getElementById('switchToLogin');
+  const switchToRegister = document.getElementById('switchToRegister');
+  if (switchToLogin)    switchToLogin.addEventListener('click',    e => { e.preventDefault(); closeModal(registerModal); openModal(loginModal); });
+  if (switchToRegister) switchToRegister.addEventListener('click', e => { e.preventDefault(); closeModal(loginModal); openModal(registerModal); });
+
+  // Escape key
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { loginModal.classList.remove('open'); registerModal.classList.remove('open'); }
+    if (e.key === 'Escape') { closeModal(loginModal); closeModal(registerModal); }
   });
 
-  document.getElementById('profilePicInput').addEventListener('change', function() {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.getElementById('avatarImg');
-      const icon = document.querySelector('#avatarPreview i');
-      img.src = e.target.result;
-      img.style.display = 'block';
-      icon.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  });
+  // Auto-open modal when Laravel returns validation errors
+  @if($errors->hasBag('login') && $errors->getBag('login')->any())
+    document.addEventListener('DOMContentLoaded', () => openModal(loginModal));
+  @elseif($errors->hasBag('register') && $errors->getBag('register')->any())
+    document.addEventListener('DOMContentLoaded', () => openModal(registerModal));
+  @endif
+
+  // Profile picture preview (register modal)
+  const profilePicInput = document.getElementById('profilePicInput');
+  if (profilePicInput) {
+    profilePicInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img  = document.getElementById('avatarImg');
+        const icon = document.querySelector('#avatarPreview i');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        if (icon) icon.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   document.querySelector('.shipping-bar a').addEventListener('click', e => {
     e.preventDefault();
