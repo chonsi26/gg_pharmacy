@@ -46,6 +46,40 @@
   .cart-btn { display: flex; align-items: center; gap: 6px; font-family: 'Montserrat', sans-serif; font-weight: 700; }
   .cart-badge { background: var(--red); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
+  /* NOTIFICATION DROPDOWN */
+  .notif-wrapper { position: relative; display: flex; align-items: center; }
+  .notif-badge { position: absolute; top: -6px; right: -6px; background: var(--red); color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; pointer-events: none; }
+  .notif-dropdown { display: none; position: absolute; top: calc(100% + 14px); right: -12px; width: 320px; background: #fff; border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid var(--border); z-index: 500; overflow: hidden; }
+  .notif-dropdown.open { display: block; }
+  .notif-dropdown::before { content: ''; position: absolute; top: -6px; right: 18px; width: 12px; height: 12px; background: #fff; border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+  .notif-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 12px; border-bottom: 1px solid var(--border); }
+  .notif-header span { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; color: var(--text); }
+  .notif-mark-all { font-size: 11px; color: var(--red); font-weight: 700; cursor: pointer; background: none; border: none; font-family: 'Open Sans', sans-serif; }
+  .notif-mark-all:hover { text-decoration: underline; }
+  .notif-list { max-height: 320px; overflow-y: auto; }
+  .notif-list::-webkit-scrollbar { width: 4px; }
+  .notif-list::-webkit-scrollbar-thumb { background: var(--red); border-radius: 4px; }
+  .notif-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.15s; position: relative; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-item:hover { background: #fafafa; }
+  .notif-item.unread { background: #fff8f8; }
+  .notif-item.unread:hover { background: #fff3f3; }
+  .notif-icon-wrap { flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+  .notif-icon-wrap.order { background: #fff0e0; color: #e65100; }
+  .notif-icon-wrap.promo { background: #fff0f0; color: var(--red); }
+  .notif-icon-wrap.system { background: #e8f5e9; color: var(--green); }
+  .notif-icon-wrap.wishlist { background: #fce4ec; color: #e91e63; }
+  .notif-body { flex: 1; min-width: 0; }
+  .notif-body p { font-size: 12px; color: var(--text); line-height: 1.45; margin-bottom: 3px; }
+  .notif-body p strong { font-weight: 700; }
+  .notif-time { font-size: 10px; color: #aaa; font-weight: 600; }
+  .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; margin-top: 5px; }
+  .notif-empty { padding: 36px 16px; text-align: center; color: #bbb; font-size: 13px; }
+  .notif-empty i { font-size: 32px; display: block; margin-bottom: 10px; color: #ddd; }
+  .notif-footer { padding: 11px 16px; border-top: 1px solid var(--border); text-align: center; }
+  .notif-footer a { font-size: 12px; font-weight: 700; color: var(--red); font-family: 'Montserrat', sans-serif; }
+  .notif-footer a:hover { text-decoration: underline; }
+
   /* NAV */
   nav { background: var(--red); border-bottom: 2px solid var(--dark-red); }
   nav ul { display: flex; align-items: center; list-style: none; padding: 0 40px; }
@@ -392,7 +426,65 @@
       </div>
     </div>
     <i class="fas fa-user icon-btn"></i>
-    <i class="far fa-heart icon-btn"></i>
+
+    {{-- NOTIFICATION HEART — dropdown only for logged-in users --}}
+    @auth
+    <div class="notif-wrapper" id="notifWrapper">
+      <i class="far fa-heart icon-btn" id="notifToggle" title="Notifications" style="cursor:pointer;"></i>
+      <span class="notif-badge" id="notifBadge">3</span>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span><i class="far fa-heart" style="color:var(--red);margin-right:6px;"></i> Notifications</span>
+          <button class="notif-mark-all" id="notifMarkAll">Mark all as read</button>
+        </div>
+        <div class="notif-list" id="notifList">
+          <div class="notif-item unread" data-id="1">
+            <div class="notif-icon-wrap order"><i class="fas fa-box"></i></div>
+            <div class="notif-body">
+              <p><strong>Order #10245</strong> has been shipped and is on its way!</p>
+              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>2 minutes ago</span>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+          <div class="notif-item unread" data-id="2">
+            <div class="notif-icon-wrap promo"><i class="fas fa-tag"></i></div>
+            <div class="notif-body">
+              <p><strong>Flash Sale!</strong> Up to 30% off on vitamins &amp; supplements today only.</p>
+              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>1 hour ago</span>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+          <div class="notif-item unread" data-id="3">
+            <div class="notif-icon-wrap wishlist"><i class="fas fa-heart"></i></div>
+            <div class="notif-body">
+              <p><strong>Biogesic 500mg</strong> from your wishlist is back in stock.</p>
+              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>3 hours ago</span>
+            </div>
+            <div class="notif-dot"></div>
+          </div>
+          <div class="notif-item" data-id="4">
+            <div class="notif-icon-wrap system"><i class="fas fa-check-circle"></i></div>
+            <div class="notif-body">
+              <p><strong>Order #10201</strong> was delivered successfully. Enjoy your purchase!</p>
+              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>Yesterday</span>
+            </div>
+          </div>
+          <div class="notif-item" data-id="5">
+            <div class="notif-icon-wrap promo"><i class="fas fa-percent"></i></div>
+            <div class="notif-body">
+              <p>Earn <strong>double points</strong> on all branded medicines this weekend.</p>
+              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>2 days ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="notif-footer">
+          <a href="#">View all notifications</a>
+        </div>
+      </div>
+    </div>
+    @else
+    <i class="far fa-heart icon-btn" title="Log in to see notifications"></i>
+    @endauth
     <div class="cart-btn">
       <div style="position:relative;">
         <i class="fas fa-shopping-cart icon-btn"></i>
@@ -1074,6 +1166,67 @@ showSlide(currentIndex); autoplay();
     e.preventDefault();
     e.target.closest('.shipping-bar').style.display = 'none';
   });
+
+  // ── Notification dropdown (auth-only) ─────────────────────────────────────
+  (function () {
+    const toggle   = document.getElementById('notifToggle');
+    const dropdown = document.getElementById('notifDropdown');
+    const badge    = document.getElementById('notifBadge');
+    const markAll  = document.getElementById('notifMarkAll');
+
+    if (!toggle || !dropdown) return; // guest: elements don't exist
+
+    function countUnread() {
+      return document.querySelectorAll('#notifList .notif-item.unread').length;
+    }
+
+    function refreshBadge() {
+      const n = countUnread();
+      badge.textContent = n;
+      badge.style.display = n > 0 ? 'flex' : 'none';
+    }
+
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+
+    // Click on a notification → mark it read
+    document.querySelectorAll('#notifList .notif-item').forEach(item => {
+      item.addEventListener('click', function () {
+        this.classList.remove('unread');
+        const dot = this.querySelector('.notif-dot');
+        if (dot) dot.remove();
+        refreshBadge();
+      });
+    });
+
+    // Mark all as read
+    if (markAll) {
+      markAll.addEventListener('click', function () {
+        document.querySelectorAll('#notifList .notif-item.unread').forEach(item => {
+          item.classList.remove('unread');
+          const dot = item.querySelector('.notif-dot');
+          if (dot) dot.remove();
+        });
+        refreshBadge();
+      });
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!dropdown.contains(e.target) && e.target !== toggle) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') dropdown.classList.remove('open');
+    });
+
+    refreshBadge();
+  })();
 
   document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', function() {
