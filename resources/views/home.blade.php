@@ -382,7 +382,7 @@
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE FINDER</a>
+  <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
   <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
   <span class="sep">|</span>
@@ -391,10 +391,6 @@
     <span class="sep">|</span>
     <a href="#" id="registerBtn"><i class="fas fa-user-plus"></i> REGISTER</a>
   @else
-    <span style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
-      <i class="fas fa-user-circle"></i> {{ Auth::user()->full_name }}
-    </span>
-    <span class="sep">|</span>
     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
       @csrf
       <a href="#" onclick="event.preventDefault();document.getElementById('logoutForm').submit();" style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
@@ -413,10 +409,11 @@
   <div class="logo">
     <img src="{{ asset($settings['logo'] ?? 'images/logo.png') }}" alt="{{ $settings['site_name'] ?? 'GG Pharmacy' }}">
   </div>
-  <div class="search-bar">
-    <input type="text" placeholder="Search for Generic and Branded Medicine">
-    <button><i class="fas fa-search"></i></button>
-  </div>
+  
+  <form action="{{ route('home') }}" method="GET" class="search-bar">
+    <input type="text" name="query" value="{{ $searchQuery ?? '' }}" placeholder="Search for Generic and Branded Medicine">
+    <button type="submit"><i class="fas fa-search"></i></button>
+  </form>
   <div class="header-right">
     <div class="phone-box">
       <i class="fas fa-phone-alt ph-icon"></i>
@@ -425,7 +422,11 @@
         <span>{{ $settings['phone'] ?? '' }}</span>
       </div>
     </div>
-    <i class="fas fa-user icon-btn"></i>
+    @auth
+    <a href="{{ route('profile') }}" title="My Profile"><i class="fas fa-user icon-btn"></i></a>
+    @else
+    <a href="#" id="userIconLoginBtn" title="Log In" style="display:flex;align-items:center;"><i class="fas fa-user icon-btn"></i></a>
+    @endauth
 
     {{-- NOTIFICATION HEART — dropdown only for logged-in users --}}
     @auth
@@ -503,13 +504,13 @@
     </button>
   </div>
   <ul id="navMenu">
-    @foreach($navItems as $item)
-      <li @if($item->is_active) class="active" @endif>
-        <a href="{{ $item->href }}">
-          {{ $item->label }}
-          @if($item->has_dropdown)
-            <i class="fas fa-chevron-down"></i>
-          @endif
+    <li>
+      <a href="{{ route('home') }}" class="{{ !request()->filled('category_id') && !request()->filled('query') ? 'active' : '' }}">HOME</a>
+    </li>
+    @foreach($categories as $cat)
+      <li class="{{ request('category_id') == $cat->id ? 'active' : '' }}">
+        <a href="{{ route('home', ['category_id' => $cat->id]) }}">
+          {{ strtoupper($cat->name) }}
         </a>
       </li>
     @endforeach
@@ -543,8 +544,36 @@
   <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
 </div>
 
-<!-- HERO BANNER - IMAGE SLIDER -->
-<div class="image-slider">
+@if(isset($searchResults))
+  <div class="section-header">
+    @if(request()->filled('query'))
+      <h2>Search Results for "{{ $searchQuery }}"</h2>
+    @elseif(isset($selectedCategory))
+      <h2>Category: {{ $selectedCategory->name }}</h2>
+    @else
+      <h2>All Products</h2>
+    @endif
+    <p>Found {{ $searchResults->count() }} matching items</p>
+  </div>
+
+  <div style="padding: 0 40px 40px;">
+    @if($searchResults->isEmpty())
+      <div style="text-align: center; padding: 60px 20px; color: var(--gray);">
+        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
+        <p style="font-size: 16px; font-weight: 600;">No medicines found under this view.</p>
+        <p style="font-size: 13px; margin-top: 5px;">Please check back later or modify your query keywords.</p>
+        <a href="{{ route('home') }}" class="see-all-btn" style="display: inline-block; margin-top: 20px; float: none;">Clear Filter</a>
+      </div>
+    @else
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+        @foreach($searchResults as $product)
+          @include('partials.product-card', ['product' => $product])
+        @endforeach
+      </div>
+    @endif
+  </div>
+@else
+  <div class="image-slider">
   <div class="slider-container">
     @foreach($sliders as $index => $slide)
       <div class="slide {{ $index === 0 ? 'active' : '' }}">
@@ -596,10 +625,12 @@ showSlide(currentIndex); autoplay();
 <div class="category-grid">
   @foreach($categories as $cat)
     <div class="cat-item">
-      <div class="cat-circle" style="background:{{ $cat->bg_color }};">
-        <i class="{{ $cat->icon_class }}" style="font-size:40px;color:{{ $cat->icon_color }};"></i>
-      </div>
-      <span>{{ $cat->name }}</span>
+      <a href="{{ route('home', ['category_id' => $cat->id]) }}">
+        <div class="cat-circle" style="background:{{ $cat->bg_color }};">
+          <i class="{{ $cat->icon_class }}" style="font-size:40px;color:{{ $cat->icon_color }};"></i>
+        </div>
+        <span>{{ $cat->name }}</span>
+      </a>
     </div>
   @endforeach
 </div>
@@ -785,7 +816,7 @@ showSlide(currentIndex); autoplay();
   <div style="display:grid;grid-template-columns:280px repeat(4,1fr);gap:16px;">
     <div style="border:2px solid var(--red);border-radius:8px;padding:24px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;">
       <div>
-        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">GG Pharmacy Generics</h3>
+        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">{{ $settings['site_name'] }} Generics</h3>
         <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">the Brand you can Trust with Assured Quality &amp; Big Savings</p>
         <div style="font-size:12px;color:#555;margin-bottom:16px;">Safe • Quality • Effective</div>
         <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--red);">Low Price Everyday</div>
@@ -854,12 +885,10 @@ showSlide(currentIndex); autoplay();
     @endforeach
   </div>
 </div>
+@endif
 
 <!-- FOOTER -->
-<div class="footer-top-bar">
-  <img src="{{ asset($settings['logo'] ?? 'images/logo.png') }}" alt="{{ $settings['site_name'] ?? 'GG Pharmacy' }}">
-  <span>{{ $settings['footer_top_text'] ?? 'Your Trusted Pharmacy' }}</span>
-</div>
+
 <footer>
   <div class="footer-grid">
     <div class="footer-section">
@@ -880,10 +909,10 @@ showSlide(currentIndex); autoplay();
       </div>
     </div>
     <div class="footer-section">
-      <h4>ABOUT GG PHARMACY</h4>
+      <h4>ABOUT {{ $settings['site_name'] }}</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
-      <a href="#">Store Finder</a>
+      <a href="#">Store Information</a>
       <a href="#">Contact Us</a>
       <a href="#">Terms And Conditions</a>
       <a href="#">Privacy Policy</a>
@@ -1111,10 +1140,12 @@ showSlide(currentIndex); autoplay();
   function closeModal(modal) { modal && modal.classList.remove('open'); }
 
   // Trigger buttons (only present for guests)
-  const loginBtn    = document.getElementById('loginBtn');
-  const registerBtn = document.getElementById('registerBtn');
-  if (loginBtn)    loginBtn.addEventListener('click',    e => { e.preventDefault(); openModal(loginModal); });
-  if (registerBtn) registerBtn.addEventListener('click', e => { e.preventDefault(); openModal(registerModal); });
+  const loginBtn        = document.getElementById('loginBtn');
+  const registerBtn     = document.getElementById('registerBtn');
+  const userIconLoginBtn = document.getElementById('userIconLoginBtn');
+  if (loginBtn)         loginBtn.addEventListener('click',         e => { e.preventDefault(); openModal(loginModal); });
+  if (registerBtn)      registerBtn.addEventListener('click',      e => { e.preventDefault(); openModal(registerModal); });
+  if (userIconLoginBtn) userIconLoginBtn.addEventListener('click', e => { e.preventDefault(); openModal(loginModal); });
 
   // Close buttons
   const modalClose         = document.getElementById('modalClose');

@@ -40,7 +40,8 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
-        $data = $request->validate(
+        $data = $request->validateWithBag(
+            'register',
             [
                 'first_name'      => ['required', 'string', 'max:100'],
                 'last_name'       => ['required', 'string', 'max:100'],
@@ -60,8 +61,9 @@ class AuthController extends Controller
 
         // Store profile picture if provided
         if ($request->hasFile('profile_picture')) {
-            $data['profile_picture'] = $request->file('profile_picture')
+            $path = $request->file('profile_picture')
                 ->store('profile_pictures', 'public');
+            $data['profile_picture'] = 'storage/' . $path;
         }
 
         $data['password'] = Hash::make($data['password']);

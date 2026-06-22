@@ -37,12 +37,7 @@
     </div>
 
     @if($showQty)
-      <div class="qty-add">
-        <button class="qty-btn">&#8722;</button>
-        <input class="qty-input" value="1">
-        <button class="qty-btn">+</button>
-        <button class="add-cart-btn"><i class="fas fa-shopping-cart"></i></button>
-      </div>
+
     @endif
   </div>
 </div>

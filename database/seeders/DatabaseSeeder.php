@@ -132,7 +132,7 @@ class DatabaseSeeder extends Seeder
         $secSale      = Section::create(['key'=>'sale',        'label'=>'SALE',                      'description'=>'Great Deals, Healthy Savings – Shop & Save at GG Pharmacy!','heading_color'=>'red',  'sort_order'=>2]);
         $secPromoPack = Section::create(['key'=>'promo_packs', 'label'=>'PROMO PACKS',               'description'=>'Exclusive Value Packs – Bundled Savings on Customer Favorites','heading_color'=>'text','sort_order'=>3]);
         $secGuardian  = Section::create(['key'=>'guardian',    'label'=>'Guardian Special Deals',    'description'=>'All our new arrivals in an exclusive brand selection',       'heading_color'=>'red',  'sort_order'=>4]);
-        $secGenerics  = Section::create(['key'=>'generics',    'label'=>'GG Pharmacy Generics',      'description'=>'All our new arrivals in a exclusive brand selection',        'heading_color'=>'red',  'sort_order'=>5]);
+        $secGenerics  = Section::create(['key'=>'generics',    'label'=>'Pharmacy Generics',      'description'=>'All our new arrivals in a exclusive brand selection',        'heading_color'=>'red',  'sort_order'=>5]);
         $secFeatured  = Section::create(['key'=>'featured',    'label'=>'FEATURED PRODUCTS',         'description'=>'',                                                           'heading_color'=>'red',  'sort_order'=>6]);
 
         // ── 6. Products ───────────────────────────────────────────────────────
