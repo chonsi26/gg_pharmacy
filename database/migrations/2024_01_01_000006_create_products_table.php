@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->text('product_usage')->nullable();             // how to use / directions
             $table->text('ingredients')->nullable();               // active & inactive ingredients
             $table->text('warnings')->nullable();                  // safety warnings (optional)
+            $table->boolean('requires_prescription')->default(false); // true = Rx-only product
 
             // ── Dimensions (optional) ──────────────────────────────────────
             $table->decimal('width', 8, 2)->nullable();            // in cm
