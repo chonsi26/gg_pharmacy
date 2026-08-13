@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GG Pharmacy — Stocks</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* Modal styles */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-backdrop.open {
+    display: flex;
+  }
+  .modal {
+    background: var(--card, #fff);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    position: relative;
+    animation: modalIn .18s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes modalIn {
+    from { transform: translateY(18px) scale(.97); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px; right: 16px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer;
+    color: var(--muted);
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: var(--border, #eee); }
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 4px;
+  }
+  .modal .modal-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .modal .stock-num-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-soft, #ffeef2);
+    color: var(--primary, #e54646);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    letter-spacing: .04em;
+  }
+  .form-group {
+    margin-bottom: 14px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .form-group select,
+  .form-group input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg, #fff);
+    outline: none;
+    transition: border-color .15s;
+    box-sizing: border-box;
+  }
+  .form-group select:focus,
+  .form-group input:focus {
+    border-color: var(--primary, #4f46e5);
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .summary-card {
+    padding: 16px 18px;
+  }
+  .summary-card .sc-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 6px;
+  }
+  .summary-card .sc-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+  .summary-card .sc-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Filter row */
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-row input {
+    flex: 1;
+    min-width: 180px;
+    padding: 7px 12px;
+    border: 1.5px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg, #fff);
+    outline: none;
+  }
+  .filter-row input:focus { border-color: var(--primary, #4f46e5); }
+  .filter-row select {
+    padding: 7px 12px;
+    border: 1.5px solid var(--border, #e2e8f0);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--bg, #fff);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* Stock number style in table */
+  .stock-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--primary, #e54646);
+    background: var(--primary-soft, #ffeeee);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    white-space: nowrap;
+  }
+  .qty-badge { font-size: 13px; font-weight: 700; color: var(--text); }
+  .qty-low   { color: #e53e3e; }
+  .qty-ok    { color: #38a169; }
+
+  .pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+  .pill.ok      { background: #dcfce7; color: #166534; }
+  .pill.warning { background: #fef3c7; color: #92400e; }
+  .pill.danger  { background: #fee2e2; color: #991b1b; }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .empty-state svg { margin-bottom: 10px; opacity: .35; display:block; margin-left:auto; margin-right:auto; }
+
+  /* ── Dark mode overrides for modal ── */
+  [data-theme="dark"] .modal-backdrop {
+    background: rgba(0,0,0,0.65);
+  }
+  [data-theme="dark"] .modal {
+  background: #242526;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+  [data-theme="dark"] .modal h3 {
+    color: var(--text);
+  }
+  [data-theme="dark"] .modal .modal-sub {
+    color: var(--muted);
+  }
+  [data-theme="dark"] .modal-close {
+    color: var(--muted);
+  }
+  [data-theme="dark"] .modal-close:hover {
+    background: var(--border);
+  }
+  [data-theme="dark"] .modal .stock-num-badge {
+    background: rgba(241, 99, 127, 0.15);
+    color: #fca5a5;
+  }
+  [data-theme="dark"] .form-group label {
+    color: var(--text);
+  }
+  [data-theme="dark"] .form-group select,
+  [data-theme="dark"] .form-group input {
+    background: var(--bg);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  [data-theme="dark"] .form-group select option {
+    background: var(--card);
+    color: var(--text);
+  }
+  [data-theme="dark"] .form-group select:focus,
+  [data-theme="dark"] .form-group input:focus {
+    border-color: #a5b4fc;
+  }
+</style>
+</head>
+<body>
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Done.</span>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<!-- Add Stock Modal -->
+<div class="modal-backdrop" id="addStockModal">
+  <div class="modal">
+    <button class="modal-close" id="closeModal" title="Close">&times;</button>
+    <h3>Add Medicine Stock</h3>
+    <div class="modal-sub">Fill in the details to log a new batch entry.</div>
+
+    <div class="stock-num-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      Stock No: <span id="generatedStockNo">—</span>
+    </div>
+
+    <div class="form-group">
+      <label>Medicine *</label>
+      <select id="modalMedicine">
+        <option value="">— Select medicine —</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Supplier</label>
+      <input type="text" name="supplier" placeholder="Enter Supplier Name (Optional)" id="modalSupplier">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantity (units) *</label>
+        <input type="number" id="modalQty" placeholder="e.g. 200" min="1">
+      </div>
+      <div class="form-group">
+        <label>Unit Cost (₱)</label>
+        <input type="number" id="modalCost" placeholder="e.g. 5.50" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Manufacturing Date</label>
+        <input type="date" id="modalMfgDate">
+      </div>
+      <div class="form-group">
+        <label>Expiry Date *</label>
+        <input type="date" id="modalExpiry">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-sm" id="cancelModal">Cancel</button>
+      <button class="btn-sm primary" id="confirmAddStock">Add Stock</button>
+    </div>
+  </div>
+</div>
+
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="sidebar-logo-icon">
+      <img src="logo2.png" alt="GG Pharmacy">
+    </div>
+    <div class="sidebar-logo-text">
+      <strong>GG Pharmacy</strong>
+      <span>Admin Portal</span>
+    </div>
+  </a>
+
+  <div class="sidebar-section-label">Main</div>
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" href="inventory.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Inventory<span class="nav-badge">3</span>
+  </a>
+  <a class="nav-item" href="orders.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Orders
+  </a>
+  <a class="nav-item" href="prescriptions.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Prescriptions
+  </a>
+  <a class="nav-item" href="customers.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Customers
+  </a>
+
+  <div class="sidebar-section-label">Manage</div>
+  <a class="nav-item active" href="stocks.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Stocks
+  </a>
+  <a class="nav-item" href="reports.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Reports
+  </a>
+  <a class="nav-item" href="expiry.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Expiry Tracking<span class="nav-badge">2</span>
+  </a>
+  <a class="nav-item" href="settings.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+<a href = "profile.html" style = "text-decoration: none;">
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar">AD</div>
+      <div class="user-info">
+        <div class="user-name">Admin User</div>
+        <div class="user-role">System Administrator</div>
+      </div>
+    </div>
+  </div>
+  </a>
+</aside>
+
+<header class="header">
+  <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="header-title">Stocks</div>
+  <div class="header-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search medicines, patients…">
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="dot"></div>
+    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
+      <span id="themeIco"></span>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+
+  <div style="margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <div style="font-size:20px;font-weight:800;color:var(--text);">Stock Batches</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:3px;">Track medicine stock levels, batch entries, and expiry dates.</div>
+    </div>
+    <button class="btn-sm primary" id="openAddStock" style="align-self:center;">+ Add Stock</button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-grid">
+    <div class="card summary-card">
+      <div class="sc-label">Total Batches</div>
+      <div class="sc-value" id="sumBatches">—</div>
+      <div class="sc-sub">All batch entries</div>
+    </div>
+    <div class="card summary-card">
+      <div class="sc-label">Total Units</div>
+      <div class="sc-value" id="sumUnits">—</div>
+      <div class="sc-sub">Units in stock</div>
+    </div>
+    <div class="card summary-card">
+      <div class="sc-label">Medicines</div>
+      <div class="sc-value" id="sumMeds">—</div>
+      <div class="sc-sub">Unique medicines</div>
+    </div>
+    <div class="card summary-card">
+      <div class="sc-label">Expiring Soon</div>
+      <div class="sc-value" id="sumExpiring" style="color:#e53e3e;">—</div>
+      <div class="sc-sub">Within 90 days</div>
+    </div>
+  </div>
+
+  <!-- Batch Table -->
+  <div class="card">
+    <div class="card-head">
+      <h3>Batch Inventory</h3>
+      <div class="filter-row">
+        <input type="text" id="searchBatch" placeholder="Search medicine or stock no…">
+        <select id="filterStatus">
+          <option value="">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Expiring">Expiring Soon</option>
+          <option value="Expired">Expired</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Stock No.</th>
+            <th>Medicine</th>
+            <th>Supplier</th>
+            <th>Qty (units)</th>
+            <th>Unit Cost</th>
+            <th>Mfg. Date</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Date Added</th>
+          </tr>
+        </thead>
+        <tbody id="batchTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <div>No batches found. Click <strong>+ Add Stock</strong> to get started.</div>
+    </div>
+  </div>
+
+</main>
+
+<script src="shared.js"></script>
+<script>
+// ── Medicines list ─────────────────────────────────────────────────────────
+const MEDICINES = [
+  "Amoxicillin 500mg","Paracetamol 500mg","Ibuprofen 400mg",
+  "Cetirizine 10mg","Metformin 500mg","Amlodipine 5mg",
+  "Losartan 50mg","Omeprazole 20mg","Salbutamol Inhaler",
+  "Vitamin C 500mg","Mefenamic Acid 500mg","Azithromycin 500mg",
+  "Doxycycline 100mg","Clonazepam 0.5mg","Atorvastatin 20mg",
+];
+
+// ── Seed batches ───────────────────────────────────────────────────────────
+let batches = [
+  { stockNo:"STK-20250101-001", medicine:"Paracetamol 500mg",  supplier:"MedSource PH",    qty:500, cost:2.50, mfgDate:"2024-12-01", expiryDate:"2027-12-01", added:"2025-01-01" },
+  { stockNo:"STK-20250110-002", medicine:"Amoxicillin 500mg",  supplier:"PharmaDist Inc.", qty:300, cost:8.75, mfgDate:"2024-11-15", expiryDate:"2026-11-15", added:"2025-01-10" },
+  { stockNo:"STK-20250115-003", medicine:"Ibuprofen 400mg",    supplier:"MedSource PH",    qty:200, cost:5.00, mfgDate:"2024-10-01", expiryDate:"2025-04-01", added:"2025-01-15" },
+  { stockNo:"STK-20250120-004", medicine:"Vitamin C 500mg",    supplier:"RxTrade Cebu",    qty:400, cost:3.20, mfgDate:"2025-01-01", expiryDate:"2027-01-01", added:"2025-01-20" },
+  { stockNo:"STK-20250201-005", medicine:"Metformin 500mg",    supplier:"PharmaDist Inc.", qty:150, cost:6.00, mfgDate:"2024-09-01", expiryDate:"2025-05-15", added:"2025-02-01" },
+  { stockNo:"STK-20250210-006", medicine:"Cetirizine 10mg",    supplier:"MedSource PH",    qty:250, cost:4.50, mfgDate:"2025-01-15", expiryDate:"2028-01-15", added:"2025-02-10" },
+  { stockNo:"STK-20250220-007", medicine:"Omeprazole 20mg",    supplier:"RxTrade Cebu",    qty:180, cost:7.00, mfgDate:"2024-08-01", expiryDate:"2025-03-31", added:"2025-02-20" },
+];
+let batchCounter = batches.length;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function generateStockNo() {
+  const d = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  batchCounter++;
+  return `STK-${d}-${String(batchCounter).padStart(3,"0")}`;
+}
+
+function getStatus(expiryDate) {
+  const diff = (new Date(expiryDate) - new Date()) / 86400000;
+  if (diff < 0)  return "Expired";
+  if (diff < 90) return "Expiring";
+  return "Active";
+}
+
+function statusPill(s) {
+  const cls = { Active:"ok", Expiring:"warning", Expired:"danger" };
+  return `<span class="pill ${cls[s]}">${s==="Expiring"?"Expiring Soon":s}</span>`;
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderTable() {
+  const search = document.getElementById("searchBatch").value.toLowerCase();
+  const filter = document.getElementById("filterStatus").value;
+  const today  = new Date();
+
+  const rows = batches.filter(b => {
+    const s = getStatus(b.expiryDate);
+    const matchS = b.medicine.toLowerCase().includes(search) || b.stockNo.toLowerCase().includes(search);
+    const matchF = !filter || s === filter;
+    return matchS && matchF;
+  });
+
+  const tbody = document.getElementById("batchTableBody");
+  const empty = document.getElementById("emptyState");
+
+  if (!rows.length) {
+    tbody.innerHTML = "";
+    empty.style.display = "block";
+  } else {
+    empty.style.display = "none";
+    tbody.innerHTML = rows.map(b => {
+      const s = getStatus(b.expiryDate);
+      const qc = b.qty <= 50 ? "qty-badge qty-low" : "qty-badge qty-ok";
+      return `<tr>
+        <td><span class="stock-num">${b.stockNo}</span></td>
+        <td style="font-weight:600;">${b.medicine}</td>
+        <td style="font-size:12px;color:var(--muted);">${b.supplier||"—"}</td>
+        <td><span class="${qc}">${b.qty.toLocaleString()}</span></td>
+        <td style="font-size:12px;color:var(--muted);">${b.cost?"₱"+Number(b.cost).toFixed(2):"—"}</td>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.mfgDate)}</td>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.expiryDate)}</td>
+        <td>${statusPill(s)}</td>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.added)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  // Summary
+  const totalUnits = batches.reduce((s,b)=>s+b.qty,0);
+  const uniqueMeds = new Set(batches.map(b=>b.medicine)).size;
+  const expiring   = batches.filter(b=>{const d=(new Date(b.expiryDate)-today)/86400000;return d>=0&&d<90;}).length;
+  document.getElementById("sumBatches").textContent  = batches.length;
+  document.getElementById("sumUnits").textContent    = totalUnits.toLocaleString();
+  document.getElementById("sumMeds").textContent     = uniqueMeds;
+  document.getElementById("sumExpiring").textContent = expiring;
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+(function populateMeds() {
+  const sel = document.getElementById("modalMedicine");
+  MEDICINES.forEach(m => { const o=document.createElement("option"); o.value=o.textContent=m; sel.appendChild(o); });
+})();
+
+function openModal() {
+  document.getElementById("generatedStockNo").textContent = generateStockNo();
+  ["modalMedicine","modalSupplier","modalQty","modalCost","modalMfgDate","modalExpiry"]
+    .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("addStockModal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("addStockModal").classList.remove("open");
+  batchCounter--; // rollback unused counter
+}
+
+document.getElementById("openAddStock").addEventListener("click", openModal);
+document.getElementById("closeModal").addEventListener("click", closeModal);
+document.getElementById("cancelModal").addEventListener("click", closeModal);
+document.getElementById("addStockModal").addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+
+document.getElementById("confirmAddStock").addEventListener("click", function() {
+  const medicine = document.getElementById("modalMedicine").value.trim();
+  const qty      = parseInt(document.getElementById("modalQty").value);
+  const expiry   = document.getElementById("modalExpiry").value;
+
+  if (!medicine) return alert("Please select a medicine.");
+  if (!qty||qty<1) return alert("Please enter a valid quantity.");
+  if (!expiry)   return alert("Please enter an expiry date.");
+
+  batches.unshift({
+    stockNo    : document.getElementById("generatedStockNo").textContent,
+    medicine,
+    supplier   : document.getElementById("modalSupplier").value || "—",
+    qty,
+    cost       : parseFloat(document.getElementById("modalCost").value)||null,
+    mfgDate    : document.getElementById("modalMfgDate").value||null,
+    expiryDate : expiry,
+    added      : new Date().toISOString().slice(0,10),
+  });
+
+  document.getElementById("addStockModal").classList.remove("open");
+  renderTable();
+
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = `Stock added successfully.`;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),3000);
+});
+
+// ── Search / Filter ────────────────────────────────────────────────────────
+document.getElementById("searchBatch").addEventListener("input", renderTable);
+document.getElementById("filterStatus").addEventListener("change", renderTable);
+
+// ── Init ───────────────────────────────────────────────────────────────────
+renderTable();
+</script>
+</body>
+</html>

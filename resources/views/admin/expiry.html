@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GG Pharmacy — Expiry Tracking</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── Expiry square cards ── */
+.expiry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.expiry-item {
+  aspect-ratio: 1 / 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e5e7eb);
+  transition: box-shadow 0.2s, transform 0.2s;
+  cursor: default;
+}
+.expiry-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+}
+
+/* Top accent bar */
+.expiry-bar {
+  height: 5px;
+  width: 100%;
+  flex-shrink: 0;
+}
+.expiry-item.danger  .expiry-bar { background: #ef4444; }
+.expiry-item.warning .expiry-bar { background: #f97316; }
+.expiry-item.ok      .expiry-bar { background: #22c55e; }
+
+/* Card body */
+.expiry-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0;
+}
+
+/* Pill + pulse row */
+.expiry-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* Countdown in info section */
+.expiry-countdown-info {
+  font-size: 10.5px;
+  color: var(--muted, #6b7280);
+  margin-bottom: 4px;
+}
+.expiry-countdown-info strong {
+  font-weight: 700;
+}
+.expiry-item.danger  .expiry-countdown-info strong { color: #ef4444; }
+.expiry-item.warning .expiry-countdown-info strong { color: #f97316; }
+.expiry-item.ok      .expiry-countdown-info strong { color: #22c55e; }
+
+/* Medicine name */
+.expiry-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text, #111827);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Batch meta */
+.expiry-batch {
+  font-size: 10.5px;
+  color: var(--muted, #6b7280);
+}
+
+/* Bottom section */
+.expiry-bottom {
+  border-top: 1px solid var(--border, #e5e7eb);
+  padding-top: 10px;
+  margin-top: auto;
+}
+
+/* Progress track */
+.expiry-track {
+  height: 4px;
+  border-radius: 99px;
+  background: var(--border, #e5e7eb);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.expiry-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.9s cubic-bezier(.4,0,.2,1);
+}
+.expiry-item.danger  .expiry-fill { background: linear-gradient(90deg,#fca5a5,#ef4444); }
+.expiry-item.warning .expiry-fill { background: linear-gradient(90deg,#fed7aa,#f97316); }
+.expiry-item.ok      .expiry-fill { background: linear-gradient(90deg,#bbf7d0,#22c55e); }
+
+.expiry-date-label {
+  font-size: 10px;
+  color: var(--muted, #6b7280);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+}
+.expiry-item.danger  .expiry-date-label span:last-child { color: #ef4444; font-weight: 600; }
+.expiry-item.warning .expiry-date-label span:last-child { color: #f97316; font-weight: 600; }
+.expiry-item.ok      .expiry-date-label span:last-child { color: #22c55e; font-weight: 600; }
+
+/* Pulse dot */
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: #ef4444;
+  opacity: 0.35;
+  animation: pulse-ring 1.4s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.35; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Pills */
+.pill { display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600; }
+.pill.danger  { background:#fee2e2;color:#dc2626; }
+.pill.warning { background:#ffedd5;color:#ea580c; }
+.pill.ok      { background:#dcfce7;color:#16a34a; }
+
+/* Summary row */
+.expiry-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.expiry-stat {
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--surface, #fff);
+}
+.expiry-stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.expiry-stat-label {
+  font-size: 11.5px;
+  color: var(--muted, #6b7280);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.expiry-stat.red   .expiry-stat-num { color: #ef4444; }
+.expiry-stat.amber .expiry-stat-num { color: #f97316; }
+.expiry-stat.green .expiry-stat-num { color: #22c55e; }
+
+.card-head { padding: 16px 20px 0; display:flex;align-items:center;justify-content:space-between; }
+.card-head h3 { font-size:14px;font-weight:700;color:var(--text,#111); margin:0; }
+.card-body  { padding: 16px 20px 20px; }
+
+
+</style>
+</head>
+<body>
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Done.</span>
+</div>
+<div class="overlay" id="overlay"></div>
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="sidebar-logo-icon">
+      <img src="logo2.png" alt="GG Pharmacy">
+    </div>
+    <div class="sidebar-logo-text">
+      <strong>GG Pharmacy</strong>
+      <span>Admin Portal</span>
+    </div>
+  </a>
+
+  <div class="sidebar-section-label">Main</div>
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" href="inventory.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Inventory<span class="nav-badge">3</span>
+  </a>
+  <a class="nav-item" href="orders.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Orders
+  </a>
+  <a class="nav-item" href="prescriptions.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Prescriptions
+  </a>
+  <a class="nav-item" href="customers.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Customers
+  </a>
+
+  <div class="sidebar-section-label">Manage</div>
+  <a class="nav-item" href="stocks.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Stocks
+  </a>
+  <a class="nav-item" href="reports.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Reports
+  </a>
+  <a class="nav-item active" href="expiry.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Expiry Tracking<span class="nav-badge">2</span>
+  </a>
+  <a class="nav-item" href="settings.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+<a href = "profile.html" style = "text-decoration: none;">
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar">AD</div>
+      <div class="user-info">
+        <div class="user-name">Admin User</div>
+        <div class="user-role">System Administrator</div>
+      </div>
+    </div>
+  </div>
+  </a>
+</aside>
+
+<header class="header">
+  <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="header-title">Expiry Tracking</div>
+  <div class="header-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search medicines, patients…">
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="dot"></div>
+    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
+      <span id="themeIco"></span>
+    </button>
+  </div>
+</header>
+
+<main class="main">
+
+  <div style="margin-bottom:20px;">
+    <div style="font-size:20px;font-weight:800;color:var(--text);">Expiry Tracking</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:3px;">Monitor medicines nearing expiry dates.</div>
+  </div>
+
+  <!-- Summary stats -->
+  <div class="expiry-summary">
+    <div class="expiry-stat red">
+      <div class="expiry-stat-num">1</div>
+      <div class="expiry-stat-label">Critical</div>
+    </div>
+    <div class="expiry-stat amber">
+      <div class="expiry-stat-num">1</div>
+      <div class="expiry-stat-label">Expiring Soon</div>
+    </div>
+    <div class="expiry-stat green">
+      <div class="expiry-stat-num">1</div>
+      <div class="expiry-stat-label">Monitored</div>
+    </div>
+  </div>
+
+  <!-- Expiry card -->
+  <div class="card">
+    <div class="card-head">
+      <h3>Expiring Soon</h3><br><br>
+    </div>
+    
+    
+    <div class="card-body">
+      <div class="expiry-grid" id="expiryGrid"></div>
+    </div>
+  </div>
+
+</main>
+
+<script src="shared.js"></script>
+<script>
+const today = new Date(2025, 3, 23); // Apr 23 2025
+
+const items = [
+  {
+    name:    'Amoxicillin 500mg',
+    batch:   'BX-2041',
+    qty:     5,
+    expiry:  new Date(2025, 5, 30),
+    level:   'danger',
+    pill:    'Critical',
+    maxDays: 90
+  },
+  {
+    name:    'Ibuprofen 400mg',
+    batch:   'BX-1998',
+    qty:     32,
+    expiry:  new Date(2025, 7, 15),
+    level:   'warning',
+    pill:    '3 Months',
+    maxDays: 180
+  },
+  {
+    name:    'Doxycycline 100mg',
+    batch:   'BX-2102',
+    qty:     60,
+    expiry:  new Date(2025, 11, 1),
+    level:   'ok',
+    pill:    '6+ Months',
+    maxDays: 365
+  }
+];
+
+function daysBetween(a, b) {
+  return Math.max(0, Math.round((b - a) / 86400000));
+}
+
+function formatExpiry(d) {
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function countdownLabel(days, level) {
+  if (level === 'ok') {
+    return { num: Math.round(days / 30), unit: 'months' };
+  }
+  if (days < 30) return { num: days, unit: 'days' };
+  return { num: Math.round(days / 7), unit: 'weeks' };
+}
+
+const grid = document.getElementById('expiryGrid');
+
+items.forEach((item) => {
+  const days    = daysBetween(today, item.expiry);
+  const fillPct = Math.min(100, Math.max(4, Math.round((days / item.maxDays) * 100)));
+  const { num, unit } = countdownLabel(days, item.level);
+
+  const pulseDot = item.level === 'danger'
+    ? `<span class="pulse-dot"></span>`
+    : '';
+
+  const el = document.createElement('div');
+  el.className = `expiry-item ${item.level}`;
+  el.innerHTML = `
+    <div class="expiry-bar"></div>
+    <div class="expiry-body">
+      <div class="expiry-top">
+        <span class="pill ${item.level}">${item.pill}</span>
+        ${pulseDot}
+      </div>
+      <div class="expiry-bottom">
+        <div class="expiry-name">${item.name}</div>
+        <div class="expiry-batch">${item.batch} &middot; ${item.qty} units</div>
+        <div class="expiry-countdown-info">Time Left: <strong>${num} ${unit}</strong></div>
+        <div class="expiry-track">
+          <div class="expiry-fill" data-fill="${fillPct}" style="width:0%"></div>
+        </div>
+        <div class="expiry-date-label">
+          <span>Expires</span>
+          <span>${formatExpiry(item.expiry)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  grid.appendChild(el);
+});
+
+// Animate progress fills in after paint
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    document.querySelectorAll('.expiry-fill').forEach(el => {
+      el.style.width = el.dataset.fill + '%';
+    });
+  }, 120);
+});
+</script>
+</body>
+</html>

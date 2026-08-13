@@ -39,6 +39,9 @@ return new class extends Migration {
             // Optional: customer note / prescription note left at reservation time
             $table->text('note')->nullable();
 
+            // Optional: uploaded prescription file when an ordered product requires it
+            $table->string('prescription_file')->nullable();
+
             // Optional: reason recorded when pharmacy or customer cancels
             $table->text('cancellation_reason')->nullable();
 

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GG Pharmacy — Sales Records</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+  /* ── Modal Backdrop ── */
+  .modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+
+  /* ── Modal Box ── */
+  .modal {
+    background: var(--card, #fff);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    overflow: hidden;
+    animation: modalIn .22s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform: translateY(18px) scale(.97); }
+    to   { opacity:1; transform: none; }
+  }
+
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border, #e8eaf0);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-header h3 { font-size: 16px; font-weight: 700; margin: 0; color: var(--text); }
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--muted); padding: 4px; line-height: 1;
+    border-radius: 6px; transition: background .15s;
+  }
+  .modal-close:hover { background: var(--surface, #f4f5f8); }
+
+  .modal-body { padding: 20px 24px; }
+
+  /* ── Receipt inside modal ── */
+  .receipt-header {
+    text-align: center;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--border, #e8eaf0);
+    margin-bottom: 16px;
+  }
+  .receipt-header .rx-logo {
+    font-size: 18px; font-weight: 800; color: var(--text);
+  }
+  .receipt-header .rx-sub {
+    font-size: 11px; color: var(--muted); margin-top: 2px;
+  }
+
+  .receipt-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+  .receipt-meta .rm-label { color: var(--muted); }
+  .receipt-meta .rm-value { color: var(--text); font-weight: 600; text-align: right; }
+
+  .receipt-items {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+    margin-bottom: 12px;
+  }
+  .receipt-items thead th {
+    font-size: 10px; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--muted);
+    padding: 4px 0; border-bottom: 1px solid var(--border, #e8eaf0);
+    text-align: left;
+  }
+  .receipt-items thead th:last-child { text-align: right; }
+  .receipt-items tbody td {
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border, #e8eaf0);
+    color: var(--text);
+  }
+  .receipt-items tbody td:last-child { text-align: right; font-weight: 600; }
+  .receipt-items tfoot td {
+    padding: 8px 0 2px;
+    font-size: 13px; font-weight: 700; color: var(--text);
+  }
+  .receipt-items tfoot td:last-child { text-align: right; }
+
+  /* ── Payment waiting banner ── */
+  .payment-banner {
+    background: #fffbeb;
+    border: 1.5px solid #f59e0b;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .payment-banner svg { color: #f59e0b; flex-shrink: 0; margin-top: 1px; }
+  .payment-banner .pb-title { font-size: 13px; font-weight: 700; color: #92400e; }
+  .payment-banner .pb-sub   { font-size: 11px; color: #92400e; opacity: .8; margin-top: 2px; }
+
+  /* ── GCash / PayMaya QR area ── */
+  .payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .pay-method {
+    border: 1.5px solid var(--border, #e8eaf0);
+    border-radius: 10px;
+    padding: 12px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .pay-method:hover, .pay-method.selected {
+    border-color: #3b82f6;
+    background: #eff6ff;
+  }
+  .pay-method .pm-logo { font-size: 22px; margin-bottom: 4px; }
+  .pay-method .pm-name { font-size: 12px; font-weight: 700; color: var(--text); }
+  .pay-method .pm-ref  { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .modal-footer {
+    padding: 14px 24px 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border, #e8eaf0);
+  }
+
+  /* ── Confirm modal (approve step) ── */
+  .confirm-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #f0fdf4;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+  }
+  .confirm-icon svg { color: #22c55e; }
+  .confirm-text { text-align: center; }
+  .confirm-text h4 { font-size: 15px; font-weight: 700; color: var(--text); margin: 0 0 6px; }
+  .confirm-text p  { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.5; }
+
+  /* ── Order row status badges ── */
+  .pill.warn { background: #fffbeb; color: #92400e; }
+  .pill.paid { background: #f0fdf4; color: #15803d; }
+
+  /* ── Approve / View / Detail Buttons ── */
+  .btn-approve {
+    font-size: 12px; font-weight: 600;
+    background: #22c55e; color: #fff;
+    border: none; border-radius: 7px;
+    padding: 5px 13px; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .btn-approve:hover { background: #16a34a; }
+  .btn-approve:active { transform: scale(.96); }
+
+  .btn-view {
+    font-size: 12px; font-weight: 600;
+    background: var(--surface, #f4f5f8); color: var(--text);
+    border: 1.5px solid var(--border, #e8eaf0); border-radius: 7px;
+    padding: 5px 13px; cursor: pointer;
+    transition: background .15s;
+  }
+  .btn-view:hover { background: var(--border, #e8eaf0); }
+
+  /* ── Detail button ── */
+  .btn-detail {
+    font-size: 12px; font-weight: 600;
+    background: #ffefef; color: #eb2525;
+    border: 1.5px solid #febfbf; border-radius: 7px;
+    padding: 5px 13px; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-detail:hover { background: #fedbdb; border-color: #fd9393; }
+
+  /* ── Action cell ── */
+  .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+  /* ── Detail modal ── */
+  .detail-modal { max-width: 520px; }
+
+  .detail-order-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .detail-order-id {
+    font-size: 18px; font-weight: 800; color: var(--text);
+  }
+  .detail-order-meta {
+    font-size: 12px; color: var(--muted); margin-top: 3px;
+  }
+
+  /* ── Cart items list ── */
+  .cart-item-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .cart-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface, #f4f5f8);
+    border-radius: 10px;
+    padding: 12px 14px;
+    transition: background .15s;
+  }
+  .cart-item:hover { background: var(--border, #e8eaf0); }
+  .cart-item-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: #dbeafe;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+  }
+  .cart-item-info { flex: 1; min-width: 0; }
+  .cart-item-name {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .cart-item-qty {
+    font-size: 11px; color: var(--muted); margin-top: 2px;
+  }
+  .cart-item-price {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .cart-item-unit-price {
+    font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px;
+  }
+
+  /* ── Detail total summary ── */
+  .detail-summary {
+    border-top: 1.5px dashed var(--border, #e8eaf0);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .detail-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .detail-summary-row.total {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  /* ── Detail customer chip ── */
+  .detail-customer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface, #f4f5f8);
+    border-radius: 30px;
+    padding: 6px 12px 6px 6px;
+  }
+  .detail-customer-avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .detail-customer-name {
+    font-size: 12px; font-weight: 700; color: var(--text);
+  }
+
+  /* dark-mode patches */
+  [data-theme="dark"] .payment-banner {
+    background: #422006; border-color: #d97706;
+  }
+  [data-theme="dark"] .payment-banner .pb-title,
+  [data-theme="dark"] .payment-banner .pb-sub { color: #fcd34d; }
+  [data-theme="dark"] .pay-method:hover,
+  [data-theme="dark"] .pay-method.selected {
+    background: #1e3a5f; border-color: #3b82f6;
+  }
+  [data-theme="dark"] .confirm-icon { background: #052e16; }
+  [data-theme="dark"] .modal { background: var(--card, #1e2130); }
+  [data-theme="dark"] .receipt-header .rx-logo,
+  [data-theme="dark"] .confirm-text h4 { color: #f1f5f9; }
+  [data-theme="dark"] .btn-detail { background: #5f1e1e; border-color: #eb2525; }
+  [data-theme="dark"] .btn-detail:hover { background: #d81d1d; }
+  [data-theme="dark"] .cart-item { background: rgba(255,255,255,.05); }
+  [data-theme="dark"] .cart-item:hover { background: rgba(255,255,255,.09); }
+  [data-theme="dark"] .cart-item-icon { background: #1e3a5f; }
+  [data-theme="dark"] .detail-customer-chip { background: rgba(255,255,255,.07); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ TOAST ═══════════════ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Done.</span>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside class="sidebar" id="sidebar">
+  <a class="sidebar-logo" href="index.html">
+    <div class="sidebar-logo-icon">
+      <img src="logo2.png" alt="GG Pharmacy">
+    </div>
+    <div class="sidebar-logo-text">
+      <strong>GG Pharmacy</strong>
+      <span>Admin Portal</span>
+    </div>
+  </a>
+
+  <div class="sidebar-section-label">Main</div>
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" href="inventory.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    Inventory<span class="nav-badge">3</span>
+  </a>
+  <a class="nav-item active" href="orders.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    Orders
+  </a>
+  <a class="nav-item" href="prescriptions.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    Prescriptions
+  </a>
+  <a class="nav-item" href="customers.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Customers
+  </a>
+
+  <div class="sidebar-section-label">Manage</div>
+  <a class="nav-item" href="stocks.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+    Stocks
+  </a>
+  <a class="nav-item" href="reports.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Reports
+  </a>
+  <a class="nav-item" href="expiry.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Expiry Tracking<span class="nav-badge">2</span>
+  </a>
+  <a class="nav-item" href="settings.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+<a href = "profile.html" style = "text-decoration: none;">
+  <div class="sidebar-bottom">
+    <div class="user-chip">
+      <div class="user-avatar">AD</div>
+      <div class="user-info">
+        <div class="user-name">Admin User</div>
+        <div class="user-role">System Administrator</div>
+      </div>
+    </div>
+  </div>
+  </a>
+</aside>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header">
+  <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="header-title">Sales Records</div>
+  <div class="header-search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search orders, patients…" id="searchInput">
+  </div>
+  <div class="header-actions">
+    <button class="icon-btn" title="Notifications">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <div class="dot"></div>
+    </button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
+      <span id="themeIco"></span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+  <div style="margin-bottom:20px;">
+    <div style="font-size:20px;font-weight:800;color:var(--text);">Sales Records</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:3px;">Review and approve incoming customer orders.</div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon" style="background:#fff7ed;color:#f97316;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div></div>
+      <div class="stat-value" id="pendingCount">5</div>
+      <div class="stat-label">Pending Approval</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+      </div></div>
+      <div class="stat-value" id="approvedCount">0</div>
+      <div class="stat-label">Approved Today</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><div class="stat-icon green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div></div>
+      <div class="stat-value" id="awaitingPayCount">0</div>
+      <div class="stat-label">Awaiting Payment</div>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="card">
+    <div class="card-head">
+      <h3>Incoming Orders</h3>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:12px;color:var(--muted);" id="tabPending" class="tab-link active-tab" onclick="filterTable('pending')" style="cursor:pointer;">Pending</span>
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabApproved" class="tab-link" onclick="filterTable('approved')">Approved</span>
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabAll" class="tab-link" onclick="filterTable('all')">All</span>
+      </div>
+    </div>
+    <style>
+      .tab-link { cursor:pointer; padding:4px 10px; border-radius:6px; font-weight:600; transition:background .15s,color .15s; }
+      .tab-link:hover { background:var(--surface,#f4f5f8); color:var(--text); }
+      .tab-link.active-tab { background:var(--primary,#f63b3b); color:#fff !important; }
+    </style>
+    <div class="table-wrap">
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <!-- injected by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════ ORDER DETAIL MODAL ═══════════════ -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal detail-modal">
+    <div class="modal-header">
+      <h3>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px;"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Order Details
+      </h3>
+      <button class="modal-close" onclick="closeModal('detailModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+
+      <!-- Order top info -->
+      <div class="detail-order-info">
+        <div>
+          <div class="detail-order-id" id="dOrderId">—</div>
+          <div class="detail-order-meta" id="dOrderMeta">—</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span id="dStatusBadge" class="pill warn">Pending</span>
+          <span id="dTypeBadge" class="pill ok">OTC</span>
+        </div>
+      </div>
+
+      <!-- Customer chip -->
+      <div style="margin-bottom:18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px;">Customer</div>
+        <div class="detail-customer-chip">
+          <div class="detail-customer-avatar" id="dCustomerInitials">—</div>
+          <div class="detail-customer-name" id="dCustomerName">—</div>
+        </div>
+      </div>
+
+      <!-- Items in cart -->
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px;">
+        Items in Order (<span id="dItemCount">0</span>)
+      </div>
+      <div class="cart-item-list" id="dCartItems">
+        <!-- injected -->
+      </div>
+
+      <!-- Summary -->
+      <div class="detail-summary">
+        <div class="detail-summary-row">
+          <span>Subtotal</span>
+          <span id="dSubtotal">—</span>
+        </div>
+        <div class="detail-summary-row">
+          <span>VAT (12%)</span>
+          <span id="dVat">—</span>
+        </div>
+        <div class="detail-summary-row total">
+          <span>Total Due</span>
+          <span id="dTotal">—</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('detailModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Close</button>
+      <button class="btn-sm" id="detailApproveBtn" onclick="approveFromDetail()" style="background:#22c55e;color:#fff;border:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg>
+        Approve Order
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM APPROVE MODAL ═══════════════ -->
+<div class="modal-backdrop" id="confirmModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Confirm Approval</h3>
+      <button class="modal-close" onclick="closeModal('confirmModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="confirm-text">
+        <h4 id="confirmTitle">Approve Order #1042?</h4>
+        <p id="confirmSub">This will generate a receipt and send a payment link to the customer.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('confirmModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Cancel</button>
+      <button class="btn-sm primary" id="confirmApproveBtn" onclick="doApprove()">Approve & Generate Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ RECEIPT MODAL ═══════════════ -->
+<div class="modal-backdrop" id="receiptModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Order Receipt — <span id="receiptOrderId"></span></h3>
+      <button class="modal-close" onclick="closeModal('receiptModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Receipt header -->
+      <div class="receipt-header">
+        <div class="rx-logo">💊 GG Pharmacy</div>
+        <div class="rx-sub">Official Sales Receipt</div>
+      </div>
+
+      <!-- Meta -->
+      <div class="receipt-meta">
+        <span class="rm-label">Customer</span><span class="rm-value" id="rCustomer">—</span>
+        <span class="rm-label">Order #</span><span class="rm-value" id="rOrderId">—</span>
+        <span class="rm-label">Date</span><span class="rm-value" id="rDate">—</span>
+        <span class="rm-label">Type</span><span class="rm-value" id="rType">—</span>
+      </div>
+
+      <!-- Items -->
+      <table class="receipt-items">
+        <thead>
+          <tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody id="rItemsBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3">Total</td>
+            <td id="rTotal">—</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Payment waiting -->
+      <div class="payment-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <div class="pb-title">Awaiting Online Payment</div>
+          <div class="pb-sub">A payment link has been sent to the customer. Order will be fulfilled once payment is confirmed.</div>
+        </div>
+      </div>
+
+      <!-- Payment method selector -->
+      <div style="font-size:12px;font-weight:600;color:var(--muted);margin-top:16px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Accepted via</div>
+      <div class="payment-methods">
+        <div class="pay-method selected" onclick="selectPay(this)">
+          <div class="pm-logo">💙</div>
+          <div class="pm-name">GCash</div>
+          <div class="pm-ref" id="gcashRef">Ref: —</div>
+        </div>
+        <div class="pay-method" onclick="selectPay(this)">
+          <div class="pm-logo">💜</div>
+          <div class="pm-name">Maya</div>
+          <div class="pm-ref" id="mayaRef">Ref: —</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('receiptModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Close</button>
+      <button class="btn-sm primary" onclick="printReceipt()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Receipt
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script>
+/* ─── Order Data ─── */
+const ORDERS = [
+  {
+    id: '#1042', customer: 'Maria Santos', date: 'Mar 30 · 9:14 AM',
+    type: 'OTC', status: 'pending',
+    items: [
+      { name: 'Biogesic 500mg', qty: 2, price: 12 },
+      { name: 'Kremil-S Tablet', qty: 1, price: 18 },
+      { name: 'Vitamin C 500mg', qty: 1, price: 8 },
+    ]
+  },
+  {
+    id: '#1041', customer: 'Juan dela Cruz', date: 'Mar 30 · 8:55 AM',
+    type: 'Rx', status: 'pending',
+    items: [
+      { name: 'Losartan 50mg', qty: 30, price: 9.5 },
+      { name: 'Metformin 500mg', qty: 30, price: 8.2 },
+      { name: 'Atorvastatin 20mg', qty: 14, price: 12 },
+    ]
+  },
+  {
+    id: '#1040', customer: 'Ana Reyes', date: 'Mar 29 · 2:12 PM',
+    type: 'OTC', status: 'pending',
+    items: [
+      { name: 'Neozep Forte', qty: 1, price: 55 },
+      { name: 'Alaxan FR', qty: 1, price: 33 },
+    ]
+  },
+  {
+    id: '#1039', customer: 'Pedro Lim', date: 'Mar 29 · 11:05 AM',
+    type: 'Rx', status: 'pending',
+    items: [
+      { name: 'Amlodipine 5mg', qty: 30, price: 7 },
+      { name: 'Omeprazole 20mg', qty: 14, price: 12 },
+      { name: 'Salbutamol Inhaler', qty: 1, price: 285 },
+      { name: 'Cetirizine 10mg', qty: 10, price: 6.5 },
+    ]
+  },
+  {
+    id: '#1038', customer: 'Rosa Garcia', date: 'Mar 29 · 9:30 AM',
+    type: 'OTC', status: 'pending',
+    items: [
+      { name: 'Betadine Solution 60ml', qty: 1, price: 55 },
+    ]
+  },
+];
+
+/* ─── Item emoji map (fallback: 💊) ─── */
+const ITEM_ICONS = {
+  default: '💊',
+  inhaler: '🫁',
+  solution: '🧴',
+  vitamin: '💛',
+  syrup: '🍶',
+};
+function itemIcon(name) {
+  const n = name.toLowerCase();
+  if (n.includes('inhaler'))      return '🫁';
+  if (n.includes('solution') || n.includes('betadine')) return '🧴';
+  if (n.includes('vitamin'))      return '🌟';
+  if (n.includes('syrup'))        return '🍶';
+  return '💊';
+}
+
+/* helpers */
+function orderTotal(order) {
+  return order.items.reduce((s, i) => s + i.qty * i.price, 0);
+}
+function fmt(n) { return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function genRef() { return Math.random().toString(36).slice(2,10).toUpperCase(); }
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+/* ─── Current filter & pending action ─── */
+let currentFilter = 'pending';
+let pendingApproveId = null;
+let detailOrderId = null;
+
+/* ─── Render table ─── */
+function renderTable(filter) {
+  currentFilter = filter;
+  const body = document.getElementById('ordersBody');
+  const filtered = filter === 'all' ? ORDERS : ORDERS.filter(o => o.status === filter);
+  body.innerHTML = '';
+  filtered.forEach(order => {
+    const total = orderTotal(order);
+    const isPending = order.status === 'pending';
+    const tr = document.createElement('tr');
+    tr.id = 'row-' + order.id.replace('#','');
+    tr.innerHTML = `
+      <td style="color:var(--muted);font-size:12px;">${order.id}</td>
+      <td>${order.customer}</td>
+      <td>${order.items.length} item${order.items.length > 1 ? 's' : ''}</td>
+      <td style="font-weight:700;">${fmt(total)}</td>
+      <td style="font-size:12px;color:var(--muted);">${order.date}</td>
+      <td><span class="pill ${order.type === 'OTC' ? 'ok' : 'blue'}">${order.type}</span></td>
+      <td>
+        ${isPending
+          ? '<span class="pill warn">Pending</span>'
+          : '<span class="pill ok">Approved</span>'}
+      </td>
+      <td>
+        <div class="action-cell">
+          <button class="btn-detail" onclick="openDetail('${order.id}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px;vertical-align:-1px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Details
+          </button>
+          ${isPending
+            ? `<button class="btn-approve" onclick="openConfirm('${order.id}')">Approve</button>`
+            : `<button class="btn-view" onclick="openReceipt('${order.id}')">Receipt</button>`}
+        </div>
+      </td>
+    `;
+    body.appendChild(tr);
+  });
+  updateStats();
+  updateTabs();
+}
+
+function filterTable(f) { renderTable(f); }
+
+function updateStats() {
+  document.getElementById('pendingCount').textContent  = ORDERS.filter(o => o.status === 'pending').length;
+  document.getElementById('approvedCount').textContent = ORDERS.filter(o => o.status === 'approved').length;
+  document.getElementById('awaitingPayCount').textContent = ORDERS.filter(o => o.status === 'approved').length;
+}
+
+function updateTabs() {
+  ['pending','approved','all'].forEach(f => {
+    const el = document.getElementById('tab' + f.charAt(0).toUpperCase() + f.slice(1));
+    el.classList.toggle('active-tab', f === currentFilter);
+  });
+}
+
+/* ─── Detail modal ─── */
+function openDetail(id) {
+  const order = ORDERS.find(o => o.id === id);
+  if (!order) return;
+  detailOrderId = id;
+
+  document.getElementById('dOrderId').textContent   = order.id;
+  document.getElementById('dOrderMeta').textContent = order.date;
+  document.getElementById('dCustomerInitials').textContent = initials(order.customer);
+  document.getElementById('dCustomerName').textContent     = order.customer;
+  document.getElementById('dItemCount').textContent  = order.items.length;
+
+  // status & type badges
+  const sBadge = document.getElementById('dStatusBadge');
+  sBadge.textContent = order.status === 'pending' ? 'Pending' : 'Approved';
+  sBadge.className   = 'pill ' + (order.status === 'pending' ? 'warn' : 'ok');
+
+  const tBadge = document.getElementById('dTypeBadge');
+  tBadge.textContent = order.type;
+  tBadge.className   = 'pill ' + (order.type === 'OTC' ? 'ok' : 'blue');
+
+  // cart items
+  const cartEl = document.getElementById('dCartItems');
+  cartEl.innerHTML = '';
+  order.items.forEach(item => {
+    const subtotal = item.qty * item.price;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <div class="cart-item-icon">${itemIcon(item.name)}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-qty">Qty: ${item.qty} &nbsp;·&nbsp; ${fmt(item.price)} each</div>
+      </div>
+      <div>
+        <div class="cart-item-price">${fmt(subtotal)}</div>
+        <div class="cart-item-unit-price">subtotal</div>
+      </div>
+    `;
+    cartEl.appendChild(div);
+  });
+
+  // summary
+  const subtotal = orderTotal(order);
+  const vat      = subtotal * 0.12;
+  const total    = subtotal + vat;
+  document.getElementById('dSubtotal').textContent = fmt(subtotal);
+  document.getElementById('dVat').textContent      = fmt(vat);
+  document.getElementById('dTotal').textContent    = fmt(total);
+
+  // show/hide approve button in footer
+  const approveBtn = document.getElementById('detailApproveBtn');
+  approveBtn.style.display = order.status === 'pending' ? '' : 'none';
+
+  openModal('detailModal');
+}
+
+function approveFromDetail() {
+  closeModal('detailModal');
+  setTimeout(() => openConfirm(detailOrderId), 200);
+}
+
+/* ─── Confirm modal ─── */
+function openConfirm(id) {
+  pendingApproveId = id;
+  document.getElementById('confirmTitle').textContent = `Approve Order ${id}?`;
+  const order = ORDERS.find(o => o.id === id);
+  document.getElementById('confirmSub').textContent =
+    `This will generate a receipt for ${order.customer} and send a payment link.`;
+  openModal('confirmModal');
+}
+
+function doApprove() {
+  const order = ORDERS.find(o => o.id === pendingApproveId);
+  if (!order) return;
+  order.status = 'approved';
+  order._gcashRef = 'GC-' + genRef();
+  order._mayaRef  = 'MY-' + genRef();
+  closeModal('confirmModal');
+  renderTable(currentFilter);
+  showToast('Order ' + pendingApproveId + ' approved!');
+  setTimeout(() => openReceipt(pendingApproveId), 400);
+}
+
+/* ─── Receipt modal ─── */
+function openReceipt(id) {
+  const order = ORDERS.find(o => o.id === id);
+  if (!order) return;
+  document.getElementById('receiptOrderId').textContent = order.id;
+  document.getElementById('rCustomer').textContent = order.customer;
+  document.getElementById('rOrderId').textContent   = order.id;
+  document.getElementById('rDate').textContent      = order.date;
+  document.getElementById('rType').textContent      = order.type;
+
+  const tbody = document.getElementById('rItemsBody');
+  tbody.innerHTML = '';
+  order.items.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td>${fmt(item.price)}</td>
+      <td>${fmt(item.qty * item.price)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('rTotal').textContent = fmt(orderTotal(order));
+  document.getElementById('gcashRef').textContent = 'Ref: ' + (order._gcashRef || '—');
+  document.getElementById('mayaRef').textContent  = 'Ref: ' + (order._mayaRef  || '—');
+
+  /* reset pay method selection */
+  document.querySelectorAll('.pay-method').forEach((el,i) => {
+    el.classList.toggle('selected', i === 0);
+  });
+
+  openModal('receiptModal');
+}
+
+function selectPay(el) {
+  document.querySelectorAll('.pay-method').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function printReceipt() {
+  showToast('Sending receipt to printer…');
+}
+
+/* ─── Modal helpers ─── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+/* ─── Toast ─── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ─── Search ─── */
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#ordersBody tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
+
+/* ─── Close modals on backdrop click ─── */
+document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+  backdrop.addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+/* ─── Init ─── */
+renderTable('pending');
+</script>
+</body>
+</html>
