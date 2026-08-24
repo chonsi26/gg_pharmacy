@@ -304,10 +304,17 @@
   <span id="themeIco"></span>
 </button>
 
+@if (session('status'))
+<div class="toast on" id="toast">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  {{ session('status') }}
+</div>
+@else
 <div class="toast" id="toast">
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
   Access granted. Redirecting…
 </div>
+@endif
 
 <div class="page">
 
@@ -324,23 +331,28 @@
         <p>Enter your credentials to access the system</p>
       </div>
 
-      <form id="form" novalidate>
+      <form id="form" method="POST" action="{{ route('admin.login') }}" novalidate>
+        @csrf
         <div class="field">
-          <input id="code" type="text" placeholder="Admin Code" autocomplete="username" spellcheck="false">
-          <p class="err-msg" id="codeErr">Admin code is required.</p>
+          <input id="code" name="login" type="text" value="{{ old('login') }}" placeholder="Admin Code (username or email)" autocomplete="username" spellcheck="false">
+          <p class="err-msg {{ $errors->has('login') ? 'on' : '' }}" id="codeErr">{{ $errors->first('login') ?: 'Admin code is required.' }}</p>
         </div>
 
         <div class="field">
           <div class="pw-wrap">
-            <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
+            <input id="pass" name="password" type="password" placeholder="Password" autocomplete="current-password">
             <button type="button" class="pw-btn" id="pwBtn" aria-label="Show/hide password">
               <svg id="eyeIco" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
               </svg>
             </button>
           </div>
-          <p class="err-msg" id="passErr">Password is required.</p>
+          <p class="err-msg {{ $errors->has('password') ? 'on' : '' }}" id="passErr">{{ $errors->first('password') ?: 'Password is required.' }}</p>
         </div>
+
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:-4px 0 10px;">
+          <input type="checkbox" name="remember" style="width:auto;height:auto;" value="1"> Remember me
+        </label>
 
         <button class="btn-signin" type="submit" id="btn">
           <span id="btnLabel">Log In</span>
@@ -362,9 +374,8 @@
 
     </div>
 
-    
     <div class="register-row">
-      Don't have an account?<a href="register.html">Create one</a>
+      Don't have an account?<a href="{{ route('admin.register') }}">Create one</a>
     </div>
     <div class="below-card">
       GG Pharmacy Inventory System &nbsp;·&nbsp; Admin Access Only
@@ -401,40 +412,19 @@
       : `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
   });
 
-  const form     = document.getElementById('form');
-  const btn      = document.getElementById('btn');
-  const btnLabel = document.getElementById('btnLabel');
-  const toast    = document.getElementById('toast');
-  const card     = document.getElementById('card');
+  const form = document.getElementById('form');
+  const card = document.getElementById('card');
 
-  form.addEventListener('submit', async e => {
-    e.preventDefault();
-    const code = document.getElementById('code').value.trim();
-    const pass = passInput.value;
-    const codeErr = document.getElementById('codeErr');
-    const passErr = document.getElementById('passErr');
+  @if ($errors->any())
+  card.classList.add('shake');
+  setTimeout(() => card.classList.remove('shake'), 380);
+  @endif
 
-    codeErr.classList.remove('on');
-    passErr.classList.remove('on');
-
-    let valid = true;
-    if (!code) { codeErr.classList.add('on'); valid = false; }
-    if (!pass) { passErr.classList.add('on'); valid = false; }
-
-    if (!valid) {
-      card.classList.add('shake');
-      setTimeout(() => card.classList.remove('shake'), 380);
-      return;
-    }
-
+  form.addEventListener('submit', () => {
+    const btn = document.getElementById('btn');
+    const btnLabel = document.getElementById('btnLabel');
     btn.disabled = true;
     btnLabel.innerHTML = `<span class="spinner"></span>`;
-    await new Promise(r => setTimeout(r, 1500));
-    btnLabel.textContent = 'Log In';
-    btn.disabled = false;
-
-    toast.classList.add('on');
-    setTimeout(() => toast.classList.remove('on'), 3000);
   });
 </script>
 </body>

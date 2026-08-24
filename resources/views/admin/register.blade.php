@@ -519,9 +519,11 @@
         <div class="progress-fill" id="progressFill" style="width:33.33%"></div>
       </div>
 
+      <form id="registerForm" method="POST" action="{{ route('admin.register') }}" enctype="multipart/form-data" novalidate>
+        @csrf
       <div class="card-body">
 
-        <!-- ─── Step 1: Personal Info ─── -->
+        <!-- Step 1: Personal Info -->
         <div class="step-panel active" id="panel1">
           <div class="card-header">
             <h2>Personal Information</h2>
@@ -531,17 +533,17 @@
           <div class="row-3">
             <div class="field">
               <label>First Name</label>
-              <input id="fname" type="text" placeholder="Juan" autocomplete="given-name">
-              <p class="err-msg" id="fnameErr">Required.</p>
+              <input id="fname" name="first_name" type="text" value="{{ old('first_name') }}" placeholder="Juan" autocomplete="given-name">
+              <p class="err-msg {{ $errors->has('first_name') ? 'on' : '' }}" id="fnameErr">{{ $errors->first('first_name') ?: 'Required.' }}</p>
             </div>
             <div class="field">
               <label>Middle Name</label>
-              <input id="mname" type="text" placeholder="Santos" autocomplete="additional-name">
+              <input id="mname" name="middle_name" type="text" value="{{ old('middle_name') }}" placeholder="Santos" autocomplete="additional-name">
             </div>
             <div class="field">
               <label>Last Name</label>
-              <input id="lname" type="text" placeholder="dela Cruz" autocomplete="family-name">
-              <p class="err-msg" id="lnameErr">Required.</p>
+              <input id="lname" name="last_name" type="text" value="{{ old('last_name') }}" placeholder="dela Cruz" autocomplete="family-name">
+              <p class="err-msg {{ $errors->has('last_name') ? 'on' : '' }}" id="lnameErr">{{ $errors->first('last_name') ?: 'Required.' }}</p>
             </div>
           </div>
 
@@ -559,7 +561,7 @@
           </div>
         </div>
 
-        <!-- ─── Step 2: Contact & Account ─── -->
+        <!-- Step 2: Contact & Account -->
         <div class="step-panel" id="panel2">
           <div class="card-header">
             <h2>Contact &amp; Account</h2>
@@ -568,23 +570,23 @@
 
           <div class="field">
             <label>Email Address</label>
-            <input id="email" type="email" placeholder="juan@ggpharmacy.com" autocomplete="email">
-            <p class="err-msg" id="emailErr">Enter a valid email address.</p>
+            <input id="email" name="email" type="email" value="{{ old('email') }}" placeholder="juan@ggpharmacy.com" autocomplete="email">
+            <p class="err-msg {{ $errors->has('email') ? 'on' : '' }}" id="emailErr">{{ $errors->first('email') ?: 'Enter a valid email address.' }}</p>
           </div>
 
           <div class="field">
             <label>Phone Number</label>
             <div class="phone-wrap">
               <div class="phone-prefix">🇵🇭 +63</div>
-              <input id="phone" type="tel" placeholder="9XX XXX XXXX" autocomplete="tel" maxlength="10">
+              <input id="phone" name="phone_number" type="tel" value="{{ old('phone_number') }}" placeholder="9XX XXX XXXX" autocomplete="tel" maxlength="10">
             </div>
-            <p class="err-msg" id="phoneErr">Enter a valid 10-digit PH mobile number.</p>
+            <p class="err-msg {{ $errors->has('phone_number') ? 'on' : '' }}" id="phoneErr">{{ $errors->first('phone_number') ?: 'Enter a valid 10-digit PH mobile number.' }}</p>
           </div>
 
           <div class="field">
             <label>Username</label>
-            <input id="username" type="text" placeholder="e.g. jdelacruz" autocomplete="username" spellcheck="false">
-            <p class="err-msg" id="usernameErr">Username is required (letters, numbers, _ only).</p>
+            <input id="username" name="username" type="text" value="{{ old('username') }}" placeholder="e.g. jdelacruz" autocomplete="username" spellcheck="false">
+            <p class="err-msg {{ $errors->has('username') ? 'on' : '' }}" id="usernameErr">{{ $errors->first('username') ?: 'Username is required (letters, numbers, _ only).' }}</p>
           </div>
 
           <div class="btn-row" style="margin-top:18px;">
@@ -599,7 +601,7 @@
           </div>
         </div>
 
-        <!-- ─── Step 3: Security & Profile ─── -->
+        <!-- Step 3: Security & Profile -->
         <div class="step-panel" id="panel3">
           <div class="card-header">
             <h2>Security &amp; Profile</h2>
@@ -609,7 +611,7 @@
           <div class="field">
             <label>Password</label>
             <div class="pw-wrap">
-              <input id="pass" type="password" placeholder="Create a strong password" autocomplete="new-password">
+              <input id="pass" name="password" type="password" placeholder="Create a strong password" autocomplete="new-password">
               <button type="button" class="pw-btn" id="pwBtn1" aria-label="Show/hide password">
                 <svg id="eyeIco1" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
@@ -620,13 +622,13 @@
               <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
             </div>
             <p class="strength-label" id="strengthLabel"></p>
-            <p class="err-msg" id="passErr">Password must be at least 8 characters.</p>
+            <p class="err-msg {{ $errors->has('password') ? 'on' : '' }}" id="passErr">{{ $errors->first('password') ?: 'Password must be at least 8 characters.' }}</p>
           </div>
 
           <div class="field">
             <label>Confirm Password</label>
             <div class="pw-wrap">
-              <input id="confirm" type="password" placeholder="Re-enter your password" autocomplete="new-password">
+              <input id="confirm" name="password_confirmation" type="password" placeholder="Re-enter your password" autocomplete="new-password">
               <button type="button" class="pw-btn" id="pwBtn2" aria-label="Show/hide confirm">
                 <svg id="eyeIco2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
@@ -637,7 +639,7 @@
           </div>
 
           <div class="field" style="margin-top:18px;">
-            <label>Profile Image <span class="opt">(optional · max 255 chars path)</span></label>
+            <label>Profile Image <span class="opt">(optional · JPG/PNG/WEBP · max 2MB)</span></label>
             <div class="avatar-upload">
               <div class="avatar-preview" id="avatarPreview" title="Click to pick image">
                 <img id="avatarImg" src="" alt="Preview">
@@ -645,8 +647,8 @@
               </div>
               <div class="avatar-info">
                 <p>Upload a profile photo</p>
-                <span>JPG, PNG, WEBP — max 5 MB</span>
-                <input type="file" id="avatarFile" accept="image/jpeg,image/png,image/webp">
+                <span>JPG, PNG, WEBP — max 2 MB</span>
+                <input type="file" id="avatarFile" name="profile_picture" accept="image/jpeg,image/png,image/webp">
                 <label for="avatarFile" class="btn-pick">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Choose File
@@ -654,9 +656,7 @@
                 <p class="avatar-filename" id="avatarFilename"></p>
               </div>
             </div>
-            <!-- Hidden text input stores the path/filename (VARCHAR 255) -->
-            <input type="hidden" id="profileImage" name="profile_image" maxlength="255">
-            <p class="err-msg" id="avatarErr">File name too long (max 255 characters).</p>
+            <p class="err-msg {{ $errors->has('profile_picture') ? 'on' : '' }}" id="avatarErr">{{ $errors->first('profile_picture') ?: 'File is too large or an invalid type.' }}</p>
           </div>
 
           <div class="btn-row" style="margin-top:22px;">
@@ -664,13 +664,14 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
               Back
             </button>
-            <button class="btn-next green" id="submitBtn" type="button">
+            <button class="btn-next green" id="submitBtn" type="submit">
               <span id="btnLabel">Create Account</span>
             </button>
           </div>
         </div>
 
       </div><!-- /card-body -->
+      </form>
 
       <div class="card-footer">
         <p>
@@ -681,7 +682,7 @@
     </div>
 
     <div class="login-row">
-      Already have an account?<a href="login.html">Sign in</a>
+      Already have an account?<a href="{{ route('admin.login') }}">Sign in</a>
     </div>
     <div class="below-card">
       GG Pharmacy Inventory System &nbsp;·&nbsp; Admin Access Only
@@ -707,7 +708,7 @@ setTheme(saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: da
 themeBtn.addEventListener('click', () => setTheme(html.getAttribute('data-theme') !== 'dark'));
 
 // ── Step system ────────────────────────────────────────
-let currentStep = 1;
+let currentStep = {{ $errors->has('email') || $errors->has('phone_number') || $errors->has('username') ? 2 : ($errors->has('password') || $errors->has('profile_picture') ? 3 : 1) }};
 const totalSteps = 3;
 const progressFill = document.getElementById('progressFill');
 
@@ -719,11 +720,9 @@ const STEP_META = [
 const CHECK_SVG = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
 
 function goTo(step) {
-  // Hide all panels
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel' + step).classList.add('active');
 
-  // Update sidebar steps
   STEP_META.forEach((m, i) => {
     const stepEl = document.getElementById(m.stepEl);
     const dotEl  = document.getElementById(m.dotEl);
@@ -743,6 +742,7 @@ function goTo(step) {
   progressFill.style.width = (step / totalSteps * 100) + '%';
   currentStep = step;
 }
+goTo(currentStep);
 
 // ── Name preview ───────────────────────────────────────
 ['fname','mname','lname'].forEach(id => {
@@ -755,6 +755,7 @@ function updatePreview() {
   const parts = [f, m, l].filter(Boolean);
   document.getElementById('namePreview').textContent = parts.length ? parts.join(' ') : '—';
 }
+updatePreview();
 
 // ── Step 1 validation ──────────────────────────────────
 document.getElementById('next1').addEventListener('click', () => {
@@ -842,15 +843,8 @@ document.getElementById('avatarFile').addEventListener('change', function() {
   if (!file) return;
 
   const filename = file.name;
-  document.getElementById('profileImage').value = filename;
   document.getElementById('avatarFilename').textContent = filename;
   document.getElementById('avatarFilename').style.display = 'block';
-
-  const avatarErr = document.getElementById('avatarErr');
-  if (filename.length > 255) {
-    avatarErr.classList.add('on'); return;
-  }
-  avatarErr.classList.remove('on');
 
   const reader = new FileReader();
   reader.onload = e => {
@@ -867,42 +861,30 @@ document.getElementById('avatarPreview').addEventListener('click', () => {
   document.getElementById('avatarFile').click();
 });
 
-// ── Step 3 submit ──────────────────────────────────────
+// ── Step 3 client-side check (final submit is native form POST) ──
 document.getElementById('back3').addEventListener('click', () => goTo(2));
 
-document.getElementById('submitBtn').addEventListener('click', async () => {
+document.getElementById('registerForm').addEventListener('submit', (e) => {
   const pass    = passInput.value;
   const confirm = document.getElementById('confirm').value;
-  const fname   = document.getElementById('profileImage').value;
   let ok = true;
 
   const pe  = document.getElementById('passErr');
   const ce  = document.getElementById('confirmErr');
-  const ae  = document.getElementById('avatarErr');
-  pe.classList.remove('on'); ce.classList.remove('on'); ae.classList.remove('on');
+  pe.classList.remove('on'); ce.classList.remove('on');
 
   if (!pass || pass.length < 8) { pe.classList.add('on'); ok = false; }
   if (!confirm || confirm !== pass) {
     ce.textContent = !confirm ? 'Please confirm your password.' : 'Passwords do not match.';
     ce.classList.add('on'); ok = false;
   }
-  if (fname.length > 255) { ae.classList.add('on'); ok = false; }
 
-  if (!ok) { shake(); return; }
+  if (!ok) { e.preventDefault(); shake(); return; }
 
   const btn = document.getElementById('submitBtn');
   const lbl = document.getElementById('btnLabel');
   btn.disabled = true;
   lbl.innerHTML = `<span class="spinner"></span>`;
-  await new Promise(r => setTimeout(r, 1600));
-  lbl.textContent = 'Create Account';
-  btn.disabled = false;
-
-  document.getElementById('toast').classList.add('on');
-  setTimeout(() => {
-    document.getElementById('toast').classList.remove('on');
-    window.location.href = 'login.html';
-  }, 2500);
 });
 
 // ── Shake helper ──────────────────────────────────────
@@ -911,6 +893,10 @@ function shake() {
   card.classList.add('shake');
   setTimeout(() => card.classList.remove('shake'), 380);
 }
+
+@if ($errors->any())
+shake();
+@endif
 </script>
 </body>
 </html>

@@ -12,6 +12,8 @@ use App\Models\PromoBanner;
 use App\Models\Section;
 use App\Models\Setting;
 use App\Models\Slider;
+use App\Models\Staff;
+use App\Models\Stock;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'facebook_url'     => '#',
             'instagram_url'    => '#',
             'logo'             => 'images/logo.png',
+            'logo2'             => 'images/logo2.png',
             'shipping_message' => 'Free shipping for orders over ₱1499 (For Sogod, Southern Leyte Only)',
             'copyright'        => '© 2024 GG Pharmacy. All Rights Reserved. | Zone 2, Sogod, Southern Leyte',
             'newsletter_intro' => 'Get all the latest information on events, sales and offers. Sign up for newsletter:',
@@ -142,9 +145,10 @@ class DatabaseSeeder extends Seeder
         $pi = 'https://via.placeholder.com/110x110/eee/999?text=';
 
         // ── Hot Deals ─────────────────────────────────────────────────────────
-        $secHotDeals->products()->createMany([
+        $secHotDeals->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Casino Alcohol 500Ml',
+                'generic_name'  => 'Ethyl Alcohol',
                 'price'         => 98.00,
                 'image'         => $ph.'Casino+Alcohol',
                 'category_id'   => $catOTC->id,
@@ -218,12 +222,13 @@ class DatabaseSeeder extends Seeder
                 'depth'         => 1.00,
                 'sort_order'    => 5,
             ],
-        ]);
+        ]));
 
         // ── Sale ──────────────────────────────────────────────────────────────
-        $secSale->products()->createMany([
+        $secSale->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Livity Prime',
+                'generic_name'  => 'Multivitamins + Minerals',
                 'price'         => 885.00,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
@@ -236,6 +241,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Livity Prime 2',
+                'generic_name'  => 'Multivitamins + Minerals + Antioxidants',
                 'price'         => 1850.00,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
@@ -248,11 +254,13 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Arthricin 9+1 Tipid Pack',
+                'generic_name'  => 'Mefenamic Acid',
                 'price'         => 333.00,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
                 'image'         => $ph.'Arthricin+9%2B1',
                 'category_id'   => $catOTC->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Arthricin is a trusted pain reliever specifically formulated for joint pain and arthritis relief. This 9+1 Tipid Pack offers 10 tablets at the price of 9, giving you more savings on every purchase.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Adults and children 12 years and above: Take 1 tablet every 6 to 8 hours as needed. Do not exceed 3 tablets in 24 hours.',
@@ -262,11 +270,13 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Liveraide 9+1 Tipid Pack',
+                'generic_name'  => 'Silymarin',
                 'price'         => 189.00,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
                 'image'         => $ph.'Liveraide+9%2B1',
                 'category_id'   => $catSupplement->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Liveraide is a liver health supplement that supports detoxification, protects liver cells from damage, and promotes overall liver function. The 9+1 Tipid Pack gives you bonus savings.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Take 1 capsule 3 times daily after meals, or as directed by your physician.',
@@ -276,11 +286,13 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Optein 9+1 Tipid Pack',
+                'generic_name'  => 'Lutein + Zeaxanthin',
                 'price'         => 281.25,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
                 'image'         => $ph.'Optein+9%2B1',
                 'category_id'   => $catSupplement->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Optein is an eye health supplement enriched with Lutein and Zeaxanthin to protect against macular degeneration, reduce eye strain, and support clear vision. The 9+1 Tipid Pack offers exceptional value.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Take 1 softgel capsule daily after a meal, or as directed by your physician.',
@@ -305,15 +317,17 @@ class DatabaseSeeder extends Seeder
                 'depth'         => 3.50,
                 'sort_order'    => 6,
             ],
-        ]);
+        ]));
 
         // ── Promo Packs ───────────────────────────────────────────────────────
-        $secPromoPack->products()->createMany([
+        $secPromoPack->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Claritin Tablet 10Mg (4+1 Pack)',
+                'generic_name'  => 'Loratadine',
                 'price'         => 152.00,
                 'image'         => $ph.'Claritin+4%2B1',
                 'category_id'   => $catAllergy->id,
+                'brand_id'      => $bBayer->id,
                 'description'   => 'Claritin (Loratadine 10mg) is a non-drowsy antihistamine that provides 24-hour relief from allergy symptoms including sneezing, runny nose, and itchy eyes. This 4+1 promo pack offers extra savings.',
                 'origin'        => 'Belgium',
                 'product_usage' => 'Adults and children 12 years and above: Take 1 tablet once daily. Children 6–11 years: half a tablet once daily. Take with or without food.',
@@ -323,9 +337,11 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Rogin-E Soft Gel Capsule (Promo Pack)',
+                'generic_name'  => 'Multivitamins + Ginseng Extract',
                 'price'         => 173.25,
                 'image'         => $ph.'Rogin-E',
                 'category_id'   => $catMultivit->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Rogin-E is a complete multivitamin and mineral supplement with ginseng extract. It helps boost energy, enhance mental alertness, and support overall vitality for adults.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Take 1 softgel capsule daily after a meal, or as directed by your physician.',
@@ -334,6 +350,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Sinecod Forte 7+1 Tipid Pack',
+                'generic_name'  => 'Butamirate Citrate',
                 'price'         => 155.00,
                 'image'         => $ph.'Sinecod+7%2B1',
                 'category_id'   => $catCough->id,
@@ -346,9 +363,11 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Tempra Forte 500mg Tablet',
+                'generic_name'  => 'Paracetamol',
                 'price'         => 35.75,
                 'image'         => $ph.'Tempra+Forte',
                 'category_id'   => $catPainRelief->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Tempra Forte (Paracetamol 500mg) provides fast and effective relief from mild to moderate pain including headache, toothache, and muscle aches, as well as fever reduction.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Adults: Take 1–2 tablets every 4 to 6 hours as needed. Do not exceed 8 tablets (4000mg) in 24 hours.',
@@ -358,9 +377,11 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Flanax 275mg Tablet (Promo Pack)',
+                'generic_name'  => 'Naproxen Sodium',
                 'price'         => 105.75,
                 'image'         => $ph.'Flanax+275',
                 'category_id'   => $catPainRelief->id,
+                'brand_id'      => $bBayer->id,
                 'description'   => 'Flanax (Naproxen Sodium 275mg) is a nonsteroidal anti-inflammatory drug (NSAID) used to relieve mild to moderate pain, fever, and inflammation. Fast-acting formula for targeted relief.',
                 'origin'        => 'Mexico',
                 'product_usage' => 'Adults: Take 1 tablet every 8 to 12 hours as needed. Do not exceed 3 tablets in 24 hours. Take with food or milk to reduce stomach upset.',
@@ -370,19 +391,21 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Rogin-E Softgel Capsule (12s Pack)',
+                'generic_name'  => 'Multivitamins + Ginseng Extract',
                 'price'         => 280.00,
                 'image'         => $ph.'Rogin-E+12',
                 'category_id'   => $catMultivit->id,
+                'brand_id'      => $bUnilab->id,
                 'description'   => 'Rogin-E 12s Pack is a value pack of the popular ginseng-enriched multivitamin supplement. Ideal for those who want sustained daily nutritional support over a 12-day period.',
                 'origin'        => 'Philippines',
                 'product_usage' => 'Take 1 softgel capsule daily after a meal. Best taken consistently at the same time each day.',
                 'ingredients'   => 'Vitamin A, Vitamin B Complex, Vitamin C, Vitamin D, Vitamin E, Ginseng Extract, Zinc, Iron, Calcium',
                 'sort_order'    => 6,
             ],
-        ]);
+        ]));
 
         // ── Guardian Special Deals ────────────────────────────────────────────
-        $secGuardian->products()->createMany([
+        $secGuardian->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Guardian Comfort & Assurance Pads',
                 'price'         => 449.00,
@@ -442,12 +465,13 @@ class DatabaseSeeder extends Seeder
                 'depth'         => 4.00,
                 'sort_order'    => 4,
             ],
-        ]);
+        ]));
 
         // ── GG Pharmacy Generics ──────────────────────────────────────────────
-        $secGenerics->products()->createMany([
+        $secGenerics->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Cetirizine 10mg Tablet (Ritemed)',
+                'generic_name'  => 'Cetirizine Hydrochloride',
                 'price'         => 115.00,
                 'image'         => $ps.'Cetirizine',
                 'category_id'   => $catAllergy->id,
@@ -461,6 +485,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Paracetamol 500mg Tablet (Ritemed)',
+                'generic_name'  => 'Paracetamol',
                 'price'         => 27.50,
                 'image'         => $ps.'Paracetamol+500',
                 'category_id'   => $catPainRelief->id,
@@ -474,6 +499,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Clopidogrel 75mg Tablet (Ritemed)',
+                'generic_name'  => 'Clopidogrel Bisulfate',
                 'price'         => 18.50,
                 'image'         => $ps.'Clopidogrel',
                 'category_id'   => $catCardio->id,
@@ -487,6 +513,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'D-Alpha Vitamin E 400 IU (Ritemed)',
+                'generic_name'  => 'D-Alpha-Tocopherol (Vitamin E)',
                 'price'         => 90.00,
                 'image'         => $ps.'Vitamin+E',
                 'category_id'   => $catVitaminE->id,
@@ -500,6 +527,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Losartan 50mg Tablet (Ritemed)',
+                'generic_name'  => 'Losartan Potassium',
                 'price'         => 11.75,
                 'image'         => $pi.'Losartan',
                 'category_id'   => $catCardio->id,
@@ -513,6 +541,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Amlodipine 10mg Tablet (Ritemed)',
+                'generic_name'  => 'Amlodipine Besylate',
                 'price'         => 8.25,
                 'image'         => $pi.'Amlodipine+10',
                 'category_id'   => $catCardio->id,
@@ -526,6 +555,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Simvastatin 20mg Tablet (Ritemed)',
+                'generic_name'  => 'Simvastatin',
                 'price'         => 10.50,
                 'image'         => $pi.'Simvastatin',
                 'category_id'   => $catCardio->id,
@@ -539,6 +569,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Amlodipine 5mg Tablet (Ritemed)',
+                'generic_name'  => 'Amlodipine Besylate',
                 'price'         => 6.00,
                 'image'         => $pi.'Amlodipine+5',
                 'category_id'   => $catCardio->id,
@@ -550,10 +581,10 @@ class DatabaseSeeder extends Seeder
                 'warnings'      => 'Do not stop taking abruptly. Inform your doctor of all medications being taken. May cause dizziness on standing up.',
                 'sort_order'    => 8,
             ],
-        ]);
+        ]));
 
         // ── Featured Products ─────────────────────────────────────────────────
-        $secFeatured->products()->createMany([
+        $secFeatured->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
                 'name'          => 'Guardian Face & Body SPF 50 Sunscreen',
                 'price'         => 299.00,
@@ -606,6 +637,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Berocca Performance Effervescent Tablet',
+                'generic_name'  => 'Vitamin B Complex + Vitamin C',
                 'price'         => 651.00,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
@@ -624,6 +656,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Fern-C 568.18mg Capsule',
+                'generic_name'  => 'Sodium Ascorbate (Vitamin C)',
                 'price'         => 581.75,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
@@ -638,6 +671,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'          => 'Centrum Silver Advance 50+ Multivitamin',
+                'generic_name'  => 'Multivitamins + Minerals',
                 'price'         => 378.25,
                 'badge'         => 'MOST SOLD',
                 'badge_type'    => 'most-sold',
@@ -653,7 +687,43 @@ class DatabaseSeeder extends Seeder
                 'depth'         => 5.50,
                 'sort_order'    => 6,
             ],
-        ]);
+        ]));
+
+        // ── 6b. Stocks ───────────────────────────────────────────────────────
+        Stock::truncate();
+
+        $suppliers = [
+            'MedSource Distributors',
+            'PharmaLink Supply Co.',
+            'HealthPlus Wholesale',
+            'Unilab Direct',
+            'Metro Drug Distributors',
+            'GG Central Warehouse',
+        ];
+
+        Product::all()->each(function (Product $product, int $index) use ($suppliers) {
+            // Cost is derived from selling price (~35–45% margin), so numbers stay realistic.
+            $margin   = fake()->randomFloat(2, 0.30, 0.45);
+            $unitCost = round($product->price * (1 - $margin), 2);
+
+            // Most items are well-stocked; a few are low/near-empty to exercise low-stock UI states.
+            $quantity = fake()->boolean(15)
+                ? fake()->numberBetween(0, 15)
+                : fake()->numberBetween(20, 300);
+
+            $manufacturingDate = now()->subMonths(fake()->numberBetween(2, 20))->startOfMonth();
+            $shelfLifeYears    = fake()->numberBetween(2, 4);
+            $expiryDate        = (clone $manufacturingDate)->addYears($shelfLifeYears);
+
+            Stock::create([
+                'product_id'          => $product->id,
+                'supplier'            => $suppliers[$index % count($suppliers)],
+                'quantity'            => $quantity,
+                'unit_cost'           => $unitCost,
+                'manufacturing_date'  => $manufacturingDate,
+                'expiry_date'         => $expiryDate,
+            ]);
+        });
 
         // ── 7. Sliders ────────────────────────────────────────────────────────
         Slider::truncate();
@@ -676,7 +746,50 @@ class DatabaseSeeder extends Seeder
         FullWidthBanner::create(['section_key'=>'ritemed', 'image'=>'https://via.placeholder.com/800x220/f5f5f5/1a237e?text=RiteMED+Banner',    'alt'=>'RiteMED']);
         FullWidthBanner::create(['section_key'=>'alaxan',  'image'=>'https://via.placeholder.com/800x200/e65100/ffd600?text=ALAXAN+XTRA+Banner','alt'=>'ALAXAN XTRA']);
 
-        // ── 10. Blog Posts ───────────────────────────────────────────────────
+        // ── 10. Staff ────────────────────────────────────────────────────────
+        Staff::truncate();
+        foreach ([
+            [
+                'first_name'     => 'Admin',
+                'last_name'      => 'User',
+                'email'          => 'admin@ggpharmacy.com.ph',
+                'contact_number' => '09188887673',
+                'address'        => 'Zone 2, Sogod, Southern Leyte, Philippines',
+                'password'       => 'password',
+                'is_active'      => true,
+            ],
+            [
+                'first_name'     => 'Maria',
+                'last_name'      => 'Santos',
+                'email'          => 'maria.santos@ggpharmacy.com.ph',
+                'contact_number' => '09171234567',
+                'address'        => 'Zone 2, Sogod, Southern Leyte, Philippines',
+                'password'       => 'password',
+                'is_active'      => true,
+            ],
+            [
+                'first_name'     => 'Juan',
+                'last_name'      => 'Dela Cruz',
+                'email'          => 'juan.delacruz@ggpharmacy.com.ph',
+                'contact_number' => '09192345678',
+                'address'        => 'Poblacion, Sogod, Southern Leyte, Philippines',
+                'password'       => 'password',
+                'is_active'      => true,
+            ],
+            [
+                'first_name'     => 'Angelica',
+                'last_name'      => 'Reyes',
+                'email'          => 'angelica.reyes@ggpharmacy.com.ph',
+                'contact_number' => '09203456789',
+                'address'        => 'Zone 5, Sogod, Southern Leyte, Philippines',
+                'password'       => 'password',
+                'is_active'      => false,
+            ],
+        ] as $row) {
+            Staff::create($row);
+        }
+
+        // ── 11. Blog Posts ───────────────────────────────────────────────────
         Blog::truncate();
         Blog::create(['title'=>'New Branch Opening Sogod City',        'excerpt'=>'GG Pharmacy is pleased to announce the opening of its newest branch located at Zone 2, Sogod, Southern Leyte...', 'day'=>7,  'month'=>'SEP','comment_count'=>0]);
         Blog::create(['title'=>'GG Pharmacy Community Health Day',      'excerpt'=>'GG Pharmacy is pleased to announce a free health check-up event for residents of Sogod and surrounding areas...',  'day'=>7,  'month'=>'SEP','comment_count'=>0]);
