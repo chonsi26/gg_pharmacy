@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     protected $fillable = [
-        'name', 'price', 'old_price', 'image',
+        'name', 'generic_name', 'price', 'old_price', 'image',
         'badge', 'badge_type',
         // ── Product Details ──────────────────────────────────────────────
         'description', 'origin', 'product_usage', 'ingredients', 'warnings',
+        'requires_prescription',
         // ── Dimensions ──────────────────────────────────────────────────
         'width', 'height', 'depth',
         // ── Relationships ────────────────────────────────────────────────
@@ -21,7 +22,8 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'             => 'boolean',
+        'requires_prescription' => 'boolean',
         'price'     => 'float',
         'old_price' => 'float',
         'width'     => 'float',

@@ -28,11 +28,13 @@ class HomeController extends Controller
         // ── Filter / Search Logic ────────────────────────────────────────────
         $searchQuery = $request->input('query');
         $categoryId = $request->input('category_id');
-        
+        $sectionId = $request->input('section_id');
+
         $searchResults = null;
         $selectedCategory = null;
+        $selectedSection = null;
 
-        if ($request->filled('query') || $request->filled('category_id')) {
+        if ($request->filled('query') || $request->filled('category_id') || $request->filled('section_id')) {
             
             if ($request->filled('query')) {
                 // Handle text search
@@ -53,6 +55,16 @@ class HomeController extends Controller
                         ->with(['category', 'brand'])
                         ->get();
                 }
+            } elseif ($request->filled('section_id')) {
+                // Handle "See all products" for a chosen section
+                $selectedSection = Section::find($sectionId);
+                if ($selectedSection) {
+                    $searchResults = Product::active()
+                        ->where('section_id', $sectionId)
+                        ->with(['category', 'brand'])
+                        ->orderBy('sort_order')
+                        ->get();
+                }
             }
 
             // Initialize default homepage objects to prevent variable undefined errors in Blade
@@ -60,16 +72,20 @@ class HomeController extends Controller
             $tickerBrands     = collect();
             $promoBanners     = collect();
             $featuredBrands   = collect();
-            $bannerOmron      = null;
-            $bannerRitemed    = null;
-            $hotDealsSection  = null;
-            $saleSection      = null;
-            $promoPackSection = null;
-            $guardianSection  = null;
-            $genericsSection  = null;
-            $genericsTop      = collect();
-            $genericsBottom   = collect();
-            $featuredSection  = null;
+            $fbanner_1      = null;
+            $fbanner_2    = null;
+            $section1  = null;
+            $section2      = null;
+            $section3 = null;
+            $section4 = null;
+            $section5  = null;
+            $section5_top      = collect();
+            $section5_bottom   = collect();
+            $section6  = null;
+            $section6_top      = collect();
+            $section6_bottom   = collect();
+            $section7  = null;
+            $extraSections    = collect();
             $blogs            = collect();
         } else {
             // ── Standard Homepage Data (Runs only when not searching/filtering) ──
@@ -78,38 +94,51 @@ class HomeController extends Controller
             $promoBanners = PromoBanner::active()->get();
             $featuredBrands = Brand::featured()->get();
             
-            $bannerOmron   = FullWidthBanner::forSection('omron');
-            $bannerRitemed = FullWidthBanner::forSection('ritemed');
+            $fbanner_1   = FullWidthBanner::forSection('fbanner_1');
+            $fbanner_2 = FullWidthBanner::forSection('fbanner_2');
 
             $productWith = ['products' => fn ($q) => $q->with(['category', 'brand'])];
 
-            $hotDealsSection  = Section::byKey('hot_deals');
-            $saleSection      = Section::byKey('sale');
-            $promoPackSection = Section::byKey('promo_packs');
-            $guardianSection  = Section::byKey('guardian');
-            $featuredSection  = Section::byKey('featured');
+            $section1  = Section::byKey('section_1');
+            $section2      = Section::byKey('section_2');
+            $section3 = Section::byKey('section_3');
+            $section4 = Section::byKey('section_4');
+            $section5  = Section::byKey('section_5');
+            $section5_top     = $section5?->products()->with(['category', 'brand'])->where('sort_order', '<=', 4)->get() ?? collect();
+            $section5_bottom  = $section5?->products()->with(['category', 'brand'])->where('sort_order', '>', 4)->get() ?? collect();
+            $section6  = Section::byKey('section_6');
 
-            $genericsSection = Section::byKey('generics');
-            $genericsTop     = $genericsSection?->products()->with(['category', 'brand'])->where('sort_order', '<=', 4)->get() ?? collect();
-            $genericsBottom  = $genericsSection?->products()->with(['category', 'brand'])->where('sort_order', '>', 4)->get() ?? collect();
+            $section7 = Section::byKey('section_7');
+            $section6_top     = $section6?->products()->with(['category', 'brand'])->where('sort_order', '<=', 4)->get() ?? collect();
+            $section6_bottom  = $section6?->products()->with(['category', 'brand'])->where('sort_order', '>', 4)->get() ?? collect();
 
-            foreach ([$hotDealsSection, $saleSection, $promoPackSection, $guardianSection, $featuredSection] as $sec) {
+            foreach ([$section1, $section2, $section3, $section4, $section5, $section6, $section7] as $sec) {
                 $sec?->load($productWith);
             }
+
+            // Any further sections (sort_order > 7) render dynamically as simple
+            // carousels — new sections added via the admin panel show up here
+            // automatically without any code changes.
+            $extraSections = Section::active()
+                ->where('sort_order', '>', 7)
+                ->get();
+            $extraSections->each(fn ($sec) => $sec->load($productWith));
 
             $blogs = Blog::active()->with('category')->limit(4)->get();
         }
 
         return view('home', compact(
-            'settings', 'categories', 'selectedCategory',
+            'settings', 'categories', 'selectedCategory', 'selectedSection',
             'sliders',
             'tickerBrands', 'featuredBrands',
             'promoBanners',
-            'bannerOmron', 'bannerRitemed',
-            'hotDealsSection', 'saleSection', 'promoPackSection',
-            'guardianSection',
-            'genericsSection', 'genericsTop', 'genericsBottom',
-            'featuredSection',
+            'fbanner_1', 'fbanner_2',
+            'section1', 'section2', 'section3',
+            'section4',
+            'section5', 'section5_top', 'section5_bottom',
+            'section6', 'section6_top', 'section6_bottom',
+            'section7',
+            'extraSections',
             'blogs',
             'searchResults', 
             'searchQuery'    

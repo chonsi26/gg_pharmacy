@@ -24,6 +24,25 @@ class DatabaseSeeder extends Seeder
         // Disable FK checks so TRUNCATE works on tables with foreign keys
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
+        // ── 0. Admins ────────────────────────────────────────────────────────
+        DB::table('admins')->truncate();
+        DB::table('admins')->insert([
+            'id'               => 1,
+            'first_name'       => 'Chauncey',
+            'middle_name'      => 'U.',
+            'last_name'        => 'Edulan',
+            'email'            => 'chaunceyedulan2020@gmail.com',
+            'username'         => 'cedulan',
+            'phone_number'     => '+639973666290',
+            'password'         => '$2y$12$MSVt47dkbARniImcC5JeIOoSz8ndlWyfKVgOJ3NC9LX.2cepXv6Se',
+            'profile_picture'  => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
+            'is_active'        => 1,
+            'remember_token'   => null,
+            'created_at'       => '2026-09-10 10:35:13',
+            'updated_at'       => '2026-09-10 10:35:13',
+            'deleted_at'       => null,
+        ]);
+
         // ── 1. Settings ──────────────────────────────────────────────────────
         foreach ([
             'site_name'        => 'GG Pharmacy',
@@ -131,12 +150,13 @@ class DatabaseSeeder extends Seeder
 
         // ── 5. Sections ───────────────────────────────────────────────────────
         Section::truncate();
-        $secHotDeals  = Section::create(['key'=>'hot_deals',   'label'=>'Hot Deals of the Month',    'description'=>'View Our Hot Deals Products of the Month',                 'heading_color'=>'red',  'sort_order'=>1]);
-        $secSale      = Section::create(['key'=>'sale',        'label'=>'SALE',                      'description'=>'Great Deals, Healthy Savings – Shop & Save at GG Pharmacy!','heading_color'=>'red',  'sort_order'=>2]);
-        $secPromoPack = Section::create(['key'=>'promo_packs', 'label'=>'PROMO PACKS',               'description'=>'Exclusive Value Packs – Bundled Savings on Customer Favorites','heading_color'=>'text','sort_order'=>3]);
-        $secGuardian  = Section::create(['key'=>'guardian',    'label'=>'Guardian Special Deals',    'description'=>'All our new arrivals in an exclusive brand selection',       'heading_color'=>'red',  'sort_order'=>4]);
-        $secGenerics  = Section::create(['key'=>'generics',    'label'=>'Pharmacy Generics',      'description'=>'All our new arrivals in a exclusive brand selection',        'heading_color'=>'red',  'sort_order'=>5]);
-        $secFeatured  = Section::create(['key'=>'featured',    'label'=>'FEATURED PRODUCTS',         'description'=>'',                                                           'heading_color'=>'red',  'sort_order'=>6]);
+        $secHotDeals  = Section::create(['key'=>'section_1',   'label'=>'Hot Deals of the Month',    'description'=>'View Our Hot Deals Products of the Month',                 'heading_color'=>'red',  'sort_order'=>1]);
+        $secSale      = Section::create(['key'=>'section_2',        'label'=>'SALE',                      'description'=>'Great Deals, Healthy Savings – Shop & Save at GG Pharmacy!','heading_color'=>'red',  'sort_order'=>2]);
+        $secPromoPack = Section::create(['key'=>'section_3', 'label'=>'PROMO PACKS',               'description'=>'Exclusive Value Packs – Bundled Savings on Customer Favorites','heading_color'=>'text','sort_order'=>3]);
+        $secBestSellers = Section::create(['key'=>'section_4', 'label'=>'Best Sellers',           'description'=>'Discover our best-selling products, loved and trusted by our customers',       'heading_color'=>'text', 'sort_order'=>4]);
+        $secGuardian  = Section::create(['key'=>'section_5',    'label'=>'Guardian Special Deals',    'description'=>'All our new arrivals in an exclusive brand selection',       'heading_color'=>'red',  'sort_order'=>5]);
+        $secGenerics  = Section::create(['key'=>'section_6',    'label'=>'Pharmacy Generics',      'description'=>'All our new arrivals in a exclusive brand selection',        'heading_color'=>'red',  'sort_order'=>6]);
+        $secFeatured  = Section::create(['key'=>'section_7',    'label'=>'FEATURED PRODUCTS',         'description'=>'',                                                           'heading_color'=>'red',  'sort_order'=>7]);
 
         // ── 6. Products ───────────────────────────────────────────────────────
         Product::truncate();
@@ -467,6 +487,120 @@ class DatabaseSeeder extends Seeder
             ],
         ]));
 
+        // ── Best Sellers ──────────────────────────────────────────────────────
+        $secBestSellers->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
+            [
+                'name'          => 'Enervon Multivitamins + B-Complex',
+                'generic_name'  => 'Multivitamins + Minerals',
+                'price'         => 8.50,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'Enervon',
+                'brand_id'      => $bEnervon->id,
+                'category_id'   => $catSupplement->id,
+                'description'   => 'Enervon is a trusted multivitamin supplement that helps convert food into energy, fights fatigue, and boosts the immune system. A household name for daily wellness.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Take one tablet daily after a meal, or as directed by your physician.',
+                'ingredients'   => 'Vitamin B1, B2, B6, B12, Vitamin C, Niacinamide, Calcium Pantothenate',
+                'width'         => 3.00,
+                'height'        => 8.00,
+                'depth'         => 3.00,
+                'sort_order'    => 1,
+            ],
+            [
+                'name'          => 'Alaxan FR 10 Tablets',
+                'generic_name'  => 'Ibuprofen + Paracetamol',
+                'price'         => 95.00,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'Alaxan+FR',
+                'brand_id'      => $bAlaxan->id,
+                'category_id'   => $catPainRelief->id,
+                'description'   => 'Alaxan FR combines Ibuprofen and Paracetamol for fast and effective relief from body pain, headache, and fever. A favorite go-to pain reliever for everyday aches.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Adults: Take 1 tablet every 6 to 8 hours as needed. Do not exceed 4 tablets in 24 hours.',
+                'ingredients'   => 'Ibuprofen 200mg, Paracetamol 325mg',
+                'warnings'      => 'Take with food to avoid stomach upset. Consult a doctor if symptoms persist beyond 3 days.',
+                'width'         => 6.00,
+                'height'        => 12.00,
+                'depth'         => 1.00,
+                'sort_order'    => 2,
+            ],
+            [
+                'name'          => 'Neurobion Forte Tablet',
+                'generic_name'  => 'Vitamin B1 + B6 + B12',
+                'price'         => 14.50,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'Neurobion',
+                'brand_id'      => $bNeurobion->id,
+                'category_id'   => $catSupplement->id,
+                'description'   => 'Neurobion Forte is a high-dose Vitamin B complex supplement that supports nerve health and helps relieve numbness, tingling, and body pain caused by nerve damage.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Take one tablet daily, or as directed by your physician.',
+                'ingredients'   => 'Vitamin B1 100mg, Vitamin B6 200mg, Vitamin B12 200mcg',
+                'width'         => 3.00,
+                'height'        => 8.00,
+                'depth'         => 3.00,
+                'sort_order'    => 3,
+            ],
+            [
+                'name'          => 'RiteMED Paracetamol 500mg 100s',
+                'generic_name'  => 'Paracetamol',
+                'price'         => 199.00,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'RiteMED+Paracetamol',
+                'brand_id'      => $bRitemed->id,
+                'category_id'   => $catOTC->id,
+                'description'   => 'RiteMED Paracetamol is an affordable and reliable generic medicine for the relief of fever and mild to moderate pain, trusted by Filipino families for everyday use.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Adults: Take 1 to 2 tablets every 4 to 6 hours as needed. Do not exceed 8 tablets in 24 hours.',
+                'ingredients'   => 'Paracetamol 500mg',
+                'warnings'      => 'Do not use with other paracetamol-containing products. Consult a doctor if fever persists beyond 3 days.',
+                'width'         => 8.00,
+                'height'        => 5.00,
+                'depth'         => 3.00,
+                'sort_order'    => 4,
+            ],
+            [
+                'name'          => 'Safeguard Antibacterial Soap 90g',
+                'generic_name'  => 'Triclocarban Antibacterial Soap',
+                'price'         => 42.00,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'Safeguard',
+                'brand_id'      => $bSafeguard->id,
+                'category_id'   => $catPersonalCare->id,
+                'description'   => 'Safeguard removes 99.9% of germs while keeping skin soft and clean, making it the most trusted antibacterial soap for Filipino households.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Wet skin, lather with soap, and rinse thoroughly. Use daily for effective germ protection.',
+                'ingredients'   => 'Sodium Tallowate, Triclocarban, Water, Fragrance',
+                'width'         => 3.00,
+                'height'        => 5.50,
+                'depth'         => 2.00,
+                'sort_order'    => 5,
+            ],
+            [
+                'name'          => 'Immuni+ Vitamin C 500mg',
+                'generic_name'  => 'Ascorbic Acid',
+                'price'         => 6.75,
+                'badge'         => 'BEST SELLER',
+                'badge_type'    => 'most-sold',
+                'image'         => $ps.'Immuni+',
+                'brand_id'      => $bImmuniPlus->id,
+                'category_id'   => $catSupplement->id,
+                'description'   => 'Immuni+ Vitamin C boosts the immune system and helps the body fight off common colds and infections, a daily favorite for staying healthy.',
+                'origin'        => 'Philippines',
+                'product_usage' => 'Take one tablet daily after a meal, or as directed by your physician.',
+                'ingredients'   => 'Ascorbic Acid 500mg, Sodium Ascorbate, Zinc',
+                'width'         => 3.00,
+                'height'        => 8.00,
+                'depth'         => 3.00,
+                'sort_order'    => 6,
+            ],
+        ]));
+
         // ── GG Pharmacy Generics ──────────────────────────────────────────────
         $secGenerics->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
             [
@@ -737,14 +871,14 @@ class DatabaseSeeder extends Seeder
 
         // ── 8. Promo Banners ─────────────────────────────────────────────────
         PromoBanner::truncate();
-        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/C01A1A/fff?text=GET+50+OFF',    'alt'=>'Promo',        'type'=>'red',  'sort_order'=>1]);
-        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/fff3e0/333?text=FREE+DELIVERY','alt'=>'Free Delivery','type'=>'beige','sort_order'=>2]);
+        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/C01A1A/fff?text=GET+50+OFF',    'alt'=>'promo_1',        'type'=>'red',  'sort_order'=>1]);
+        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/fff3e0/333?text=FREE+DELIVERY','alt'=>'promo_2','type'=>'beige','sort_order'=>2]);
 
         // ── 9. Full-Width Banners ────────────────────────────────────────────
         FullWidthBanner::truncate();
-        FullWidthBanner::create(['section_key'=>'omron',   'image'=>'https://via.placeholder.com/800x220/0d47a1/fff?text=OMRON+Banner',         'alt'=>'OMRON']);
-        FullWidthBanner::create(['section_key'=>'ritemed', 'image'=>'https://via.placeholder.com/800x220/f5f5f5/1a237e?text=RiteMED+Banner',    'alt'=>'RiteMED']);
-        FullWidthBanner::create(['section_key'=>'alaxan',  'image'=>'https://via.placeholder.com/800x200/e65100/ffd600?text=ALAXAN+XTRA+Banner','alt'=>'ALAXAN XTRA']);
+        FullWidthBanner::create(['sort_order'=>1, 'image'=>'https://via.placeholder.com/800x220/0d47a1/fff?text=OMRON+Banner',         'alt'=>'OMRON']);
+        FullWidthBanner::create(['sort_order'=>2, 'image'=>'https://via.placeholder.com/800x220/f5f5f5/1a237e?text=RiteMED+Banner',    'alt'=>'RiteMED']);
+        FullWidthBanner::create(['sort_order'=>3, 'image'=>'https://via.placeholder.com/800x200/e65100/ffd600?text=ALAXAN+XTRA+Banner','alt'=>'ALAXAN XTRA']);
 
         // ── 10. Staff ────────────────────────────────────────────────────────
         Staff::truncate();

@@ -17,6 +17,7 @@ class Stock extends Model
         'unit_cost',
         'manufacturing_date',
         'expiry_date',
+        'is_active',
     ];
 
     protected $casts = [
@@ -24,6 +25,7 @@ class Stock extends Model
         'unit_cost' => 'decimal:2',
         'manufacturing_date' => 'date',
         'expiry_date' => 'date',
+        'is_active' => 'boolean',
     ];
 
     /**

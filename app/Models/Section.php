@@ -35,4 +35,13 @@ class Section extends Model
     {
         return static::where('key', $key)->where('is_active', true)->first();
     }
+
+    /**
+     * Derive the fixed "section_N" key from a sort order, e.g. keyForSortOrder(3) -> 'section_3'.
+     * Keys are never entered by hand — they always mirror the chosen sort order.
+     */
+    public static function keyForSortOrder(int $sortOrder): string
+    {
+        return 'section_' . $sortOrder;
+    }
 }

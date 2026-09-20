@@ -9,7 +9,8 @@ return new class extends Migration {
     {
         Schema::create('full_width_banners', function (Blueprint $table) {
             $table->id();
-            $table->string('section_key')->unique();  // omron | ritemed | alaxan
+            $table->string('section_key')->unique();  // fbanner_1 | fbanner_2 | fbanner_3
+            $table->unsignedTinyInteger('sort_order')->unique(); // 1, 2, or 3 — drives section_key
             $table->string('image')->nullable();
             $table->string('alt')->nullable();
             $table->boolean('is_active')->default(true);

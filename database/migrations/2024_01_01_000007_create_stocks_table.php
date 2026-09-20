@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->decimal('unit_cost', 10, 2);
             $table->date('manufacturing_date')->nullable();
             $table->date('expiry_date')->nullable();
+            $table->boolean('is_active')->default(true);
 
             $table->timestamps();
         });

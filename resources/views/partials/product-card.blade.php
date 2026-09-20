@@ -12,7 +12,7 @@
 
 <div class="product-card">
   <div class="product-img"@if($imgHeight) style="height:{{ $imgHeight }};"@endif>
-    <img src="{{ $product->image }}" alt="{{ $product->name }}">
+    <img src="storage/{{ $product->image }}" alt="{{ $product->name }}">
 
     @if($product->isMostSold())
       <div class="most-sold">{{ $product->badge }}</div>

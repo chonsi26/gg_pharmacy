@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ $settings['site_name'] ?? 'GG Pharmacy' }} - {{ $settings['tagline'] ?? 'Search for Generic and Branded Medicine' }}</title>
+<title>{{ $settings['site_name'] ?? 'No Pharmacy Name' }} - {{ $settings['tagline'] ?? 'Search for Generic and Branded Medicine' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -167,6 +167,9 @@
 
   /* PRODUCT SECTION WRAPPER */
   .product-section { padding: 0 40px 40px; }
+  .dual-row-wrap { padding: 0 40px 40px; }
+  .dual-row-grid { display: grid; grid-template-columns: 280px repeat(4,1fr); gap: 16px; }
+  .dual-row-bottom-grid { grid-column: 2 / span 4; display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-top: 4px; }
 
   /* MOST SOLD BADGE */
   .most-sold { background: var(--green); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-family: 'Montserrat', sans-serif; position: absolute; top: 10px; left: 10px; }
@@ -353,6 +356,11 @@
     .count-block { font-size: 16px; padding: 4px 8px; }
     .count-label { font-size: 9px; }
     .product-section { padding: 0 16px 24px; }
+    .dual-row-wrap { padding: 0 16px 24px; }
+    .dual-row-grid { grid-template-columns: 1fr; }
+    .dual-row-bottom-grid { grid-column: 1; grid-template-columns: 1fr; margin-top: 0; }
+    .dual-row-grid .product-card,
+    .dual-row-bottom-grid .product-card { flex: none; width: 100%; }
     .product-card { flex: 0 0 160px; }
     .product-img { height: 150px; }
     .product-img img { max-width: 110px; max-height: 110px; }
@@ -407,7 +415,7 @@
 <!-- HEADER -->
 <div class="header">
   <div class="logo">
-    <img src="{{ asset($settings['logo'] ?? 'images/logo.png') }}" alt="{{ $settings['site_name'] ?? 'GG Pharmacy' }}">
+    <img src="{{ asset($settings['logo'] ?? 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png') }}" alt="{{ $settings['site_name'] ?? 'No Pharmacy Name' }}">
   </div>
   
   <form action="{{ route('home') }}" method="GET" class="search-bar">
@@ -419,7 +427,7 @@
       <i class="fas fa-phone-alt ph-icon"></i>
       <div>
         <small style="color:#555;font-size:10px;font-weight:600;">{{ $settings['phone_label'] ?? 'Call Us Now' }}</small>
-        <span>{{ $settings['phone'] ?? '' }}</span>
+        <span>{{ $settings['phone'] ?? 'No phone number available' }}</span>
       </div>
     </div>
     @auth
@@ -498,7 +506,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-inner">
-    <span class="nav-brand" style="display:none" id="nav-brand-label">{{ $settings['site_name'] ?? 'GG PHARMACY' }}</span>
+    <span class="nav-brand" style="display:none" id="nav-brand-label">{{ $settings['site_name'] ?? 'NO PHARMACY NAME' }}</span>
     <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
       <i class="fas fa-bars"></i>
     </button>
@@ -507,13 +515,19 @@
     <li>
       <a href="{{ route('home') }}" class="{{ !request()->filled('category_id') && !request()->filled('query') ? 'active' : '' }}">HOME</a>
     </li>
-    @foreach($categories as $cat)
+    @forelse(($categories ?? []) as $cat)
       <li class="{{ request('category_id') == $cat->id ? 'active' : '' }}">
         <a href="{{ route('home', ['category_id' => $cat->id]) }}">
-          {{ strtoupper($cat->name) }}
+          {{ strtoupper($cat->name ?? '') }}
         </a>
       </li>
-    @endforeach
+    @empty
+      @for($i = 0; $i < 6; $i++)
+        <li>
+          <a href="#">{{ 'NO CATEGORIES' ?? '' }}</a>
+        </li>
+      @endfor
+    @endforelse
   </ul>
 </nav>
 
@@ -539,9 +553,9 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
+  {{ $settings['location_strip'] ?? 'No location available' }} &nbsp;|&nbsp;
+  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }} &nbsp;|&nbsp;
+  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}
 </div>
 
 @if(isset($searchResults))
@@ -550,14 +564,16 @@
       <h2>Search Results for "{{ $searchQuery }}"</h2>
     @elseif(isset($selectedCategory))
       <h2>Category: {{ $selectedCategory->name }}</h2>
+    @elseif(isset($selectedSection))
+      <h2>{{ $selectedSection->label }}</h2>
     @else
       <h2>All Products</h2>
     @endif
-    <p>Found {{ $searchResults->count() }} matching items</p>
+    <p>Found {{ $searchResults->count() ?? 0 }} matching items</p>
   </div>
 
   <div style="padding: 0 40px 40px;">
-    @if($searchResults->isEmpty())
+    @if(($searchResults ?? collect())->isEmpty())
       <div style="text-align: center; padding: 60px 20px; color: var(--gray);">
         <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
         <p style="font-size: 16px; font-weight: 600;">No medicines found under this view.</p>
@@ -575,16 +591,20 @@
 @else
   <div class="image-slider">
   <div class="slider-container">
-    @foreach($sliders as $index => $slide)
+    @forelse(($sliders ?? []) as $index => $slide)
       <div class="slide {{ $index === 0 ? 'active' : '' }}">
-        <img src="{{ asset($slide->image) }}" alt="{{ $slide->alt }}">
+        <img src="{{ asset($slide->image ?? '') }}" alt="{{ $slide->alt ?? '' }}">
       </div>
-    @endforeach
+    @empty
+      <div class="slide active" style="display:flex;align-items:center;justify-content:center;background:#f5f5f5;height:100%;">
+        <span style="color:#bbb;font-size:13px;">No banner available</span>
+      </div>
+    @endforelse
   </div>
   <button class="slider-arrow prev" onclick="changeSlide(-1)" title="Previous"><i class="fas fa-chevron-left"></i></button>
   <button class="slider-arrow next" onclick="changeSlide(1)" title="Next"><i class="fas fa-chevron-right"></i></button>
   <div class="slider-controls">
-    @foreach($sliders as $index => $slide)
+    @foreach(($sliders ?? []) as $index => $slide)
       <span class="slider-dot {{ $index === 0 ? 'active' : '' }}" onclick="currentSlide({{ $index + 1 }})" title="Slide {{ $index + 1 }}"></span>
     @endforeach
   </div>
@@ -595,12 +615,13 @@ let currentIndex = 1, autoplayTimer;
 function showSlide(n) {
   const slides = document.querySelectorAll('.slide');
   const dots = document.querySelectorAll('.slider-dot');
+  if (!slides.length) return;
   if (n > slides.length) currentIndex = 1;
   if (n < 1) currentIndex = slides.length;
   slides.forEach(s => s.classList.remove('active'));
   dots.forEach(d => d.classList.remove('active'));
-  slides[currentIndex - 1].classList.add('active');
-  dots[currentIndex - 1].classList.add('active');
+  if (slides[currentIndex - 1]) slides[currentIndex - 1].classList.add('active');
+  if (dots[currentIndex - 1]) dots[currentIndex - 1].classList.add('active');
 }
 function changeSlide(n) { clearTimeout(autoplayTimer); showSlide(currentIndex += n); autoplay(); }
 function currentSlide(n) { clearTimeout(autoplayTimer); showSlide(currentIndex = n); autoplay(); }
@@ -611,9 +632,11 @@ showSlide(currentIndex); autoplay();
 <!-- BRAND LOGOS — loaded via Brand::ticker() scope -->
 <div class="brands-ticker">
   <div class="brands-row">
-    @foreach($tickerBrands as $brand)
-      <img class="brand-logo" src="{{ asset($brand->ticker_image) }}" alt="{{ $brand->name }}">
-    @endforeach
+    @forelse(($tickerBrands ?? []) as $brand)
+      <img class="brand-logo" src="{{ asset($brand->ticker_image ?? '') }}" alt="{{ $brand->name ?? '' }}">
+    @empty
+      <span style="color:#bbb;font-size:12px;">No brands available</span>
+    @endforelse
   </div>
 </div>
 
@@ -623,25 +646,36 @@ showSlide(currentIndex); autoplay();
   <p>View all products per category</p>
 </div>
 <div class="category-grid">
-  @foreach($categories as $cat)
+  @forelse(($categories ?? []) as $cat)
     <div class="cat-item">
       <a href="{{ route('home', ['category_id' => $cat->id]) }}">
-        <div class="cat-circle" style="background:{{ $cat->bg_color }};">
-          <i class="{{ $cat->icon_class }}" style="font-size:40px;color:{{ $cat->icon_color }};"></i>
+        <div class="cat-circle" style="background:{{ $cat->bg_color ?? '#f5f5f5' }};">
+          <i class="{{ $cat->icon_class ?? 'fas fa-pills' }}" style="font-size:40px;color:{{ $cat->icon_color ?? '#ccc' }};"></i>
         </div>
-        <span>{{ $cat->name }}</span>
+        <span>{{ $cat->name ?? '' }}</span>
       </a>
     </div>
-  @endforeach
+  @empty
+      @for($i = 0; $i < 7; $i++)
+    <div class="cat-item">
+      <div class="cat-circle"><i class="fas fa-pills" style="font-size:40px;color:#ccc;"></i></div>
+      <span style="color:#bbb;">No categories</span>
+    </div>
+    @endfor
+  @endforelse
 </div>
 
 <!-- PROMO BANNERS -->
 <div class="promo-banners">
-  @foreach($promoBanners as $banner)
-    <div class="promo-banner {{ $banner->type }}" style="gap:20px;justify-content:space-between;padding:0;">
-      <img src="{{ $banner->image }}" alt="{{ $banner->alt }}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+  @forelse(($promoBanners ?? []) as $banner)
+    <div class="promo-banner {{ $banner->type ?? '' }}" style="gap:20px;justify-content:space-between;padding:0;">
+      <img src="{{ $banner->image ?? '' }}" alt="{{ $banner->alt ?? '' }}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
     </div>
-  @endforeach
+  @empty
+  @for($i = 0; $i < 2; $i++)
+    <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;">No promo banners</div>
+    @endfor
+  @endforelse
 </div>
 
 <!-- FEATURED BRANDS — loaded via Brand::featured() scope -->
@@ -651,19 +685,29 @@ showSlide(currentIndex); autoplay();
 </div>
 <div class="featured-brands">
   <div class="brands-grid">
-    @foreach($featuredBrands as $brand)
-      <div class="brand-card {{ $brand->featured_color }}">
-        <img src="{{ asset($brand->featured_image) }}" alt="{{ $brand->name }}" style="width:100%;height:100%;object-fit:cover;">
+    @forelse(($featuredBrands ?? []) as $brand)
+      <div class="brand-card {{ $brand->featured_color ?? '' }}">
+        <img src="{{ asset($brand->featured_image ?? '') }}" alt="{{ $brand->name ?? '' }}" style="width:100%;height:100%;object-fit:cover;">
       </div>
-    @endforeach
+    @empty
+    @for($i = 0; $i < 6; $i++)
+      <div class="brand-card white"><span>No brands available</span></div>
+      @endfor
+    @endforelse
   </div>
 </div>
 
 <!-- OMRON BANNER -->
-@if($bannerOmron)
+@if($fbanner_1)
 <div class="fw-banner">
   <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-    <img src="{{ $bannerOmron->image }}" alt="{{ $bannerOmron->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+    <img src="{{ $fbanner_1->image }}" alt="{{ $fbanner_1->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+  </div>
+</div>
+@else
+<<div class="fw-banner">
+  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
+  <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;">No promo banners</div>  
   </div>
 </div>
 @endif
@@ -672,8 +716,8 @@ showSlide(currentIndex); autoplay();
 <div style="padding: 0 40px 40px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
-      <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $hotDealsSection->label }}</h2>
-      <p style="color:var(--gray);font-size:12px;">{{ $hotDealsSection->description }}</p>
+      <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $section1?->label ?? 'Section 1' }}</h2>
+      <p style="color:var(--gray);font-size:12px;">{{ $section1?->description ?? '' }}</p>
     </div>
     <div style="display:flex;align-items:center;gap:12px;">
       <span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;">End in:</span>
@@ -686,17 +730,34 @@ showSlide(currentIndex); autoplay();
     </div>
   </div>
   <div class="product-carousel">
-    @foreach($hotDealsSection->products as $product)
+    @forelse(($section1?->products ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'showQty' => true])
-    @endforeach
+    @empty
+      @for($i = 0; $i < 5; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
   </div>
 </div>
 
 <!-- RITEMED BANNER -->
-@if($bannerRitemed)
+@if($fbanner_2)
 <div class="fw-banner">
   <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-    <img src="{{ $bannerRitemed->image }}" alt="{{ $bannerRitemed->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+    <img src="{{ $fbanner_2->image }}" alt="{{ $fbanner_2->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+  </div>
+</div>
+@else
+  <div class="fw-banner">
+  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
+    <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
   </div>
 </div>
 @endif
@@ -704,32 +765,54 @@ showSlide(currentIndex); autoplay();
 <!-- SALE SECTION — products via Section hasMany relationship -->
 <div class="section-row">
   <div>
-    <h2>{{ $saleSection->label }}</h2>
-    <p>{{ $saleSection->description }}</p>
+    <h2>{{ $section2?->label ?? 'Section 2' }}</h2>
+    <p>{{ $section2?->description ?? '' }}</p>
   </div>
-  <a href="{{ $saleSection->see_all_url ?? '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $section2 ? route('home', ['section_id' => $section2->id]) : '#' }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    @foreach($saleSection->products as $product)
+    @forelse(($section2?->products ?? []) as $product)
       @include('partials.product-card', ['product' => $product])
-    @endforeach
+    @empty
+      @for($i = 0; $i < 6; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
   </div>
 </div>
 
 <!-- PROMO PACKS — products via Section hasMany relationship -->
 <div class="section-row">
   <div>
-    <h2 style="color:var(--text);">{{ $promoPackSection->label }}</h2>
-    <p>{{ $promoPackSection->description }}</p>
+    <h2 style="color:var(--text);">{{ $section3?->label ?? 'Section 3' }}</h2>
+    <p>{{ $section3?->description ?? '' }}</p>
   </div>
-  <a href="{{ $promoPackSection->see_all_url ?? '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $section3 ? route('home', ['section_id' => $section3->id]) : '#' }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    @foreach($promoPackSection->products as $product)
+    @forelse(($section3?->products ?? []) as $product)
       @include('partials.product-card', ['product' => $product])
-    @endforeach
+    @empty
+      @for($i = 0; $i < 6; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
   </div>
 </div>
 
@@ -739,36 +822,50 @@ showSlide(currentIndex); autoplay();
     @php $bannerAlaxan = \App\Models\FullWidthBanner::forSection('alaxan'); @endphp
     @if($bannerAlaxan)
       <img src="{{ $bannerAlaxan->image }}" alt="{{ $bannerAlaxan->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+      @else
+      <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
+</div>
     @endif
   </div>
 </div>
 
 <!-- BEST SELLERS -->
 <div class="section-row">
-  <div><h2 style="color:var(--text);">BEST SELLERS</h2><p>Top-Rated Favorites – Discover What Everyone's Loving</p></div>
-  <a href="#" class="see-all-btn">See all products</a>
+  <div>
+    <h2 style="color:var(--text);">{{ $section4?->label ?? 'Section 4' }}</h2>
+    <p>{{ $section4?->description ?? '' }}</p>
+  </div>
+  <a href="{{ $section4 ? route('home', ['section_id' => $section4->id]) : '#' }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Immunpro" alt="Immunpro"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">VITAMIN C</div><div class="product-name">Immunpro 500mg / 1...</div><div class="product-price">₱165.00</div></div></div>
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Fern-C" alt="Fern-C"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">VITAMIN C</div><div class="product-name">Fern-C 568.18mg</div><div class="product-price">₱315.00</div></div></div>
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Bewell-C" alt="Bewell-C"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">CALCIUM</div><div class="product-name">Bewell-C Plus Calcium</div><div class="product-price">₱11.50</div></div></div>
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Centrum" alt="Centrum"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">MULTIVITAMIN ADULT</div><div class="product-name">Centrum Silver Advan...</div><div class="product-price">₱378.25</div></div></div>
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Berocca" alt="Berocca"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">MULTIVITAMIN ADULT</div><div class="product-name">Berocca Performance...</div><div class="product-price">₱651.00</div></div></div>
-    <div class="product-card"><div class="product-img"><img src="https://via.placeholder.com/140x140/eee/999?text=Fern-C+Caps" alt="Fern-C Caps"><div class="most-sold">MOST SOLD</div></div><div class="product-info"><div class="product-cat">VITAMIN C</div><div class="product-name">Fern-C 568.18Mg Cap...</div><div class="product-price">₱581.75</div></div></div>
+    @forelse(($section4?->products ?? []) as $product)
+      @include('partials.product-card', ['product' => $product])
+    @empty
+      @for($i = 0; $i < 6; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
   </div>
 </div>
 
 <!-- GUARDIAN SPECIAL DEALS — products via Section hasMany relationship -->
 <div class="section-row">
   <div>
-    <h2>{{ $guardianSection->label }}</h2>
-    <p>{{ $guardianSection->description }}</p>
+    <h2>{{ $section5?->label ?? 'Section 5' }}</h2>
+    <p>{{ $section5?->description ?? '' }}</p>
   </div>
-  <a href="{{ $guardianSection->see_all_url ?? '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $section5 ? route('home', ['section_id' => $section5->id]) : '#' }}" class="see-all-btn">See all products</a>
 </div>
-<div style="padding:0 40px 40px;">
-  <div style="display:grid;grid-template-columns:280px repeat(4,1fr);gap:16px;">
+<div class="dual-row-wrap">
+  <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;">
       <div class="most-sold" style="position:static;margin-bottom:10px;">MOST SOLD</div>
       <i class="fas fa-pump-soap" style="font-size:80px;color:#e91e63;margin-bottom:16px;"></i>
@@ -776,14 +873,35 @@ showSlide(currentIndex); autoplay();
       <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;text-align:center;margin-top:4px;">Guardian Kids Strawberry Yogurt He...</div>
       <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-top:8px;">₱189.00</div>
     </div>
-    @foreach($guardianSection->products as $product)
+    @forelse(($section5_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
-    @endforeach
-    <div style="grid-column:2/span 4;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:4px;">
-      <div class="product-card"><div class="product-img" style="height:130px;"><img src="https://via.placeholder.com/110x110/eee/999?text=Jolly+Tots" alt="Jolly Tots"></div><div class="product-info"><div class="product-cat">BABY TAPED DIAPERS</div><div class="product-name">Jolly Tots Comfydri La...</div><div class="product-price">₱327.00</div></div></div>
-      <div class="product-card"><div class="product-img" style="height:130px;"><img src="https://via.placeholder.com/110x110/eee/999?text=Baby+Daily" alt="Baby Daily"></div><div class="product-info"><div class="product-cat">BABY LIQUID SOAP</div><div class="product-name">Guardian Baby Daily ...</div><div class="product-price">₱189.00</div></div></div>
-      <div class="product-card"><div class="product-img" style="height:130px;"><img src="https://via.placeholder.com/110x110/eee/999?text=Comfort+Pads+2" alt="Comfort Pads 2"></div><div class="product-info"><div class="product-cat">INCONTINENCE-OSTOMY AIDS</div><div class="product-name">Guardian Comfort &amp;A...</div><div class="product-price">₱195.00</div></div></div>
-      <div class="product-card"><div class="product-img" style="height:130px;"><img src="https://via.placeholder.com/110x110/eee/999?text=Cotton+Pads" alt="Cotton Pads"></div><div class="product-info"><div class="product-cat">PADS</div><div class="product-name">GUARDIAN Cotton Faci...</div><div class="product-price">₱79.00</div></div></div>
+    @empty
+      @for($i = 0; $i < 4; $i++)
+        <div class="product-card">
+          <div class="product-img" style="height:150px;"><i class="fas fa-box-open" style="font-size:36px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
+    <div class="dual-row-bottom-grid">
+      @forelse(($section5_bottom ?? []) as $product)
+        @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
+      @empty
+        @for($i = 0; $i < 4; $i++)
+          <div class="product-card">
+            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
+            <div class="product-info">
+              <div class="product-cat">&nbsp;</div>
+              <div class="product-name" style="color:#ccc;">No product available</div>
+              <div class="product-price" style="color:#ccc;">—</div>
+            </div>
+          </div>
+        @endfor
+      @endforelse
     </div>
   </div>
 </div>
@@ -807,16 +925,16 @@ showSlide(currentIndex); autoplay();
 <!-- GG PHARMACY GENERICS — products split into top/bottom rows -->
 <div class="section-row">
   <div>
-    <h2>{{ $genericsSection->label }}</h2>
-    <p>{{ $genericsSection->description }}</p>
+    <h2>{{ $section6?->label ?? 'Section 6' }}</h2>
+    <p>{{ $section6?->description ?? '' }}</p>
   </div>
-  <a href="{{ $genericsSection->see_all_url ?? '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $section6 ? route('home', ['section_id' => $section6->id]) : '#' }}" class="see-all-btn">See all products</a>
 </div>
-<div style="padding:0 40px 40px;">
-  <div style="display:grid;grid-template-columns:280px repeat(4,1fr);gap:16px;">
+<div class="dual-row-wrap">
+  <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;padding:24px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;">
       <div>
-        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">{{ $settings['site_name'] }} Generics</h3>
+        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">{{ $settings['site_name'] ?? 'No Pharmacy Name' }} Generics</h3>
         <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">the Brand you can Trust with Assured Quality &amp; Big Savings</p>
         <div style="font-size:12px;color:#555;margin-bottom:16px;">Safe • Quality • Effective</div>
         <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--red);">Low Price Everyday</div>
@@ -826,26 +944,90 @@ showSlide(currentIndex); autoplay();
         <a href="#" style="display:block;text-align:center;background:var(--red);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:12px;border-radius:6px;">VIEW ALL NOW</a>
       </div>
     </div>
-    @foreach($genericsTop as $product)
+    @forelse(($section6_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
-    @endforeach
-    <div style="grid-column:2/span 4;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:4px;">
-      @foreach($genericsBottom as $product)
+    @empty
+      @for($i = 0; $i < 4; $i++)
+        <div class="product-card">
+          <div class="product-img" style="height:150px;"><i class="fas fa-box-open" style="font-size:36px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
+    <div class="dual-row-bottom-grid">
+      @forelse(($section6_bottom ?? []) as $product)
         @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
-      @endforeach
+      @empty
+        @for($i = 0; $i < 4; $i++)
+          <div class="product-card">
+            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
+            <div class="product-info">
+              <div class="product-cat">&nbsp;</div>
+              <div class="product-name" style="color:#ccc;">No product available</div>
+              <div class="product-price" style="color:#ccc;">—</div>
+            </div>
+          </div>
+        @endfor
+      @endforelse
     </div>
   </div>
 </div>
 
 <!-- FEATURED PRODUCTS — products via Section hasMany relationship -->
 <div class="featured-section">
-  <h2>{{ $featuredSection->label }}</h2>
+  <h2>{{ $section7?->label ?? 'Section 7' }}</h2>
   <div class="product-carousel">
-    @foreach($featuredSection->products as $product)
+    @forelse(($section7?->products ?? []) as $product)
       @include('partials.product-card', ['product' => $product])
-    @endforeach
+    @empty
+      @for($i = 0; $i < 6; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
   </div>
 </div>
+
+<!-- SECTION 8 to ... — every remaining section (sort_order > 7) is pulled straight
+     from the database, so new sections added via the admin panel appear here
+     automatically without touching this template. -->
+@foreach(($extraSections ?? []) as $section)
+<div class="section-row">
+  <div>
+    <h2 style="color:var(--text);">{{ $section->label }}</h2>
+    <p>{{ $section->description }}</p>
+  </div>
+  <a href="{{ route('home', ['section_id' => $section->id]) }}" class="see-all-btn">See all products</a>
+</div>
+<div class="product-section">
+  <div class="product-carousel">
+    @forelse($section->products as $product)
+      @include('partials.product-card', ['product' => $product])
+    @empty
+      @for($i = 0; $i < 5; $i++)
+        <div class="product-card">
+          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
+          </div>
+        </div>
+      @endfor
+    @endforelse
+  </div>
+</div>
+@endforeach
 
 <!-- EXCLUSIVELY FOR YOU -->
 <div class="exclusively" style="padding:40px;">
@@ -858,31 +1040,39 @@ showSlide(currentIndex); autoplay();
 <div class="blogs">
   <h2>CATCH UP WITH OUR LATEST BLOGS</h2>
   <div class="blogs-grid">
-    @foreach($blogs as $blog)
+    @forelse(($blogs ?? []) as $blog)
       <div class="blog-card">
         @if($blog->hasImage())
           <div class="blog-img">
-            <img src="{{ asset($blog->image) }}" alt="{{ $blog->title }}">
+            <img src="{{ asset($blog->image) }}" alt="{{ $blog->title ?? '' }}">
           </div>
         @elseif($blog->hasIcon())
           <div class="blog-img" style="height:150px;background:{{ $blog->icon_bg ?? '#f0f0f0' }};display:flex;align-items:center;justify-content:center;">
-            <i class="{{ $blog->icon_class }}" style="font-size:60px;color:{{ $blog->icon_color ?? '#999' }};opacity:0.4;"></i>
+            <i class="{{ $blog->icon_class ?? 'fas fa-newspaper' }}" style="font-size:60px;color:{{ $blog->icon_color ?? '#999' }};opacity:0.4;"></i>
           </div>
         @endif
         <div style="display:flex;">
-          <div class="blog-date" style="min-width:50px;"><span>{{ $blog->day }}</span><small>{{ $blog->month }}</small></div>
+          <div class="blog-date" style="min-width:50px;"><span>{{ $blog->day ?? '' }}</span><small>{{ $blog->month ?? '' }}</small></div>
           <div class="blog-body" style="padding:14px 14px 10px;">
             {{-- Category name shown via BelongsTo relationship --}}
             @if($blog->category)
-              <div class="product-cat" style="margin-bottom:4px;">{{ $blog->category->name }}</div>
+              <div class="product-cat" style="margin-bottom:4px;">{{ $blog->category->name ?? '' }}</div>
             @endif
-            <h4>{{ $blog->title }}</h4>
-            <p>{{ $blog->excerpt }}</p>
-            <div class="no-comments">{{ $blog->commentLabel() }}</div>
+            <h4>{{ $blog->title ?? '' }}</h4>
+            <p>{{ $blog->excerpt ?? '' }}</p>
+            <div class="no-comments">{{ $blog->commentLabel() ?? '' }}</div>
           </div>
         </div>
       </div>
-    @endforeach
+    @empty
+    @for($i = 0; $i < 4; $i++)
+      <div class="blog-card" style="padding:30px;text-align:center;color:#bbb;">
+        <i class="fas fa-newspaper" style="font-size:36px;margin-bottom:10px;display:block;color:#ddd;"></i>
+        No blog posts available yet.
+      </div>
+      @endfor
+      
+    @endforelse
   </div>
 </div>
 @endif
@@ -894,22 +1084,22 @@ showSlide(currentIndex); autoplay();
     <div class="footer-section">
       <h4>CONTACT INFO</h4>
       <div class="label">ADDRESS:</div>
-      <p>{{ $settings['address_line1'] ?? '' }}</p>
-      <p>{{ $settings['address_line2'] ?? '' }}</p>
-      <p>{{ $settings['address_line3'] ?? '' }}</p>
+      <p>{{ $settings['address_line1'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line2'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line3'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">PHONE:</div>
-      <p>{{ $settings['phone'] ?? '' }}</p>
+      <p>{{ $settings['phone'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">EMAIL:</div>
-      <p>{{ $settings['email'] ?? '' }}</p>
+      <p>{{ $settings['email'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">WORKING DAYS/HOURS:</div>
-      <p>{{ $settings['working_hours'] ?? '' }}</p>
+      <p>{{ $settings['working_hours'] ?? 'N/A' }}</p>
       <div class="footer-social">
         <a href="{{ $settings['facebook_url'] ?? '#' }}" class="fb"><i class="fab fa-facebook-f"></i></a>
         <a href="{{ $settings['instagram_url'] ?? '#' }}" class="ig"><i class="fab fa-instagram"></i></a>
       </div>
     </div>
     <div class="footer-section">
-      <h4>ABOUT {{ $settings['site_name'] }}</h4>
+      <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
       <a href="#">Store Information</a>
@@ -950,7 +1140,7 @@ showSlide(currentIndex); autoplay();
 <div class="modal-overlay" id="loginModal">
   <div class="modal-box">
     <button class="modal-close" id="modalClose" aria-label="Close" type="button">&times;</button>
-    <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'GG PHARMACY') }}</span></div>
+    <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'NO PHARMACY NAME') }}</span></div>
     <div class="modal-title">Welcome Back!</div>
     <div class="modal-subtitle">Sign in to your account to continue</div>
 
@@ -982,7 +1172,7 @@ showSlide(currentIndex); autoplay();
     </form>
 
     <div class="modal-divider"><hr><span>Don't have an account?</span><hr></div>
-    <div class="modal-register">New to {{ $settings['site_name'] ?? 'GG Pharmacy' }}? <a href="#" id="switchToRegister">Register here</a></div>
+    <div class="modal-register">New to {{ $settings['site_name'] ?? 'No Pharmacy Name' }}? <a href="#" id="switchToRegister">Register here</a></div>
   </div>
 </div>
 
@@ -990,9 +1180,9 @@ showSlide(currentIndex); autoplay();
 <div class="modal-overlay" id="registerModal">
   <div class="modal-box wide">
     <button class="modal-close" id="registerModalClose" aria-label="Close" type="button">&times;</button>
-    <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'GG PHARMACY') }}</span></div>
+    <div class="modal-logo"><span>{{ strtoupper($settings['site_name'] ?? 'NO PHARMACY NAME') }}</span></div>
     <div class="modal-title">Create an Account</div>
-    <div class="modal-subtitle">Join {{ $settings['site_name'] ?? 'GG Pharmacy' }} and start shopping today</div>
+    <div class="modal-subtitle">Join {{ $settings['site_name'] ?? 'No Pharmacy Name' }} and start shopping today</div>
 
     @if($errors->hasBag('register'))
       <div class="modal-alert-error">
@@ -1108,7 +1298,7 @@ showSlide(currentIndex); autoplay();
 
 <!-- SHIPPING BAR -->
 <div class="shipping-bar">
-  {{ $settings['shipping_message'] ?? '' }} &nbsp;<a href="#">Dismiss</a>
+  {{ $settings['shipping_message'] ?? 'No shipping message' }} &nbsp;<a href="#">Dismiss</a>
 </div>
 
 <script>
