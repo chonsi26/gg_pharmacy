@@ -29,12 +29,14 @@ class HomeController extends Controller
         $searchQuery = $request->input('query');
         $categoryId = $request->input('category_id');
         $sectionId = $request->input('section_id');
+        $brandId = $request->input('brand_id');
 
         $searchResults = null;
         $selectedCategory = null;
         $selectedSection = null;
+        $selectedBrand = null;
 
-        if ($request->filled('query') || $request->filled('category_id') || $request->filled('section_id')) {
+        if ($request->filled('query') || $request->filled('category_id') || $request->filled('section_id') || $request->filled('brand_id')) {
             
             if ($request->filled('query')) {
                 // Handle text search
@@ -61,6 +63,16 @@ class HomeController extends Controller
                 if ($selectedSection) {
                     $searchResults = Product::active()
                         ->where('section_id', $sectionId)
+                        ->with(['category', 'brand'])
+                        ->orderBy('sort_order')
+                        ->get();
+                }
+            } elseif ($request->filled('brand_id')) {
+                // Handle "shop by brand" clicks (ticker & featured brand logos)
+                $selectedBrand = Brand::find($brandId);
+                if ($selectedBrand) {
+                    $searchResults = Product::active()
+                        ->where('brand_id', $brandId)
                         ->with(['category', 'brand'])
                         ->orderBy('sort_order')
                         ->get();
@@ -128,7 +140,7 @@ class HomeController extends Controller
         }
 
         return view('home', compact(
-            'settings', 'categories', 'selectedCategory', 'selectedSection',
+            'settings', 'categories', 'selectedCategory', 'selectedSection', 'selectedBrand',
             'sliders',
             'tickerBrands', 'featuredBrands',
             'promoBanners',

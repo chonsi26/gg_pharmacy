@@ -9,18 +9,60 @@ class Setting extends Model
     protected $fillable = ['key', 'value'];
 
     /**
-     * The pharmacy settings panel defines exactly 21 distinct keys
-     * (see admin.pharmacy's field list), so this table should never
-     * legitimately hold more than 21 rows. Anything from row 22
-     * onward is stale/junk data and gets trimmed automatically.
+     * The pharmacy settings panel defines exactly 22 distinct keys
+     * (see admin.pharmacy's field list, now including `map_link`), so this
+     * table should never legitimately hold more than 22 rows. Anything from
+     * row 23 onward is stale/junk data and gets trimmed automatically.
+     *
+     * NOTE: bump this whenever a new field is added to the settings panel,
+     * otherwise enforceRowLimit() will delete the newest key.
      */
-    public const MAX_ROWS = 21;
+    public const MAX_ROWS = 22;
+
+    /** Settings key holding the Google Maps embed URL of the pharmacy. */
+    public const MAP_LINK_KEY = 'map_link';
 
     public static function get(string $key, mixed $default = null): mixed
     {
         // oldest('id') ensures that if duplicate keys ever exist, the first
         // one ever created is treated as the authoritative value.
         return static::where('key', $key)->oldest('id')->value('value') ?? $default;
+    }
+
+    /**
+     * The pharmacy's Google Maps embed URL, ready to drop into an
+     * <iframe src="...">. Accepts either a bare URL or a full pasted
+     * <iframe> snippet, and returns null unless the result is a genuine
+     * https Google Maps embed URL (so nothing arbitrary is ever framed).
+     */
+    public static function mapEmbedUrl(): ?string
+    {
+        $raw = trim((string) static::get(self::MAP_LINK_KEY, ''));
+
+        if ($raw === '') {
+            return null;
+        }
+
+        if (stripos($raw, '<iframe') !== false
+            && preg_match('/\bsrc\s*=\s*["\']([^"\']+)["\']/i', $raw, $m)) {
+            $raw = $m[1];
+        }
+
+        $url   = html_entity_decode(trim($raw), ENT_QUOTES);
+        $parts = parse_url($url);
+
+        if (!$parts || ($parts['scheme'] ?? '') !== 'https') {
+            return null;
+        }
+
+        $host = strtolower($parts['host'] ?? '');
+        $path = $parts['path'] ?? '';
+        parse_str($parts['query'] ?? '', $query);
+
+        $isGoogle = in_array($host, ['www.google.com', 'google.com', 'maps.google.com'], true);
+        $isEmbed  = str_starts_with($path, '/maps/embed') || ($query['output'] ?? '') === 'embed';
+
+        return ($isGoogle && $isEmbed) ? $url : null;
     }
 
     public static function allAsArray(): array

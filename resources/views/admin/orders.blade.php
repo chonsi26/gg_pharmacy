@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $siteName }} — Sales Records</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -369,7 +370,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .btn-sm.primary:hover { background: var(--red-h); border-color: var(--red-h); }
 
 /* ── TABLE ── */
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: hidden; }
 table {
   width: 100%;
   border-collapse: collapse;
@@ -712,6 +713,9 @@ tbody tr:last-child td { border-bottom: none; }
     padding: 20px;
   }
   .modal-backdrop.open { display: flex; }
+  /* Prescription gallery/zoom open on top of the details or receipt modal */
+  #prescriptionModal { z-index: 1100; }
+  #prescriptionZoomModal { z-index: 1200; }
 
   /* ── Modal Box ── */
   .modal {
@@ -893,6 +897,11 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .btn-approve:hover { background: #16a34a; }
   .btn-approve:active { transform: scale(.96); }
+  .btn-approve:disabled, .btn-sm:disabled {
+    opacity: .45; cursor: not-allowed; pointer-events: auto;
+  }
+  .btn-approve:disabled:hover { background: #22c55e; }
+  .btn-approve:disabled:active { transform: none; }
 
   .btn-view {
     font-size: 12px; font-weight: 600;
@@ -913,8 +922,20 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .btn-detail:hover { background: #fedbdb; border-color: #fd9393; }
 
+  /* ── Refund button ── */
+  .btn-refund {
+    font-size: 12px; font-weight: 600;
+    background: #f97316; color: #fff;
+    border: none; border-radius: 7px;
+    padding: 5px 13px; cursor: pointer;
+    transition: background .15s, transform .1s;
+  }
+  .btn-refund:hover { background: #ea6a0c; }
+  .btn-refund:active { transform: scale(.96); }
+
   /* ── Action cell ── */
-  .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; white-space: nowrap; }
+  .action-cell > * { flex-shrink: 0; white-space: nowrap; }
 
   /* ── Detail modal ── */
   .detail-modal { max-width: 520px; }
@@ -1023,6 +1044,56 @@ tbody tr:last-child td { border-bottom: none; }
     margin-top: 6px;
   }
 
+  /* ── Prescription requirement (detail modal) ── */
+  .rx-view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue-light);
+    color: var(--blue);
+    border: 1.5px solid var(--blue);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .rx-view-btn:hover { background: var(--blue); color: #fff; }
+  .rx-view-btn svg { flex-shrink: 0; }
+
+  .prescription-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+  }
+  .prescription-card {
+    border: 1.5px solid var(--border, #e8eaf0);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface, #f4f5f8);
+    cursor: pointer;
+    transition: border-color .15s, transform .1s;
+  }
+  .prescription-card:hover { border-color: var(--blue); transform: translateY(-2px); }
+  .prescription-card img {
+    display: block;
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    background: var(--surface2, #eef0f3);
+  }
+  .prescription-card-label {
+    padding: 7px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   /* ── Detail customer chip ── */
   .detail-customer-chip {
     display: inline-flex;
@@ -1043,6 +1114,34 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .detail-customer-name {
     font-size: 12px; font-weight: 700; color: var(--text);
+  }
+
+
+  /* ── Orders table: fixed layout, long text is cut with "…" (no scrolling) ── */
+  #ordersTable { table-layout: fixed; width: 100%; }
+  #ordersTable thead th,
+  #ordersTable tbody td {
+    padding-left: 8px; padding-right: 8px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #ordersTable thead th:first-child, #ordersTable tbody td:first-child { padding-left: 14px; }
+  #ordersTable .c-id      { width: 13%; }
+  #ordersTable .c-items   { width: 7%; }
+  #ordersTable .c-total   { width: 9%; }
+  #ordersTable .c-date    { width: 10%; }
+  #ordersTable .c-pay     { width: 7%; }
+  #ordersTable .c-status  { width: 11%; }
+  #ordersTable .c-action  { width: 22%; }
+  /* Customer / Due Date / Cancelation Reason share whatever space is left */
+  #ordersTable tbody td.col-action { overflow: visible; }
+  #ordersTable .btn-approve, #ordersTable .btn-view,
+  #ordersTable .btn-detail,  #ordersTable .btn-refund { padding: 5px 10px; white-space: nowrap; }
+
+  /* Very small screens: buttons can't sit side by side in a squeezed table,
+     so keep a minimum width there (scrolls sideways on phones only). */
+  @media (max-width: 900px) {
+    .table-wrap { overflow-x: auto; }
+    #ordersTable { min-width: 860px; }
   }
 
   /* dark-mode patches */
@@ -1203,8 +1302,10 @@ tbody tr:last-child td { border-bottom: none; }
       <h3>Incoming Orders</h3>
       <div style="display:flex;gap:8px;align-items:center;">
         <span style="font-size:12px;color:var(--muted);" id="tabPending" class="tab-link active-tab" onclick="filterTable('pending')" style="cursor:pointer;">Pending</span>
-        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabApproved" class="tab-link" onclick="filterTable('approved')">Approved</span>
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabConfirmed" class="tab-link" onclick="filterTable('confirmed')">Confirmed</span>
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabApproved" class="tab-link" onclick="filterTable('approved')">For Pick Up</span>
         <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabCompleted" class="tab-link" onclick="filterTable('completed')">Completed</span>
+        <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabCancelled" class="tab-link" onclick="filterTable('cancelled')">Cancelled</span>
       </div>
     </div>
     <style>
@@ -1216,15 +1317,16 @@ tbody tr:last-child td { border-bottom: none; }
       <table id="ordersTable">
         <thead>
           <tr>
-            <th>#</th>
-            <th>Customer</th>
-            <th>Items</th>
-            <th>Total</th>
-            <th>Date</th>
+            <th class="c-id">#</th>
+            <th class="c-customer">Customer</th>
+            <th class="c-items">Items</th>
+            <th class="c-total">Total</th>
+            <th class="c-date">Date</th>
             <th id="dueDateHeader" style="display:none;">Due Date</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th id="cancelReasonHeader" style="display:none;">Cancelation Reason</th>
+            <th class="c-pay">Payment</th>
+            <th class="c-status">Status</th>
+            <th class="c-action">Action</th>
           </tr>
         </thead>
         <tbody id="ordersBody">
@@ -1258,7 +1360,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <span id="dStatusBadge" class="pill warn">Pending</span>
-          <span id="dTypeBadge" class="pill ok">OTC</span>
+          <span id="dPaymentBadge" class="pill ok">Cash</span>
         </div>
       </div>
 
@@ -1279,6 +1381,15 @@ tbody tr:last-child td { border-bottom: none; }
         <!-- injected -->
       </div>
 
+      <!-- Prescriptions (only shown when the order contains prescription-required items) -->
+      <div class="detail-proof" id="dPrescriptionSection" style="display:none;margin-bottom:18px;">
+        <div class="detail-proof-label">Prescription Requirement</div>
+        <button class="rx-view-btn" onclick="openPrescriptions()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="12" y2="11"/></svg>
+          View Prescriptions (<span id="dPrescriptionCount">0</span>)
+        </button>
+      </div>
+
       <!-- Summary -->
       <div class="detail-summary">
         <div class="detail-summary-row">
@@ -1295,13 +1406,26 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
-      <!-- Proof of payment (only shown for orders already paid via online app) -->
+      <!-- Proof of payment (shown for online app orders — image if uploaded, notice if not) -->
       <div class="detail-proof" id="dProofSection" style="display:none;">
         <div class="detail-proof-label">Proof of Payment</div>
-        <div class="detail-proof-img-wrap">
+        <div class="detail-proof-img-wrap" id="dProofImgWrap">
           <img id="dProofImage" src="" alt="Proof of payment">
         </div>
-        <div class="detail-proof-note">Customer already paid via online app — awaiting approval.</div>
+        <div class="detail-proof-note" id="dProofNote">Customer already paid via online app — awaiting approval.</div>
+        <!-- Stand-in for the customer-side upload (demo) -->
+        <div id="dProofUploadWrap" style="display:none;text-align:center;margin-top:10px;">
+          <input type="file" id="dProofUploadInput" accept="image/*" onchange="handleProofUpload(event)" style="font-size:12px;max-width:100%;">
+        </div>
+      </div>
+
+      <!-- Proof of refund (only shown once a cancelled online-paid order has been refunded) -->
+      <div class="detail-proof" id="dRefundProofSection" style="display:none;">
+        <div class="detail-proof-label">Proof of Refund</div>
+        <div class="detail-proof-img-wrap">
+          <img id="dRefundProofImage" src="" alt="Proof of refund">
+        </div>
+        <div class="detail-proof-note">Refund has been processed for this order.</div>
       </div>
 
     </div>
@@ -1309,7 +1433,7 @@ tbody tr:last-child td { border-bottom: none; }
       <button class="btn-sm" onclick="closeModal('detailModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Close</button>
       <button class="btn-sm" id="detailApproveBtn" onclick="approveFromDetail()" style="background:#22c55e;color:#fff;border:none;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg>
-        Approve Order
+        <span id="detailApproveBtnLabel">Approve Order</span>
       </button>
     </div>
   </div>
@@ -1319,7 +1443,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="modal-backdrop" id="confirmModal">
   <div class="modal">
     <div class="modal-header">
-      <h3>Confirm Approval</h3>
+      <h3 id="confirmModalHeader">Confirm Approval</h3>
       <button class="modal-close" onclick="closeModal('confirmModal')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
@@ -1336,6 +1460,109 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="modal-footer">
       <button class="btn-sm" onclick="closeModal('confirmModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Cancel</button>
       <button class="btn-sm primary" id="confirmApproveBtn" onclick="doApprove()">Approve & Generate Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CANCEL ORDER MODAL ═══════════════ -->
+<div class="modal-backdrop" id="cancelModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Cancel Order</h3>
+      <button class="modal-close" onclick="closeModal('cancelModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="cancelModalSub">Cancel Order #1042?</p>
+      <div class="field">
+        <label for="cancelReasonSelect">Cancelation Reason</label>
+        <select id="cancelReasonSelect" onchange="toggleOtherCancelReason()">
+          <option value="Cancelled">Cancelled</option>
+          <option value="Session Expired">Session Expired</option>
+          <option value="Customer Request">Customer Request</option>
+          <option value="Out of Stock">Out of Stock</option>
+          <option value="Payment Failed">Payment Failed</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field" id="cancelReasonOtherField" style="display:none;">
+        <label for="cancelReasonOther">Specify Reason</label>
+        <input type="text" id="cancelReasonOther" placeholder="Enter reason">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('cancelModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Back</button>
+      <button class="btn-sm" onclick="confirmCancelOrder()" style="background:var(--red);border-color:var(--red);color:#fff;">Cancel Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ REFUND MODAL ═══════════════ -->
+<div class="modal-backdrop" id="refundModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Process Refund</h3>
+      <button class="modal-close" onclick="closeModal('refundModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;" id="refundModalSub">Refund Order #1037?</p>
+      <div class="field">
+        <label for="refundProofInput">Refund Proof</label>
+        <input type="file" id="refundProofInput" accept="image/*" onchange="handleRefundProofSelect(event)">
+      </div>
+      <div id="refundProofPreviewWrap" style="display:none;margin-top:10px;">
+        <img id="refundProofPreview" src="" alt="Refund proof preview" style="max-width:100%;border-radius:8px;border:1px solid var(--border);">
+      </div>
+      <p id="refundProofError" style="display:none;font-size:12px;color:var(--red);margin-top:8px;">Please upload a proof of refund before continuing.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('refundModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Cancel</button>
+      <button class="btn-sm" onclick="confirmRefund()" style="background:#f97316;border-color:#f97316;color:#fff;">Confirm Refund</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PRESCRIPTIONS MODAL ═══════════════ -->
+<div class="modal-backdrop" id="prescriptionModal">
+  <div class="modal detail-modal">
+    <div class="modal-header">
+      <h3>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="12" y2="11"/></svg>
+        Prescription Files
+      </h3>
+      <button class="modal-close" onclick="closeModal('prescriptionModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="max-height:70vh;overflow-y:auto;">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:14px;" id="presModalSub">—</p>
+      <div class="prescription-grid" id="prescriptionGrid">
+        <!-- injected -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('prescriptionModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PRESCRIPTION ZOOM MODAL ═══════════════ -->
+<div class="modal-backdrop" id="prescriptionZoomModal">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-header">
+      <h3 id="presZoomLabel">Prescription</h3>
+      <button class="modal-close" onclick="closeModal('prescriptionZoomModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <img id="presZoomImage" src="" alt="Prescription" style="max-width:100%;border-radius:10px;border:1px solid var(--border);">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm" onclick="closeModal('prescriptionZoomModal')" style="background:var(--surface,#f4f5f8);color:var(--text);border:1.5px solid var(--border,#e8eaf0);">Close</button>
     </div>
   </div>
 </div>
@@ -1362,7 +1589,7 @@ tbody tr:last-child td { border-bottom: none; }
         <span class="rm-label">Customer</span><span class="rm-value" id="rCustomer">—</span>
         <span class="rm-label">Order #</span><span class="rm-value" id="rOrderId">—</span>
         <span class="rm-label">Date</span><span class="rm-value" id="rDate">—</span>
-        <span class="rm-label">Type</span><span class="rm-value" id="rType">—</span>
+        <span class="rm-label">Payment</span><span class="rm-value" id="rMethod">—</span>
       </div>
 
       <!-- Items -->
@@ -1379,13 +1606,22 @@ tbody tr:last-child td { border-bottom: none; }
         </tfoot>
       </table>
 
-      <!-- Proof of payment (only shown while awaiting approval/payment, hidden once completed) -->
+      <!-- Prescriptions (only shown when the order contains prescription-required items) -->
+      <div class="detail-proof" id="rPrescriptionSection" style="display:none;margin-bottom:18px;">
+        <div class="detail-proof-label">Prescription Requirement</div>
+        <button class="rx-view-btn" onclick="openPrescriptions(currentReceiptId)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="12" y2="11"/></svg>
+          View Prescriptions (<span id="rPrescriptionCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Proof of payment (online app orders — image if uploaded, notice if not; stays visible after completion) -->
       <div class="detail-proof" id="rProofSection" style="display:none;">
         <div class="detail-proof-label">Proof of Payment</div>
-        <div class="detail-proof-img-wrap">
+        <div class="detail-proof-img-wrap" id="rProofImgWrap">
           <img id="rProofImage" src="" alt="Proof of payment">
         </div>
-        <div class="detail-proof-note">Customer already paid via online app.</div>
+        <div class="detail-proof-note" id="rProofNote">Customer already paid via online app.</div>
       </div>
 
       <div class="receipt-summary">
@@ -1443,62 +1679,49 @@ overlay.addEventListener('click', () => {
 });
 </script>
 <script>
-/* ─── Order Data ─── */
-const ORDERS = [
-  {
-    id: '#1042', customer: 'Maria Santos', date: 'Mar 30 · 9:14 AM',
-    type: 'OTC', status: 'pending',
-    items: [
-      { name: 'Biogesic 500mg', qty: 2, price: 12 },
-      { name: 'Kremil-S Tablet', qty: 1, price: 18 },
-      { name: 'Vitamin C 500mg', qty: 1, price: 8 },
-    ]
-  },
-  {
-    id: '#1041', customer: 'Juan dela Cruz', date: 'Mar 30 · 8:55 AM',
-    type: 'Rx', status: 'pending',
-    items: [
-      { name: 'Losartan 50mg', qty: 30, price: 9.5 },
-      { name: 'Metformin 500mg', qty: 30, price: 8.2 },
-      { name: 'Atorvastatin 20mg', qty: 14, price: 12 },
-    ]
-  },
-  {
-    id: '#1040', customer: 'Ana Reyes', date: 'Mar 29 · 2:12 PM',
-    type: 'OTC', status: 'approved',
-    items: [
-      { name: 'Neozep Forte', qty: 1, price: 55 },
-      { name: 'Alaxan FR', qty: 1, price: 33 },
-    ]
-  },
-  {
-    id: '#1039', customer: 'Pedro Lim', date: 'Mar 29 · 11:05 AM',
-    type: 'Rx', status: 'pending',
-    items: [
-      { name: 'Amlodipine 5mg', qty: 30, price: 7 },
-      { name: 'Omeprazole 20mg', qty: 14, price: 12 },
-      { name: 'Salbutamol Inhaler', qty: 1, price: 285 },
-      { name: 'Cetirizine 10mg', qty: 10, price: 6.5 },
-    ]
-  },
-  {
-    id: '#1038', customer: 'Rosa Garcia', date: 'Mar 29 · 9:30 AM',
-    type: 'OTC', status: 'pending',
-    items: [
-      { name: 'Betadine Solution 60ml', qty: 1, price: 55 },
-    ]
-  },
-  {
-    id: '#1043', customer: 'Carlos Tan', date: 'Mar 30 · 9:20 AM',
-    type: 'Rx', status: 'approved', paidOnline: true,
-    proofImage: 'payment-proof-1043.jfif',
-    items: [
-      { name: 'Losartan 50mg', qty: 30, price: 9.5 },
-      { name: 'Metformin 500mg', qty: 60, price: 8.2 },
-      { name: 'Rosuvastatin 10mg', qty: 30, price: 15 },
-    ]
-  },
-];
+/* ─── Order Data (loaded from AdminOrdersController@data) ─── */
+let ORDERS = [];
+
+const CSRF   = document.querySelector('meta[name="csrf-token"]').content;
+const ROUTES = {
+  data: @json(route('admin.orders.data')),
+  base: @json(url('/admin/orders')),
+};
+
+// Orders sit in "For Pick Up" for 5 hours; the server auto-cancels them after
+// that with the reason "Order expired". Re-poll so the table catches it live.
+const ORDERS_POLL_MS = 60 * 1000;
+
+async function orderApi(method, path, body = null) {
+  // FormData (file uploads) must NOT get a manual Content-Type — the browser
+  // adds the multipart boundary itself.
+  const isForm = body instanceof FormData;
+  const headers = { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF };
+  if (!isForm) headers['Content-Type'] = 'application/json';
+  const res = await fetch(ROUTES.base + path, {
+    method,
+    headers,
+    body: body ? (isForm ? body : JSON.stringify(body)) : null,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || 'Something went wrong.');
+  return data;
+}
+
+async function loadOrders(silent = false) {
+  try {
+    const res = await fetch(ROUTES.data, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('Failed to load orders.');
+    const data = await res.json();
+    ORDERS = data.orders;
+    renderTable(currentFilter);
+    if (data.expired_count > 0) {
+      showToast(data.expired_count + ' order' + (data.expired_count > 1 ? 's' : '') + ' expired and cancelled.');
+    }
+  } catch (e) {
+    if (!silent) showToast(e.message);
+  }
+}
 
 /* ─── Item emoji map (fallback: 💊) ─── */
 const ITEM_ICONS = {
@@ -1521,7 +1744,12 @@ function itemIcon(name) {
 function orderTotal(order) {
   return order.items.reduce((s, i) => s + i.qty * i.price, 0);
 }
+function esc(v) { return String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmt(n) { return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function paymentLabel(order) { return order.payment === 'online' ? 'App' : 'Cash'; }
+function paymentPill(order)  { return `<span class="pill ${order.payment === 'online' ? 'blue' : 'ok'}">${paymentLabel(order)}</span>`; }
+// Online-app orders can't be reserved until the customer has uploaded proof of payment
+function canReserve(order) { return order.payment !== 'online' || !!order.proofImage; }
 function genRef() { return Math.random().toString(36).slice(2,10).toUpperCase(); }
 function initials(name) {
   return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
@@ -1540,10 +1768,14 @@ function renderTable(filter) {
   let filtered = [];
   if (filter === 'pending') {
     filtered = ORDERS.filter(o => o.status === 'pending');
+  } else if (filter === 'confirmed') {
+    filtered = ORDERS.filter(o => o.status === 'confirmed');
   } else if (filter === 'approved') {
     filtered = ORDERS.filter(o => o.status === 'approved');
   } else if (filter === 'completed') {
     filtered = ORDERS.filter(o => o.status === 'completed');
+  } else if (filter === 'cancelled') {
+    filtered = ORDERS.filter(o => o.status === 'cancelled');
   } else {
     filtered = ORDERS;
   }
@@ -1551,53 +1783,60 @@ function renderTable(filter) {
   filtered.forEach(order => {
     const total = orderTotal(order);
     const isPending = order.status === 'pending';
+    const isConfirmed = order.status === 'confirmed';
     const isApproved = order.status === 'approved'
     const isCompleted = order.status === 'completed';
+    const isCancelled = order.status === 'cancelled';
     const tr = document.createElement('tr');
 
-    let dueDate = '';
-    if (isApproved) {
-      const orderDate = new Date(order.date.replace('·', ''));
-      orderDate.setDate(orderDate.getDate() + 3);
-      dueDate = orderDate.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric'
-      }).replace(',', ' ·');
-    }
+    const dueDate = order.dueDate || '—';
 
     tr.id = 'row-' + order.id.replace('#','');
     tr.innerHTML = `
-      <td style="color:var(--muted);font-size:12px;">${order.id}</td>
-      <td>${order.customer}</td>
+      <td style="color:var(--muted);font-size:12px;" title="${esc(order.id)}">${esc(order.id)}</td>
+      <td title="${esc(order.customer)}">${esc(order.customer)}</td>
       <td>${order.items.length} item${order.items.length > 1 ? 's' : ''}</td>
       <td style="font-weight:700;">${fmt(total)}</td>
-      <td style="font-size:12px;color:var(--muted);">${order.date}</td>
-      ${isApproved ? `<td style="font-size:12px;color:var(--muted);">${dueDate}</td>` : ''}
-      <td><span class="pill ${order.type === 'OTC' ? 'ok' : 'blue'}">${order.type}</span></td>
+      <td style="font-size:12px;color:var(--muted);" title="${esc(order.date)}">${esc(order.date)}</td>
+      ${isApproved ? `<td style="font-size:12px;color:var(--muted);" title="${esc(dueDate)}">${esc(dueDate)}</td>` : ''}
+      ${isCancelled ? `<td style="font-size:12px;color:var(--muted);" title="${esc(order.cancelReason || '—')}">${esc(order.cancelReason || '—')}</td>` : ''}
+      <td>${paymentPill(order)}</td>
       <td>
         ${isCompleted
           ? '<span class="pill paid">Completed</span>'
-          : isPending
-          ? `<span class="pill ${order.paidOnline ? 'blue' : 'warn'}">Pending</span>`
-          : isApproved
-            ? `<span class="pill ${order.paidOnline ? 'paid' : 'blue'}">Approved</span>`
-            : '<span class="pill ok">Completed</span>'}
+          : isCancelled
+            ? '<span class="pill danger">Cancelled</span>'
+            : isPending
+            ? `<span class="pill ${order.paidOnline ? 'blue' : 'warn'}">Pending</span>`
+            : isConfirmed
+              ? `<span class="pill blue">Confirmed</span>`
+              : isApproved
+                ? `<span class="pill ${order.paidOnline ? 'paid' : 'blue'}">For Pick Up</span>`
+                : '<span class="pill ok">Completed</span>'}
       </td>
-      <td>
+      <td class="col-action">
         <div class="action-cell">
           ${isCompleted
             ? `<button class="btn-detail" onclick="deleteCurrentReceiptOrder('${order.id}')">Delete</button> 
                <button class="btn-view" onclick="openReceipt('${order.id}')">Receipt</button>`
-            : isPending
-              ? `<button class="btn-detail" onclick="rejectOrder('${order.id}')">Reject</button>
-                 <button class="btn-view" onclick="openDetail('${order.id}')">Details</button>
-                 <button class="btn-approve" onclick="openConfirm('${order.id}')">Approve</button>`
-              : isApproved
-                ? `<button class="btn-detail" onclick="cancelOrder('${order.id}')">Cancel</button>
-                   <button class="btn-view" onclick="openReceipt('${order.id}')">Receipt</button>`
-                : ''
+            : isCancelled
+              ? `<div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;"><button class="btn-view" onclick="openDetail('${order.id}')">Details</button>${order.paidOnline
+                    ? (order.refunded
+                        ? '<span class="pill ok">Refunded</span>'
+                        : `<button class="btn-refund" onclick="openRefundModal('${order.id}')">Refund</button>`)
+                    : ''}</div>`
+              : isPending
+                ? `<button class="btn-detail" onclick="rejectOrder('${order.id}')">Reject</button>
+                   <button class="btn-view" onclick="openDetail('${order.id}')">Details</button>
+                   <button class="btn-approve" onclick="openConfirm('${order.id}', 'confirm')">Approve</button>`
+                : isConfirmed
+                  ? `<button class="btn-view" onclick="openDetail('${order.id}')">Details</button>
+                     <button class="btn-detail" onclick="openCancelModal('${order.id}')">Cancel</button>
+                     <button class="btn-approve" onclick="openConfirm('${order.id}', 'reserve')" ${canReserve(order) ? '' : 'disabled title="Waiting for the customer to upload proof of payment"'}>Reserve</button>`
+                  : isApproved
+                    ? `<button class="btn-detail" onclick="openCancelModal('${order.id}')">Cancel</button>
+                       <button class="btn-view" onclick="openReceipt('${order.id}')">Receipt</button>`
+                    : ''
           }
         </div>
       </td>
@@ -1608,8 +1847,12 @@ function renderTable(filter) {
   const dueDateHeader = document.getElementById('dueDateHeader');
   if (dueDateHeader) dueDateHeader.style.display = filter === 'approved' ? '' : 'none';
 
+  const cancelReasonHeader = document.getElementById('cancelReasonHeader');
+  if (cancelReasonHeader) cancelReasonHeader.style.display = filter === 'cancelled' ? '' : 'none';
+
   updateStats();
   updateTabs();
+  applySearch();
 }
 
 function filterTable(f) { renderTable(f); }
@@ -1621,7 +1864,7 @@ function updateStats() {
 }
 
 function updateTabs() {
-  ['pending','approved','completed'].forEach(f => {
+  ['pending','confirmed','approved','completed','cancelled'].forEach(f => {
     const el = document.getElementById('tab' + f.charAt(0).toUpperCase() + f.slice(1));
     el.classList.toggle('active-tab', f === currentFilter);
   });
@@ -1639,14 +1882,14 @@ function openDetail(id) {
   document.getElementById('dCustomerName').textContent     = order.customer;
   document.getElementById('dItemCount').textContent  = order.items.length;
 
-  // status & type badges
+  // status & payment method badges
   const sBadge = document.getElementById('dStatusBadge');
-  sBadge.textContent = order.status === 'pending' ? 'Pending' : order.status === 'approved' ? 'Approved' : 'Completed';
-  sBadge.className   = 'pill ' + (order.status === 'pending' ? (order.paidOnline ? 'blue' : 'warn') : order.status === 'approved' ? (order.paidOnline ? 'paid' : 'blue') : 'ok');
+  sBadge.textContent = order.status === 'pending' ? 'Pending' : order.status === 'confirmed' ? 'Confirmed' : order.status === 'approved' ? 'For Pick Up' : order.status === 'cancelled' ? 'Cancelled' : 'Completed';
+  sBadge.className   = 'pill ' + (order.status === 'pending' ? (order.paidOnline ? 'blue' : 'warn') : order.status === 'confirmed' ? 'blue' : order.status === 'approved' ? (order.paidOnline ? 'paid' : 'blue') : order.status === 'cancelled' ? 'danger' : 'ok');
 
-  const tBadge = document.getElementById('dTypeBadge');
-  tBadge.textContent = order.type;
-  tBadge.className   = 'pill ' + (order.type === 'OTC' ? 'ok' : 'blue');
+  const pBadge = document.getElementById('dPaymentBadge');
+  pBadge.textContent = paymentLabel(order);
+  pBadge.className   = 'pill ' + (order.payment === 'online' ? 'blue' : 'ok');
 
   // cart items
   const cartEl = document.getElementById('dCartItems');
@@ -1658,7 +1901,7 @@ function openDetail(id) {
     div.innerHTML = `
       <div class="cart-item-icon">${itemIcon(item.name)}</div>
       <div class="cart-item-info">
-        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-name">${item.name}${item.requiresPrescription ? ' <span class="pill blue" style="font-size:9px;padding:1px 6px;vertical-align:1px;">Rx</span>' : ''}</div>
         <div class="cart-item-qty">Qty: ${item.qty} &nbsp;·&nbsp; ${fmt(item.price)} each</div>
       </div>
       <div>
@@ -1677,61 +1920,317 @@ function openDetail(id) {
   document.getElementById('dVat').textContent      = fmt(vat);
   document.getElementById('dTotal').textContent    = fmt(total);
 
-  // proof of payment (only for orders already paid via an online app)
+  // proof of payment (online app orders only — image if uploaded, notice if not)
   const proofSection = document.getElementById('dProofSection');
+  const proofImgWrap = document.getElementById('dProofImgWrap');
+  const proofNote    = document.getElementById('dProofNote');
+  const uploadWrap   = document.getElementById('dProofUploadWrap');
+  uploadWrap.style.display = 'none';
+  document.getElementById('dProofUploadInput').value = '';
   if (order.proofImage) {
     document.getElementById('dProofImage').src = order.proofImage;
+    proofImgWrap.style.display = '';
     proofSection.style.display = '';
+    proofNote.textContent = order.status === 'cancelled'
+      ? (order.refunded ? 'Customer already paid via online app — refund has been processed.' : 'Customer already paid via online app — refund pending.')
+      : order.status === 'confirmed'
+        ? 'Customer already paid via online app — ready to reserve.'
+        : 'Customer already paid via online app — awaiting approval.';
+  } else if (order.payment === 'online') {
+    proofImgWrap.style.display = 'none';
+    proofSection.style.display = '';
+    proofNote.textContent = 'No proof of payment uploaded yet.' + (order.status === 'confirmed' ? ' The order can be reserved once the customer uploads it.' : '');
+    if (order.status === 'pending' || order.status === 'confirmed') uploadWrap.style.display = '';
   } else {
     proofSection.style.display = 'none';
   }
 
-  // show/hide approve button in footer
+  const refundProofSection = document.getElementById('dRefundProofSection');
+  if (order.refunded && order.refundProof) {
+    document.getElementById('dRefundProofImage').src = order.refundProof;
+    refundProofSection.style.display = '';
+  } else {
+    refundProofSection.style.display = 'none';
+  }
+
+  // prescriptions — only shown when at least one item in the order requires one
+  const rxItems = order.items.filter(i => i.requiresPrescription);
+  const prescriptionSection = document.getElementById('dPrescriptionSection');
+  if (rxItems.length > 0) {
+    document.getElementById('dPrescriptionCount').textContent = rxItems.length;
+    prescriptionSection.style.display = '';
+  } else {
+    prescriptionSection.style.display = 'none';
+  }
+
+  // show/hide approve/reserve button in footer
   const approveBtn = document.getElementById('detailApproveBtn');
-  approveBtn.style.display = order.status === 'pending' ? '' : 'none';
+  const approveBtnLabel = document.getElementById('detailApproveBtnLabel');
+  if (order.status === 'pending') {
+    approveBtn.style.display = '';
+    approveBtnLabel.textContent = 'Approve Order';
+  } else if (order.status === 'confirmed') {
+    approveBtn.style.display = '';
+    approveBtnLabel.textContent = 'Reserve Order';
+  } else {
+    approveBtn.style.display = 'none';
+  }
+  const blocked = order.status === 'confirmed' && !canReserve(order);
+  approveBtn.disabled = blocked;
+  approveBtn.title    = blocked ? 'Waiting for the customer to upload proof of payment' : '';
+  approveBtn.style.opacity = blocked ? '.45' : '';
+  approveBtn.style.cursor  = blocked ? 'not-allowed' : '';
 
   openModal('detailModal');
 }
 
+/* ─── Prescriptions gallery (opened from the details modal) ─── */
+function openPrescriptions(orderId = detailOrderId) {
+  const order = ORDERS.find(o => o.id === orderId);
+  if (!order) return;
+
+  const rxItems = order.items.filter(i => i.requiresPrescription);
+  document.getElementById('presModalSub').textContent =
+    `${rxItems.length} prescription file${rxItems.length > 1 ? 's' : ''} attached to Order ${order.id}`;
+
+  const grid = document.getElementById('prescriptionGrid');
+  grid.innerHTML = '';
+  rxItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'prescription-card';
+    card.onclick = () => openPrescriptionZoom(item.prescriptionImage, item.name);
+    card.innerHTML = `
+      <img src="${item.prescriptionImage}" alt="Prescription for ${item.name}">
+      <div class="prescription-card-label">${item.name}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  openModal('prescriptionModal');
+}
+
+function openPrescriptionZoom(src, name) {
+  document.getElementById('presZoomImage').src = src;
+  document.getElementById('presZoomLabel').textContent = name;
+  openModal('prescriptionZoomModal');
+}
+
+function handleProofUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  const order = ORDERS.find(o => o.id === detailOrderId);
+  if (!file || !order) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    order.proofImage = e.target.result;
+    order.paidOnline = true;
+    renderTable(currentFilter);
+    openDetail(order.id);
+    showToast('Proof of payment uploaded for order ' + order.id + '.');
+  };
+  reader.readAsDataURL(file);
+}
+
 function approveFromDetail() {
+  const order = ORDERS.find(o => o.id === detailOrderId);
+  if (!order) return;
+  if (order.status === 'confirmed' && !canReserve(order)) return;
+  const type = order.status === 'confirmed' ? 'reserve' : 'confirm';
   closeModal('detailModal');
-  setTimeout(() => openConfirm(detailOrderId), 200);
+  setTimeout(() => openConfirm(detailOrderId, type), 200);
 }
 
-function rejectOrder(id) {
+async function rejectOrder(id) {
   const order = ORDERS.find(o => o.id === id);
   if (!order) return;
-  order.status = 'rejected'; // Or 'cancelled'
-  renderTable(currentFilter);
-  showToast('Order ' + id + ' has been rejected.');
+  try {
+    await orderApi('PUT', `/${order.dbId}/cancel`, { reason: 'Rejected by pharmacy' });
+    await loadOrders(true);
+    showToast('Order ' + id + ' has been rejected.');
+  } catch (e) { showToast(e.message); }
 }
 
-function cancelOrder(id) {
+let pendingCancelId = null;
+
+function openCancelModal(id) {
   const order = ORDERS.find(o => o.id === id);
   if (!order) return;
-  order.status = 'cancelled';
-  renderTable(currentFilter);
-  showToast('Order ' + id + ' cancelled.');
+  pendingCancelId = id;
+  document.getElementById('cancelModalSub').textContent = `Cancel Order ${id}?`;
+  document.getElementById('cancelReasonSelect').value = 'Cancelled';
+  document.getElementById('cancelReasonOtherField').style.display = 'none';
+  document.getElementById('cancelReasonOther').value = '';
+  openModal('cancelModal');
+}
+
+function toggleOtherCancelReason() {
+  const sel = document.getElementById('cancelReasonSelect').value;
+  document.getElementById('cancelReasonOtherField').style.display = sel === 'Other' ? '' : 'none';
+}
+
+async function confirmCancelOrder() {
+  const order = ORDERS.find(o => o.id === pendingCancelId);
+  if (!order) return;
+  const selected = document.getElementById('cancelReasonSelect').value;
+  const reason = selected === 'Other'
+    ? (document.getElementById('cancelReasonOther').value.trim() || 'Other')
+    : selected;
+
+  closeModal('cancelModal');
+  try {
+    await orderApi('PUT', `/${order.dbId}/cancel`, { reason });
+    await loadOrders(true);
+    showToast('Order ' + order.id + ' cancelled — ' + reason + '.');
+  } catch (e) { showToast(e.message); }
+}
+
+let pendingRefundId = null;      // order_number shown in the UI (e.g. ORD-20260926-00001)
+let pendingRefundFile = null;    // the File chosen in the modal
+let refundSubmitting = false;
+
+const REFUND_MAX_BYTES = 5 * 1024 * 1024; // keep in sync with AdminOrdersController@refund
+
+function resetRefundModal() {
+  pendingRefundFile = null;
+  refundSubmitting = false;
+  document.getElementById('refundProofInput').value = '';
+  document.getElementById('refundProofPreviewWrap').style.display = 'none';
+  document.getElementById('refundProofPreview').src = '';
+  const err = document.getElementById('refundProofError');
+  err.style.display = 'none';
+  err.textContent = 'Please upload a proof of refund before continuing.';
+  setRefundBusy(false);
+}
+
+function setRefundBusy(busy) {
+  const btn = document.querySelector('#refundModal .btn-sm[onclick="confirmRefund()"]');
+  if (!btn) return;
+  btn.disabled = busy;
+  btn.textContent = busy ? 'Processing…' : 'Confirm Refund';
+}
+
+function showRefundError(msg) {
+  const err = document.getElementById('refundProofError');
+  err.textContent = msg;
+  err.style.display = '';
+}
+
+function openRefundModal(id) {
+  const order = ORDERS.find(o => o.id === id);
+  if (!order) return;
+  if (order.refunded) { showToast('This order has already been refunded.'); return; }
+  pendingRefundId = id;
+  resetRefundModal();
+  document.getElementById('refundModalSub').textContent =
+    `Refund Order ${id} (${fmt(orderTotal(order))})?`;
+  openModal('refundModal');
+}
+
+function handleRefundProofSelect(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) {
+    pendingRefundFile = null;
+    document.getElementById('refundProofPreviewWrap').style.display = 'none';
+    return;
+  }
+  if (!file.type.startsWith('image/')) {
+    pendingRefundFile = null;
+    event.target.value = '';
+    document.getElementById('refundProofPreviewWrap').style.display = 'none';
+    showRefundError('Please choose an image file.');
+    return;
+  }
+  if (file.size > REFUND_MAX_BYTES) {
+    pendingRefundFile = null;
+    event.target.value = '';
+    document.getElementById('refundProofPreviewWrap').style.display = 'none';
+    showRefundError('Image is too large (max 5 MB).');
+    return;
+  }
+  pendingRefundFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('refundProofPreview').src = e.target.result;
+    document.getElementById('refundProofPreviewWrap').style.display = '';
+    document.getElementById('refundProofError').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function confirmRefund() {
+  if (refundSubmitting) return;
+  const order = ORDERS.find(o => o.id === pendingRefundId);
+  if (!order) return;
+
+  if (!pendingRefundFile) {
+    showRefundError('Please upload a proof of refund before continuing.');
+    return;
+  }
+
+  refundSubmitting = true;
+  setRefundBusy(true);
+
+  try {
+    const form = new FormData();
+    form.append('proof_of_refund', pendingRefundFile);
+    // POST (not PUT): PHP doesn't parse multipart bodies on PUT requests.
+    await orderApi('POST', `/${order.dbId}/refund`, form);
+
+    const refundedId = pendingRefundId;
+    closeModal('refundModal');
+    resetRefundModal();
+    await loadOrders(true);   // pulls refunded + refundProof from the server
+    showToast('Refund processed for order ' + refundedId + '.');
+  } catch (e) {
+    refundSubmitting = false;
+    setRefundBusy(false);
+    showRefundError(e.message);
+  }
 }
 
 /* ─── Confirm modal ─── */
-function openConfirm(id) {
+let pendingActionType = null; // 'confirm' (pending → confirmed) or 'reserve' (confirmed → for pick up)
+
+function openConfirm(id, type) {
+  const guard = ORDERS.find(o => o.id === id);
+  if (type === 'reserve' && guard && !canReserve(guard)) return;
   pendingApproveId = id;
-  document.getElementById('confirmTitle').textContent = `Approve Order ${id}?`;
+  pendingActionType = type;
   const order = ORDERS.find(o => o.id === id);
-  document.getElementById('confirmSub').textContent =
-    `This will generate a receipt for ${order.customer} and send a payment link.`;
+  const headerEl = document.getElementById('confirmModalHeader');
+  const titleEl  = document.getElementById('confirmTitle');
+  const subEl    = document.getElementById('confirmSub');
+  const btnEl    = document.getElementById('confirmApproveBtn');
+
+  if (type === 'reserve') {
+    headerEl.textContent = 'Confirm Reservation';
+    titleEl.textContent  = `Reserve Order ${id}?`;
+    subEl.textContent    = `This will generate a receipt for ${order.customer} and send a payment link.`;
+    btnEl.textContent    = 'Reserve & Generate Receipt';
+  } else {
+    headerEl.textContent = 'Confirm Approval';
+    titleEl.textContent  = `Approve Order ${id}?`;
+    subEl.textContent    = `This will confirm the order for ${order.customer} and prepare it for reservation.`;
+    btnEl.textContent    = 'Approve';
+  }
   openModal('confirmModal');
 }
 
-function doApprove() {
+async function doApprove() {
   const order = ORDERS.find(o => o.id === pendingApproveId);
   if (!order) return;
-  order.status = 'approved';
+  const isReserve = pendingActionType === 'reserve';
   closeModal('confirmModal');
-  renderTable(currentFilter);
-  showToast('Order ' + pendingApproveId + ' approved!');
-  setTimeout(() => openReceipt(pendingApproveId), 400);
+
+  try {
+    await orderApi('PUT', `/${order.dbId}/${isReserve ? 'ready' : 'confirm'}`);
+    await loadOrders(true);
+    if (isReserve) {
+      showToast('Order ' + order.id + ' reserved — now for pick up!');
+      setTimeout(() => openReceipt(order.id), 400);
+    } else {
+      showToast('Order ' + order.id + ' confirmed!');
+    }
+  } catch (e) { showToast(e.message); }
 }
 
 /* ─── Receipt modal ─── */
@@ -1763,7 +2262,7 @@ function openReceipt(id) {
   document.getElementById('rCustomer').textContent = order.customer;
   document.getElementById('rOrderId').textContent   = order.id;
   document.getElementById('rDate').textContent      = order.date;
-  document.getElementById('rType').textContent      = order.type;
+  document.getElementById('rMethod').textContent    = paymentLabel(order);
 
   const tbody = document.getElementById('rItemsBody');
   tbody.innerHTML = '';
@@ -1780,10 +2279,28 @@ function openReceipt(id) {
 
   document.getElementById('rTotal').textContent = fmt(orderTotal(order));
 
-  // proof of payment — only while awaiting approval/payment, never once completed
+  // prescriptions — only shown when at least one item in the order requires one
+  const rxItems = order.items.filter(i => i.requiresPrescription);
+  const rPrescriptionSection = document.getElementById('rPrescriptionSection');
+  if (rxItems.length > 0) {
+    document.getElementById('rPrescriptionCount').textContent = rxItems.length;
+    rPrescriptionSection.style.display = '';
+  } else {
+    rPrescriptionSection.style.display = 'none';
+  }
+
+  // proof of payment — online app orders only, for every status (incl. completed)
   const rProofSection = document.getElementById('rProofSection');
-  if (order.proofImage && order.status !== 'completed') {
+  const rProofImgWrap = document.getElementById('rProofImgWrap');
+  const rProofNote    = document.getElementById('rProofNote');
+  if (order.proofImage) {
     document.getElementById('rProofImage').src = order.proofImage;
+    rProofImgWrap.style.display = '';
+    rProofNote.textContent = 'Customer already paid via online app.';
+    rProofSection.style.display = '';
+  } else if (order.payment === 'online') {
+    rProofImgWrap.style.display = 'none';
+    rProofNote.textContent = 'No proof of payment uploaded.';
     rProofSection.style.display = '';
   } else {
     rProofSection.style.display = 'none';
@@ -1812,7 +2329,7 @@ function openReceipt(id) {
   openModal('receiptModal');
 }
 
-function submitReceipt() {
+async function submitReceipt() {
   const order = ORDERS.find(o => o.id === currentReceiptId);
   if (!order) return;
   const paymentValue = parseFloat(document.getElementById('paymentAmountInput').value);
@@ -1822,36 +2339,44 @@ function submitReceipt() {
   }
 
   const total = orderTotal(order);
-  order.status = 'completed';
-  order.paymentAmount = paymentValue;
-  order.change = Math.max(0, paymentValue - total);
+  try {
+    await orderApi('PUT', `/${order.dbId}/complete`);
+    await loadOrders(true);
+  } catch (e) {
+    // e.g. the order expired while the receipt was open
+    showToast(e.message);
+    closeModal('receiptModal');
+    await loadOrders(true);
+    return;
+  }
+
+  const done = ORDERS.find(o => o.id === currentReceiptId);
+  if (!done) return;
+  done.paymentAmount = paymentValue;
+  done.change = Math.max(0, paymentValue - total);
 
   document.getElementById('paymentInputGroup').style.display = 'none';
   const receiptStatus = document.getElementById('receiptStatus');
   receiptStatus.style.display = '';
   receiptStatus.textContent = 'Transaction completed.';
+  document.getElementById('rPayment').textContent = fmt(done.paymentAmount);
+  document.getElementById('rChangeRow').style.display = done.change > 0 ? '' : 'none';
+  document.getElementById('rChange').textContent = fmt(done.change);
 
-  // proof of payment — hide now that the order is completed
-  document.getElementById('rProofSection').style.display = 'none';
-
-  document.getElementById('rPayment').textContent = fmt(order.paymentAmount);
-  document.getElementById('rChangeRow').style.display = order.change > 0 ? '' : 'none';
-  document.getElementById('rChange').textContent = fmt(order.change);
-
-  updateReceiptFooter(order);
+  updateReceiptFooter(done);
   renderTable('completed');
   showToast('Transaction completed.');
 }
 
-function deleteCurrentReceiptOrder() {
-  const index = ORDERS.findIndex(o => o.id === currentReceiptId);
-  if (index === -1) return;
-
-  const deleted = ORDERS[index];
-  ORDERS.splice(index, 1);
-  closeModal('receiptModal');
-  renderTable(currentFilter);
-  showToast(`Order ${deleted.id} deleted.`);
+async function deleteCurrentReceiptOrder(id = currentReceiptId) {
+  const order = ORDERS.find(o => o.id === id);
+  if (!order) return;
+  try {
+    await orderApi('DELETE', `/${order.dbId}`);
+    closeModal('receiptModal');
+    await loadOrders(true);
+    showToast(`Order ${order.id} deleted.`);
+  } catch (e) { showToast(e.message); }
 }
 
 function printReceipt() {
@@ -1866,17 +2391,18 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function showToast(msg) {
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2800);
 }
 
 /* ─── Search ─── */
-document.getElementById('searchInput').addEventListener('input', function() {
-  const q = this.value.toLowerCase();
+function applySearch() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
   document.querySelectorAll('#ordersBody tr').forEach(tr => {
     tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
-});
+}
+document.getElementById('searchInput').addEventListener('input', applySearch);
 
 /* ─── Close modals on backdrop click ─── */
 document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
@@ -1886,7 +2412,9 @@ document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
 });
 
 /* ─── Init ─── */
-renderTable('pending');
+renderTable('pending');            // paint the empty shell immediately
+loadOrders();                     // fetch (and sweep expired pickups)
+setInterval(() => loadOrders(true), ORDERS_POLL_MS);
 </script>
 </body>
 </html>

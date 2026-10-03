@@ -54,6 +54,92 @@ class AdminInventoryController extends Controller
         ));
     }
 
+    /**
+     * Backs the "All Medicines" card search box. Matches on product name,
+     * generic name, category name and brand name, and returns just the
+     * matching product ids — the blade already has every card rendered, so
+     * the JS only needs to know which cards to show/hide.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $query = trim((string) $request->query('q', ''));
+
+        $ids = Product::query()
+            ->when($query !== '', function ($builder) use ($query) {
+                $builder->where(function ($sub) use ($query) {
+                    $sub->where('name', 'like', "%{$query}%")
+                        ->orWhere('generic_name', 'like', "%{$query}%")
+                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$query}%"))
+                        ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$query}%"));
+                });
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->pluck('id');
+
+        return response()->json(['ids' => $ids]);
+    }
+
+    /**
+     * Backs the "Sort by" chip on the inventory screen. Returns every
+     * product id in the requested order — the blade already has every card
+     * rendered, so the JS only needs to know what order to re-append them
+     * in (same "just hand back ids" shape as search() above).
+     *
+     * Supported $request->query('by') values: "alphabetical", "date",
+     * "category", "brand". Anything else falls back to the default listing
+     * order (sort_order, then name) used by index().
+     */
+    public function sort(Request $request): JsonResponse
+    {
+        $by = $request->query('by', 'alphabetical');
+
+        $query = Product::query();
+
+        match ($by) {
+            'alphabetical' => $query->orderBy('name'),
+            'date'         => $query->orderByDesc('created_at'),
+            'category'     => $query->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+                                     ->orderByRaw('categories.name IS NULL')
+                                     ->orderBy('categories.name')
+                                     ->orderBy('products.name')
+                                     ->select('products.*'),
+            'brand'        => $query->leftJoin('brands', 'brands.id', '=', 'products.brand_id')
+                                     ->orderByRaw('brands.name IS NULL')
+                                     ->orderBy('brands.name')
+                                     ->orderBy('products.name')
+                                     ->select('products.*'),
+            default        => $query->orderBy('sort_order')->orderBy('name'),
+        };
+
+        $ids = $query->pluck('products.id');
+
+        return response()->json(['ids' => $ids, 'by' => $by]);
+    }
+
+    /**
+     * Full details for the "view product" modal that opens when a card is
+     * clicked. Returns everything the modal needs in one shot (including
+     * fields like product_usage and stock quantity that aren't already
+     * sitting in the card's data-* attributes) so the front end doesn't have
+     * to guess or re-derive anything.
+     */
+    public function show(Product $product): JsonResponse
+    {
+        $product->load([
+            'category',
+            'brand',
+            'section',
+            'stocks' => function ($query) {
+                $query->where('is_active', true)->orderBy('id');
+            },
+        ]);
+
+        return response()->json([
+            'product' => $this->formatProductDetails($product),
+        ]);
+    }
+
     // ── Create ──────────────────────────────────────────────────────────────
 
     public function store(Request $request)
@@ -217,6 +303,287 @@ class AdminInventoryController extends Controller
 
         return redirect()->route('admin.inventory')
             ->with('status', "\"{$name}\" removed from inventory.");
+    }
+
+    // ── Categories ──────────────────────────────────────────────────────────
+
+    /**
+     * Create a new category from the inventory screen's "Add Category" modal.
+     * New categories are appended to the end of the list — the modal doesn't
+     * expose a sort_order field, so there's nothing for the admin to conflict with.
+     */
+    public function storeCategory(Request $request)
+    {
+        $data = $this->validatedCategoryData($request);
+
+        $data['is_active']  = $request->boolean('is_active', true);
+        $data['sort_order'] = (int) Category::max('sort_order') + 1;
+
+        $category = Category::create($data);
+
+        $message = "Category \"{$category->name}\" added successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => $message,
+                'category' => $this->formatCategory($category),
+            ], 201);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Update an existing category.
+     */
+    public function updateCategory(Request $request, Category $category)
+    {
+        $data = $this->validatedCategoryData($request);
+
+        $data['is_active'] = $request->boolean('is_active', (bool) $category->is_active);
+
+        $category->update($data);
+
+        $message = "Category \"{$category->name}\" updated successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => $message,
+                'category' => $this->formatCategory($category),
+            ]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Delete a category. Products already assigned to it (via category_id)
+     * are left untouched — they'll just show as "Uncategorized" until
+     * reassigned, same convention as removing a brand.
+     */
+    public function destroyCategory(Request $request, Category $category)
+    {
+        $name = $category->name;
+        $id   = $category->id;
+
+        $category->delete();
+
+        $message = "Category \"{$name}\" deleted successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'id'      => $id,
+            ]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Shared validation for storeCategory() and updateCategory(). icon_class,
+     * icon_color and bg_color are NOT NULL columns but the modal allows an
+     * empty icon_class, so they stay nullable here and just default to ''
+     * when the field is left blank — that still satisfies the NOT NULL
+     * constraint (empty string, not null).
+     */
+    private function validatedCategoryData(Request $request): array
+    {
+        $validated = $request->validate([
+            'name'       => ['required', 'string', 'max:255'],
+            'icon_class' => ['nullable', 'string', 'max:255'],
+            'icon_color' => ['nullable', 'string', 'max:20'],
+            'bg_color'   => ['nullable', 'string', 'max:20'],
+            'is_active'  => ['nullable', 'boolean'],
+        ]);
+
+        $validated['icon_class'] = $validated['icon_class'] ?? '';
+        $validated['icon_color'] = $validated['icon_color'] ?? '';
+        $validated['bg_color']   = $validated['bg_color'] ?? '';
+
+        return $validated;
+    }
+
+    /**
+     * Shape a Category model the way the inventory blade's Categories modal
+     * JS expects.
+     */
+    private function formatCategory(Category $category): array
+    {
+        return [
+            'id'         => $category->id,
+            'name'       => $category->name,
+            'icon_class' => $category->icon_class,
+            'icon_color' => $category->icon_color,
+            'bg_color'   => $category->bg_color,
+            'status'     => $category->is_active ? 'Active' : 'Inactive',
+        ];
+    }
+
+    // ── Brands ──────────────────────────────────────────────────────────────
+
+    /**
+     * Create a new brand from the inventory screen's "Add Brand" modal. New
+     * brands are appended to the end of the list — the modal doesn't expose
+     * a sort_order field, so there's nothing for the admin to conflict with.
+     */
+    public function storeBrand(Request $request)
+    {
+        $data = $this->validatedBrandData($request);
+
+        if ($request->hasFile('ticker_image')) {
+            $data['ticker_image'] = 'storage/' . $request->file('ticker_image')->store('brand_logos', 'public');
+        }
+
+        if ($request->hasFile('featured_image')) {
+            $data['featured_image'] = 'storage/' . $request->file('featured_image')->store('brand_logos', 'public');
+        }
+
+        $data['show_in_ticker']   = $request->boolean('show_in_ticker');
+        $data['show_in_featured'] = $request->boolean('show_in_featured');
+        $data['is_active']        = $request->boolean('is_active', true);
+        $data['sort_order']       = (int) Brand::max('sort_order') + 1;
+
+        $brand = Brand::create($data);
+
+        $message = "Brand \"{$brand->name}\" added successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'brand'   => $this->formatBrand($brand),
+            ], 201);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Update an existing brand. Images are replaced only when a new file is
+     * uploaded — otherwise the existing ticker/featured image is left alone,
+     * same convention as product images in update() above.
+     */
+    public function updateBrand(Request $request, Brand $brand)
+    {
+        $data = $this->validatedBrandData($request);
+
+        if ($request->hasFile('ticker_image')) {
+            $this->deleteImage($brand->ticker_image);
+            $data['ticker_image'] = 'storage/' . $request->file('ticker_image')->store('brand_logos', 'public');
+        }
+
+        if ($request->hasFile('featured_image')) {
+            $this->deleteImage($brand->featured_image);
+            $data['featured_image'] = 'storage/' . $request->file('featured_image')->store('brand_logos', 'public');
+        }
+
+        $data['show_in_ticker']   = $request->boolean('show_in_ticker', (bool) $brand->show_in_ticker);
+        $data['show_in_featured'] = $request->boolean('show_in_featured', (bool) $brand->show_in_featured);
+        $data['is_active']        = $request->boolean('is_active', (bool) $brand->is_active);
+
+        $brand->update($data);
+
+        $message = "Brand \"{$brand->name}\" updated successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'brand'   => $this->formatBrand($brand),
+            ]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Delete a brand. Products already assigned to it (via brand_id) are
+     * left untouched — they'll just show no brand until reassigned.
+     */
+    public function destroyBrand(Request $request, Brand $brand)
+    {
+        $name = $brand->name;
+        $id   = $brand->id;
+
+        $this->deleteImage($brand->ticker_image);
+        $this->deleteImage($brand->featured_image);
+
+        $brand->delete();
+
+        $message = "Brand \"{$name}\" deleted successfully.";
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => $message,
+                'id'      => $id,
+            ]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
+    /**
+     * Shared validation for storeBrand() and updateBrand(). Images and the
+     * boolean flags are resolved separately by the caller.
+     */
+    private function validatedBrandData(Request $request): array
+    {
+        $validated = $request->validate([
+            'name'             => ['required', 'string', 'max:255'],
+            'ticker_image'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'featured_image'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'featured_color'   => ['nullable', 'string', 'max:20'],
+            'show_in_ticker'   => ['nullable', 'boolean'],
+            'show_in_featured' => ['nullable', 'boolean'],
+            'is_active'        => ['nullable', 'boolean'],
+        ]);
+
+        unset($validated['ticker_image'], $validated['featured_image']);
+
+        return $validated;
+    }
+
+    /**
+     * Shape a Brand model the way the inventory blade's Brands modal JS
+     * expects.
+     */
+    private function formatBrand(Brand $brand): array
+    {
+        return [
+            'id'               => $brand->id,
+            'name'             => $brand->name,
+            'ticker_image'     => $brand->ticker_image ? asset($brand->ticker_image) : null,
+            'featured_image'   => $brand->featured_image ? asset($brand->featured_image) : null,
+            'featured_color'   => $brand->featured_color,
+            'show_in_ticker'   => (bool) $brand->show_in_ticker,
+            'show_in_featured' => (bool) $brand->show_in_featured,
+            'status'           => $brand->is_active ? 'Active' : 'Inactive',
+        ];
+    }
+
+    /**
+     * Everything formatProduct() has, plus the extra fields the read-only
+     * details modal shows that the inventory cards don't already carry
+     * (usage/directions, stock on hand, category & section display info,
+     * and pre-formatted price/discount strings).
+     */
+    private function formatProductDetails(Product $product): array
+    {
+        $stock = $product->stocks->first();
+
+        return array_merge($this->formatProduct($product), [
+            'product_usage'       => $product->product_usage,
+            'category_color'      => $product->category->icon_color ?? '#6b7280',
+            'category_bg'         => $product->category->bg_color ?? '#f3f4f6',
+            'section_id'          => $product->section_id,
+            'section_label'       => $product->section->label ?? null,
+            'stock_quantity'      => $stock->quantity ?? 0,
+            'formatted_price'     => $product->formattedPrice(),
+            'formatted_old_price' => $product->formattedOldPrice(),
+            'has_discount'        => $product->hasDiscount(),
+            'discount_percent'    => $product->discountPercent(),
+            'has_dimensions'      => $product->hasDimensions(),
+            'is_active'           => (bool) $product->is_active,
+        ]);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

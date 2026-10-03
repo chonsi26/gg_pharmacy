@@ -104,4 +104,25 @@ class Product extends Model
     {
         return ! is_null($this->width) || ! is_null($this->height) || ! is_null($this->depth);
     }
+
+    /**
+     * Total sellable quantity across this product's active, unexpired stock
+     * batches. This is what's actually available to order — not just the
+     * raw sum of every stock row regardless of status.
+     */
+    public function availableStock(): int
+    {
+        return (int) $this->stocks()
+            ->where('is_active', true)
+            ->where('quantity', '>', 0)
+            ->where(function ($q) {
+                $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now());
+            })
+            ->sum('quantity');
+    }
+
+    public function isInStock(): bool
+    {
+        return $this->availableStock() > 0;
+    }
 }

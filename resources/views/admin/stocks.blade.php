@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ $siteName }} — Stocks</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -931,6 +932,75 @@ tbody tr:last-child td { border-bottom: none; }
   [data-theme="dark"] .form-group input:focus {
     border-color: #a5b4fc;
   }
+
+  /* ── Wider modal variant (Products modal) ── */
+  .modal.modal-lg { max-width: 560px; }
+
+  /* ── Back link inside a stacked modal ── */
+  .modal-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0;
+    margin-bottom: 10px;
+  }
+  .modal-back:hover { color: var(--text); }
+  .modal-back svg { width: 14px; height: 14px; }
+
+  /* ── Products modal list ── */
+  .pick-list { max-height: 380px; overflow-y: auto; margin: 0 -4px; }
+  .pick-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border-radius: 9px;
+    transition: background .12s;
+  }
+  .pick-item + .pick-item { margin-top: 2px; }
+  .pick-item.clickable { cursor: pointer; }
+  .pick-item.clickable:hover { background: var(--bg); }
+  .pick-thumb {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .pick-thumb.placeholder {
+    display: flex; align-items: center; justify-content: center;
+    color: var(--subtle);
+    font-size: 14px; font-weight: 700;
+  }
+  .pick-info { flex: 1; min-width: 0; }
+  .pick-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .pick-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .pick-chevron { color: var(--subtle); flex-shrink: 0; }
+  .pick-chevron svg { width: 16px; height: 16px; }
+  .pick-empty { text-align: center; padding: 30px 10px; color: var(--muted); font-size: 13px; }
+
+  /* ── Row action buttons in the batch table ── */
+  .row-actions { display: flex; gap: 6px; white-space: nowrap; }
+  .row-action-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: 1.5px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: border-color .15s, color .15s;
+  }
+  .row-action-btn svg { width: 14px; height: 14px; }
+  .row-action-btn:hover { border-color: var(--red); color: var(--red); }
+  .row-action-btn.edit:hover { border-color: var(--blue); color: var(--blue); }
 </style>
 </head>
 <body>
@@ -940,22 +1010,27 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 <div class="overlay" id="overlay"></div>
 
-<!-- Add Stock Modal -->
+<!-- Add / Edit Stock Modal -->
 <div class="modal-backdrop" id="addStockModal">
   <div class="modal">
     <button class="modal-close" id="closeModal" title="Close">&times;</button>
-    <h3>Add Medicine Stock</h3>
-    <div class="modal-sub">Fill in the details to log a new batch entry.</div>
+    <h3 id="stockModalTitle">Add Medicine Stock</h3>
+    <div class="modal-sub" id="stockModalSub">Fill in the details to log a new batch entry.</div>
 
-    <div class="stock-num-badge">
+    <div class="stock-num-badge" id="stockNoBadge" style="display:none;">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
       Stock No: <span id="generatedStockNo">—</span>
     </div>
+
+    <input type="hidden" id="modalStockId" value="">
 
     <div class="form-group">
       <label>Medicine *</label>
       <select id="modalMedicine">
         <option value="">— Select medicine —</option>
+        @foreach($products as $product)
+          <option value="{{ $product->id }}">{{ $product->name }}</option>
+        @endforeach
       </select>
     </div>
     <div class="form-group">
@@ -965,7 +1040,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="form-row">
       <div class="form-group">
         <label>Quantity (units) *</label>
-        <input type="number" id="modalQty" placeholder="e.g. 200" min="1">
+        <input type="number" id="modalQty" placeholder="e.g. 200" min="0">
       </div>
       <div class="form-group">
         <label>Unit Cost (₱)</label>
@@ -978,14 +1053,50 @@ tbody tr:last-child td { border-bottom: none; }
         <input type="date" id="modalMfgDate">
       </div>
       <div class="form-group">
-        <label>Expiry Date *</label>
+        <label>Expiry Date</label>
         <input type="date" id="modalExpiry">
       </div>
     </div>
+    <div class="form-group">
+      <label>Status</label>
+      <select id="modalStatus">
+        <option value="1">Active</option>
+        <option value="0">Inactive</option>
+      </select>
+    </div>
+    <div class="modal-sub" id="modalStatusHint" style="display:none;color:#e07b00;margin:-6px 0 0;"></div>
 
     <div class="modal-actions">
       <button class="btn-sm" id="cancelModal">Cancel</button>
       <button class="btn-sm primary" id="confirmAddStock">Add Stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Products Modal (status overview) -->
+<div class="modal-backdrop" id="productsModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeProductsModal" title="Close">&times;</button>
+    <h3>Products</h3>
+    <div class="modal-sub">Green means a product has an ongoing active batch. Tap an Out of Stock product to activate one of its available batches.</div>
+    <div class="pick-list" id="productsList">
+      <div class="pick-empty">Loading products…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Available Stocks Modal (per out-of-stock product) -->
+<div class="modal-backdrop" id="availableStocksModal">
+  <div class="modal modal-lg">
+    <button class="modal-close" id="closeAvailableStocksModal" title="Close">&times;</button>
+    <button class="modal-back" id="backToProducts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to products
+    </button>
+    <h3 id="availableStocksTitle">Available Batches</h3>
+    <div class="modal-sub">Sorted by longest time left before expiry. Tap a batch to make it the active stock.</div>
+    <div class="pick-list" id="availableStocksList">
+      <div class="pick-empty">Loading batches…</div>
     </div>
   </div>
 </div>
@@ -1124,12 +1235,16 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head">
       <h3>Batch Inventory</h3>
       <div class="filter-row">
+        <button class="btn-sm" id="openProductsModal" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Products
+        </button>
         <input type="text" id="searchBatch" placeholder="Search medicine or stock no…">
         <select id="filterStatus">
-          <option value="">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Expiring">Expiring Soon</option>
+          <option value="Active" selected>Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Out of Stock">Out of Stock</option>
           <option value="Expired">Expired</option>
+          <option value="">All Stocks</option>
         </select>
       </div>
     </div>
@@ -1146,6 +1261,7 @@ tbody tr:last-child td { border-bottom: none; }
             <th>Expiry Date</th>
             <th>Status</th>
             <th>Date Added</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="batchTableBody"></tbody>
@@ -1191,61 +1307,68 @@ overlay.addEventListener('click', () => {
 });
 </script>
 <script>
-// ── Medicines list ─────────────────────────────────────────────────────────
-const MEDICINES = [
-  "Amoxicillin 500mg","Paracetamol 500mg","Ibuprofen 400mg",
-  "Cetirizine 10mg","Metformin 500mg","Amlodipine 5mg",
-  "Losartan 50mg","Omeprazole 20mg","Salbutamol Inhaler",
-  "Vitamin C 500mg","Mefenamic Acid 500mg","Azithromycin 500mg",
-  "Doxycycline 100mg","Clonazepam 0.5mg","Atorvastatin 20mg",
-];
+// ── Server data ──────────────────────────────────────────────────────────
+const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+const ROUTES = {
+  store: "{{ route('admin.stocks.store') }}",
+  update: id => `{{ url('/admin/stocks') }}/${id}`,
+  destroy: id => `{{ url('/admin/stocks') }}/${id}`,
+  activate: id => `{{ url('/admin/stocks') }}/${id}/activate`,
+  products: "{{ route('admin.stocks.products') }}",
+  availableStocks: productId => `{{ url('/admin/stocks/products') }}/${productId}/available`,
+};
 
-// ── Seed batches ───────────────────────────────────────────────────────────
-let batches = [
-  { stockNo:"STK-20250101-001", medicine:"Paracetamol 500mg",  supplier:"MedSource PH",    qty:500, cost:2.50, mfgDate:"2024-12-01", expiryDate:"2027-12-01", added:"2025-01-01" },
-  { stockNo:"STK-20250110-002", medicine:"Amoxicillin 500mg",  supplier:"PharmaDist Inc.", qty:300, cost:8.75, mfgDate:"2024-11-15", expiryDate:"2026-11-15", added:"2025-01-10" },
-  { stockNo:"STK-20250115-003", medicine:"Ibuprofen 400mg",    supplier:"MedSource PH",    qty:200, cost:5.00, mfgDate:"2024-10-01", expiryDate:"2025-04-01", added:"2025-01-15" },
-  { stockNo:"STK-20250120-004", medicine:"Vitamin C 500mg",    supplier:"RxTrade Cebu",    qty:400, cost:3.20, mfgDate:"2025-01-01", expiryDate:"2027-01-01", added:"2025-01-20" },
-  { stockNo:"STK-20250201-005", medicine:"Metformin 500mg",    supplier:"PharmaDist Inc.", qty:150, cost:6.00, mfgDate:"2024-09-01", expiryDate:"2025-05-15", added:"2025-02-01" },
-  { stockNo:"STK-20250210-006", medicine:"Cetirizine 10mg",    supplier:"MedSource PH",    qty:250, cost:4.50, mfgDate:"2025-01-15", expiryDate:"2028-01-15", added:"2025-02-10" },
-  { stockNo:"STK-20250220-007", medicine:"Omeprazole 20mg",    supplier:"RxTrade Cebu",    qty:180, cost:7.00, mfgDate:"2024-08-01", expiryDate:"2025-03-31", added:"2025-02-20" },
-];
-let batchCounter = batches.length;
+// Seeded from the server. Every batch already carries a single computed
+// `status`: Active, Inactive, Out of Stock, or Expired.
+let batches = @json($stocks);
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function generateStockNo() {
-  const d = new Date().toISOString().slice(0,10).replace(/-/g,"");
-  batchCounter++;
-  return `STK-${d}-${String(batchCounter).padStart(3,"0")}`;
-}
-
-function getStatus(expiryDate) {
-  const diff = (new Date(expiryDate) - new Date()) / 86400000;
-  if (diff < 0)  return "Expired";
-  if (diff < 90) return "Expiring";
-  return "Active";
-}
-
 function statusPill(s) {
-  const cls = { Active:"ok", Expiring:"warning", Expired:"danger" };
-  return `<span class="pill ${cls[s]}">${s==="Expiring"?"Expiring Soon":s}</span>`;
+  const cls = { "Active": "ok", "Inactive": "blue", "Out of Stock": "warning", "Expired": "danger" };
+  return `<span class="pill ${cls[s] || "blue"}">${s}</span>`;
 }
 
 function fmtDate(d) {
   if (!d) return "—";
-  return new Date(d).toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"});
+  return new Date(d + "T00:00:00").toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" });
 }
 
-// ── Render ─────────────────────────────────────────────────────────────────
+function fmtMoney(v) {
+  return (v || v === 0) ? "₱" + Number(v).toFixed(2) : "—";
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  t.classList.add("on");
+  setTimeout(() => t.classList.remove("on"), 3000);
+}
+
+async function apiFetch(url, options = {}) {
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "X-CSRF-TOKEN": CSRF_TOKEN,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.message || "Something went wrong.");
+  }
+  return data;
+}
+
+// ── Render batch table ───────────────────────────────────────────────────
 function renderTable() {
   const search = document.getElementById("searchBatch").value.toLowerCase();
   const filter = document.getElementById("filterStatus").value;
-  const today  = new Date();
 
   const rows = batches.filter(b => {
-    const s = getStatus(b.expiryDate);
-    const matchS = b.medicine.toLowerCase().includes(search) || b.stockNo.toLowerCase().includes(search);
-    const matchF = !filter || s === filter;
+    const matchS = b.medicine.toLowerCase().includes(search) || b.stock_no.toLowerCase().includes(search);
+    const matchF = !filter || b.status === filter;
     return matchS && matchF;
   });
 
@@ -1258,87 +1381,245 @@ function renderTable() {
   } else {
     empty.style.display = "none";
     tbody.innerHTML = rows.map(b => {
-      const s = getStatus(b.expiryDate);
-      const qc = b.qty <= 50 ? "qty-badge qty-low" : "qty-badge qty-ok";
+      const qc = b.quantity <= 50 ? "qty-badge qty-low" : "qty-badge qty-ok";
       return `<tr>
-        <td><span class="stock-num">${b.stockNo}</span></td>
+        <td><span class="stock-num">${b.stock_no}</span></td>
         <td style="font-weight:600;">${b.medicine}</td>
-        <td style="font-size:12px;color:var(--muted);">${b.supplier||"—"}</td>
-        <td><span class="${qc}">${b.qty.toLocaleString()}</span></td>
-        <td style="font-size:12px;color:var(--muted);">${b.cost?"₱"+Number(b.cost).toFixed(2):"—"}</td>
-        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.mfgDate)}</td>
-        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.expiryDate)}</td>
-        <td>${statusPill(s)}</td>
+        <td style="font-size:12px;color:var(--muted);">${b.supplier || "—"}</td>
+        <td><span class="${qc}">${b.quantity.toLocaleString()}</span></td>
+        <td style="font-size:12px;color:var(--muted);">${fmtMoney(b.unit_cost)}</td>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.manufacturing_date)}</td>
+        <td style="font-size:12px;color:var(--muted);">${fmtDate(b.expiry_date)}</td>
+        <td>${statusPill(b.status)}</td>
         <td style="font-size:12px;color:var(--muted);">${fmtDate(b.added)}</td>
+        <td>
+          <div class="row-actions">
+            <button class="row-action-btn edit" title="Edit" onclick="openEditStock(${b.id})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="row-action-btn" title="Delete" onclick="deleteStock(${b.id}, '${b.stock_no}')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+            </button>
+          </div>
+        </td>
       </tr>`;
     }).join("");
   }
 
   // Summary
-  const totalUnits = batches.reduce((s,b)=>s+b.qty,0);
-  const uniqueMeds = new Set(batches.map(b=>b.medicine)).size;
-  const expiring   = batches.filter(b=>{const d=(new Date(b.expiryDate)-today)/86400000;return d>=0&&d<90;}).length;
-  document.getElementById("sumBatches").textContent  = batches.length;
-  document.getElementById("sumUnits").textContent    = totalUnits.toLocaleString();
-  document.getElementById("sumMeds").textContent     = uniqueMeds;
+  const totalUnits = batches.reduce((s, b) => s + b.quantity, 0);
+  const uniqueMeds = new Set(batches.map(b => b.medicine)).size;
+  const expiring = batches.filter(b => {
+    if (!b.expiry_date) return false;
+    const d = (new Date(b.expiry_date) - new Date()) / 86400000;
+    return d >= 0 && d < 90;
+  }).length;
+  document.getElementById("sumBatches").textContent = batches.length;
+  document.getElementById("sumUnits").textContent = totalUnits.toLocaleString();
+  document.getElementById("sumMeds").textContent = uniqueMeds;
   document.getElementById("sumExpiring").textContent = expiring;
 }
 
-// ── Modal ──────────────────────────────────────────────────────────────────
-(function populateMeds() {
-  const sel = document.getElementById("modalMedicine");
-  MEDICINES.forEach(m => { const o=document.createElement("option"); o.value=o.textContent=m; sel.appendChild(o); });
-})();
+// ── Add / Edit Stock Modal ─────────────────────────────────────────────────
+let stockModalMode = "add"; // "add" | "edit"
 
-function openModal() {
-  document.getElementById("generatedStockNo").textContent = generateStockNo();
-  ["modalMedicine","modalSupplier","modalQty","modalCost","modalMfgDate","modalExpiry"]
+function openStockAddModal() {
+  stockModalMode = "add";
+  document.getElementById("stockModalTitle").textContent = "Add Medicine Stock";
+  document.getElementById("stockModalSub").textContent = "Fill in the details to log a new batch entry.";
+  document.getElementById("confirmAddStock").textContent = "Add Stock";
+  document.getElementById("stockNoBadge").style.display = "none";
+  document.getElementById("modalStockId").value = "";
+  ["modalMedicine", "modalSupplier", "modalQty", "modalCost", "modalMfgDate", "modalExpiry"]
     .forEach(id => document.getElementById(id).value = "");
+  document.getElementById("modalStatus").value = "1";
+  document.getElementById("modalStatusHint").style.display = "none";
+  document.getElementById("addStockModal").classList.add("open");
+}
+
+function openEditStock(id) {
+  const b = batches.find(x => x.id === id);
+  if (!b) return;
+  stockModalMode = "edit";
+  document.getElementById("stockModalTitle").textContent = "Edit Medicine Stock";
+  document.getElementById("stockModalSub").textContent = "Update this batch's details.";
+  document.getElementById("confirmAddStock").textContent = "Save Changes";
+  document.getElementById("stockNoBadge").style.display = "inline-flex";
+  document.getElementById("generatedStockNo").textContent = b.stock_no;
+  document.getElementById("modalStockId").value = b.id;
+  document.getElementById("modalMedicine").value = b.product_id;
+  document.getElementById("modalSupplier").value = b.supplier || "";
+  document.getElementById("modalQty").value = b.quantity;
+  document.getElementById("modalCost").value = b.unit_cost || "";
+  document.getElementById("modalMfgDate").value = b.manufacturing_date || "";
+  document.getElementById("modalExpiry").value = b.expiry_date || "";
+  document.getElementById("modalStatus").value = b.is_active ? "1" : "0";
+  document.getElementById("modalStatusHint").style.display = "none";
   document.getElementById("addStockModal").classList.add("open");
 }
 
 function closeModal() {
   document.getElementById("addStockModal").classList.remove("open");
-  batchCounter--; // rollback unused counter
 }
 
-document.getElementById("openAddStock").addEventListener("click", openModal);
+document.getElementById("openAddStock").addEventListener("click", openStockAddModal);
 document.getElementById("closeModal").addEventListener("click", closeModal);
 document.getElementById("cancelModal").addEventListener("click", closeModal);
-document.getElementById("addStockModal").addEventListener("click", e => { if(e.target===e.currentTarget) closeModal(); });
+document.getElementById("addStockModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeModal(); });
 
-document.getElementById("confirmAddStock").addEventListener("click", function() {
-  const medicine = document.getElementById("modalMedicine").value.trim();
-  const qty      = parseInt(document.getElementById("modalQty").value);
-  const expiry   = document.getElementById("modalExpiry").value;
+document.getElementById("confirmAddStock").addEventListener("click", async function () {
+  const productId = document.getElementById("modalMedicine").value;
+  const qty = parseInt(document.getElementById("modalQty").value, 10);
+  const btn = this;
 
-  if (!medicine) return alert("Please select a medicine.");
-  if (!qty||qty<1) return alert("Please enter a valid quantity.");
-  if (!expiry)   return alert("Please enter an expiry date.");
+  if (!productId) return alert("Please select a medicine.");
+  if (isNaN(qty) || qty < 0) return alert("Please enter a valid quantity.");
 
-  batches.unshift({
-    stockNo    : document.getElementById("generatedStockNo").textContent,
-    medicine,
-    supplier   : document.getElementById("modalSupplier").value || "—",
-    qty,
-    cost       : parseFloat(document.getElementById("modalCost").value)||null,
-    mfgDate    : document.getElementById("modalMfgDate").value||null,
-    expiryDate : expiry,
-    added      : new Date().toISOString().slice(0,10),
-  });
+  const payload = {
+    product_id: productId,
+    supplier: document.getElementById("modalSupplier").value || null,
+    quantity: qty,
+    unit_cost: document.getElementById("modalCost").value || 0,
+    manufacturing_date: document.getElementById("modalMfgDate").value || null,
+    expiry_date: document.getElementById("modalExpiry").value || null,
+    is_active: document.getElementById("modalStatus").value === "1",
+  };
 
-  document.getElementById("addStockModal").classList.remove("open");
-  renderTable();
+  const isEdit = stockModalMode === "edit";
+  const id = document.getElementById("modalStockId").value;
+  const url = isEdit ? ROUTES.update(id) : ROUTES.store;
+  const method = isEdit ? "PUT" : "POST";
 
-  const t = document.getElementById("toast");
-  document.getElementById("toastMsg").textContent = `Stock added successfully.`;
-  t.classList.add("show");
-  setTimeout(()=>t.classList.remove("show"),3000);
+  document.getElementById("modalStatusHint").style.display = "none";
+  btn.disabled = true;
+  try {
+    const data = await apiFetch(url, { method, body: JSON.stringify(payload) });
+    batches = data.stocks;
+    closeModal();
+    renderTable();
+    showToast(data.message || "Saved successfully.");
+  } catch (err) {
+    const hint = document.getElementById("modalStatusHint");
+    hint.textContent = err.message;
+    hint.style.display = "block";
+  } finally {
+    btn.disabled = false;
+  }
 });
+
+function deleteStock(id, stockNo) {
+  if (!confirm(`Delete batch "${stockNo}"? This cannot be undone.`)) return;
+  apiFetch(ROUTES.destroy(id), { method: "DELETE" })
+    .then(data => {
+      batches = data.stocks;
+      renderTable();
+      showToast(data.message || "Stock deleted successfully.");
+    })
+    .catch(err => alert(err.message));
+}
 
 // ── Search / Filter ────────────────────────────────────────────────────────
 document.getElementById("searchBatch").addEventListener("input", renderTable);
 document.getElementById("filterStatus").addEventListener("change", renderTable);
+
+// ── Products modal (status overview) ────────────────────────────────────────
+function showProductsModal() {
+  document.getElementById("productsModal").classList.add("open");
+  loadProducts();
+}
+function hideProductsModal() {
+  document.getElementById("productsModal").classList.remove("open");
+}
+function loadProducts() {
+  const list = document.getElementById("productsList");
+  list.innerHTML = `<div class="pick-empty">Loading products…</div>`;
+  apiFetch(ROUTES.products, { method: "GET" })
+    .then(data => renderProductsList(data.products))
+    .catch(err => { list.innerHTML = `<div class="pick-empty">${err.message}</div>`; });
+}
+function renderProductsList(products) {
+  const list = document.getElementById("productsList");
+  if (!products.length) {
+    list.innerHTML = `<div class="pick-empty">No products yet.</div>`;
+    return;
+  }
+  list.innerHTML = products.map(p => {
+    const clickable = p.status === "Out of Stock";
+    const pillCls = p.status === "In Stock" ? "ok" : "warning";
+    const initial = p.name ? p.name.charAt(0).toUpperCase() : "?";
+    const safeName = p.name.replace(/'/g, "\\'");
+    const thumb = p.image
+      ? `<img class="pick-thumb" src="${p.image}" alt="">`
+      : `<div class="pick-thumb placeholder">${initial}</div>`;
+    return `<div class="pick-item ${clickable ? "clickable" : ""}" ${clickable ? `onclick="openAvailableStocks(${p.id}, '${safeName}')"` : ""}>
+      ${thumb}
+      <div class="pick-info">
+        <div class="pick-name">${p.name}</div>
+        <div class="pick-sub">${p.batch_count} batch${p.batch_count === 1 ? "" : "es"} recorded</div>
+      </div>
+      <span class="pill ${pillCls}">${p.status}</span>
+      ${clickable ? `<span class="pick-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>` : ""}
+    </div>`;
+  }).join("");
+}
+
+document.getElementById("openProductsModal").addEventListener("click", showProductsModal);
+document.getElementById("closeProductsModal").addEventListener("click", hideProductsModal);
+document.getElementById("productsModal").addEventListener("click", e => { if (e.target === e.currentTarget) hideProductsModal(); });
+
+// ── Available stocks modal (per out-of-stock product) ───────────────────────
+function openAvailableStocks(productId, productName) {
+  document.getElementById("productsModal").classList.remove("open");
+  document.getElementById("availableStocksModal").classList.add("open");
+  document.getElementById("availableStocksTitle").textContent = `Available Batches — ${productName}`;
+  const list = document.getElementById("availableStocksList");
+  list.innerHTML = `<div class="pick-empty">Loading batches…</div>`;
+
+  apiFetch(ROUTES.availableStocks(productId), { method: "GET" })
+    .then(data => renderAvailableStocksList(data.stocks))
+    .catch(err => { list.innerHTML = `<div class="pick-empty">${err.message}</div>`; });
+}
+function hideAvailableStocksModal() {
+  document.getElementById("availableStocksModal").classList.remove("open");
+}
+function renderAvailableStocksList(stocks) {
+  const list = document.getElementById("availableStocksList");
+  if (!stocks.length) {
+    list.innerHTML = `<div class="pick-empty">No available batches for this product yet. Try adding a new stock batch instead.</div>`;
+    return;
+  }
+  list.innerHTML = stocks.map(s => `
+    <div class="pick-item clickable" onclick="activateStock(${s.id})">
+      <div class="pick-thumb placeholder">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/></svg>
+      </div>
+      <div class="pick-info">
+        <div class="pick-name">${s.stock_no} <span style="font-weight:500;color:var(--muted);">· ${s.quantity.toLocaleString()} units</span></div>
+        <div class="pick-sub">Expires ${fmtDate(s.expiry_date)} · ${s.supplier || "No supplier listed"}</div>
+      </div>
+      <span class="pick-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    </div>
+  `).join("");
+}
+
+function activateStock(stockId) {
+  apiFetch(ROUTES.activate(stockId), { method: "PUT" })
+    .then(data => {
+      batches = data.stocks;
+      renderTable();
+      hideAvailableStocksModal();
+      hideProductsModal();
+      showToast(data.message || "Stock activated.");
+    })
+    .catch(err => alert(err.message));
+}
+
+document.getElementById("closeAvailableStocksModal").addEventListener("click", hideAvailableStocksModal);
+document.getElementById("availableStocksModal").addEventListener("click", e => { if (e.target === e.currentTarget) hideAvailableStocksModal(); });
+document.getElementById("backToProducts").addEventListener("click", () => {
+  hideAvailableStocksModal();
+  showProductsModal();
+});
 
 // ── Init ───────────────────────────────────────────────────────────────────
 renderTable();

@@ -1117,12 +1117,13 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="wc-wrap">
   <nav class="wc-tabs">
     <a class="wc-tab" href="{{ route('admin.pharmacy') }}"><i class="fas fa-store"></i> Settings</a>
-    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> Full-Width Banners</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> FW Banners</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sections') }}"><i class="fas fa-layer-group"></i> Sections</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_promo_banners') }}"><i class="fas fa-bullhorn"></i> Promo Banner</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sliders') }}"><i class="fas fa-images"></i> Sliders</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_categories') }}"><i class="fas fa-th-large"></i> Categories</a>
     <a class="wc-tab active" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
   <div class="wc-group-label active" data-group="catalog">Catalog management · Add, edit or remove</div>
   <section class="wc-card wc-section active" id="sec-brands">

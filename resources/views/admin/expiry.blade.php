@@ -786,10 +786,19 @@ tbody tr:last-child td { border-bottom: none; }
 .expiry-item:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.10); }
 
 .exp-top-wrap {
-  width: 100%; height: 84px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+}
+.exp-product-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: relative;
+  z-index: 1;
 }
 .expiry-item.danger  .exp-top-wrap { background: linear-gradient(135deg,#fee2e2,#fff5f5); }
 .expiry-item.warning .exp-top-wrap { background: linear-gradient(135deg,#ffedd5,#fff7ed); }
@@ -1081,53 +1090,40 @@ overlay.addEventListener('click', () => {
 
 </script>
 <script>
-const today = new Date(2025, 3, 23); // Apr 23 2025
-
-const items = [
-  {
-    name:    'Amoxicillin 500mg',
-    batch:   'BX-2041',
-    qty:     5,
-    expiry:  new Date(2025, 5, 30),
-    level:   'danger',
-    pill:    'Critical',
-    maxDays: 90
-  },
-  {
-    name:    'Ibuprofen 400mg',
-    batch:   'BX-1998',
-    qty:     32,
-    expiry:  new Date(2025, 7, 15),
-    level:   'warning',
-    pill:    '3 Months',
-    maxDays: 180
-  },
-  {
-    name:    'Doxycycline 100mg',
-    batch:   'BX-2102',
-    qty:     60,
-    expiry:  new Date(2025, 11, 1),
-    level:   'ok',
-    pill:    '6+ Months',
-    maxDays: 365
-  }
-];
+// Real stock batches, provided by AdminController@expiry. Each item is
+// already computed server-side (days_left, level, pill, is_active,
+// status_label, ...) and comes sorted soonest-expiry-first from the
+// `orderBy('expiry_date', 'asc')` query.
+const items = @json($stocks);
 
 const iconMain = `<svg class="exp-main-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="M8.5 8.5l7 7"/></svg>`;
 const iconBg   = `<svg class="exp-bg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M10.5 20.5 3.5 13.5a4.95 4.95 0 1 1 7-7l7 7a4.95 4.95 0 1 1-7 7Z"/><path d="M8.5 8.5l7 7"/></svg>`;
 
+// Escapes a value for safe use inside an HTML attribute (src, alt, etc.)
+// so embedded quotes never break out of the attribute and corrupt markup.
+function escapeAttr(value) {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// Swaps a broken product photo for the placeholder icon. Kept as a real
+// function (instead of building HTML inline inside the onerror attribute)
+// so the icon's own SVG markup — which contains double quotes — can never
+// break out of the onerror="..." attribute string.
+function handleImgError(imgEl) {
+  const wrap = imgEl.closest('.exp-top-wrap');
+  imgEl.remove();
+  if (wrap) {
+    wrap.insertAdjacentHTML('afterbegin', iconBg + iconMain);
+  }
+}
+
 let activeFilter = 'all';
 let activeSearch = '';
 
-function daysBetween(a, b) {
-  return Math.max(0, Math.round((b - a) / 86400000));
-}
-
-function formatExpiry(d) {
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
 function countdownLabel(days, level) {
+  if (days < 0) {
+    return { num: Math.abs(days), unit: 'days overdue' };
+  }
   if (level === 'ok') {
     return { num: Math.round(days / 30), unit: 'months left' };
   }
@@ -1140,9 +1136,15 @@ const grid = document.getElementById('expiryGrid');
 function render() {
   grid.innerHTML = '';
 
-  const filtered = items.filter(item => {
+  // Keep the nearest-to-expiry batches first (backend already sorts this
+  // way, but re-sort defensively so filtering/searching never disturbs it).
+  const sorted = [...items].sort((a, b) => a.days_left - b.days_left);
+
+  const filtered = sorted.filter(item => {
     const matchesFilter = activeFilter === 'all' || item.level === activeFilter;
-    const matchesSearch = item.name.toLowerCase().includes(activeSearch) || item.batch.toLowerCase().includes(activeSearch);
+    const name  = (item.name  || '').toLowerCase();
+    const batch = (item.batch || '').toLowerCase();
+    const matchesSearch = name.includes(activeSearch) || batch.includes(activeSearch);
     return matchesFilter && matchesSearch;
   });
 
@@ -1152,20 +1154,27 @@ function render() {
   }
 
   filtered.forEach((item) => {
-    const days    = daysBetween(today, item.expiry);
-    const fillPct = Math.min(100, Math.max(4, Math.round((days / item.maxDays) * 100)));
+    const days    = item.days_left;
+    const fillPct = Math.min(100, Math.max(4, Math.round((Math.max(days, 0) / item.max_days) * 100)));
     const { num, unit } = countdownLabel(days, item.level);
 
     const pulseDot = item.level === 'danger'
       ? `<span class="pulse-dot"></span>`
       : '';
 
+    // Stock status label, derived from is_active (Active / Inactive).
+    const statusClass = item.is_active ? 'ok' : 'warning';
+    const statusLabel = item.status_label;
+
+    const media = item.image
+      ? `<img class="exp-product-img" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.name)}" loading="lazy" onerror="handleImgError(this)">`
+      : `${iconBg}${iconMain}`;
+
     const el = document.createElement('div');
     el.className = `expiry-item ${item.level}`;
     el.innerHTML = `
       <div class="exp-top-wrap">
-        ${iconBg}
-        ${iconMain}
+        ${media}
         <div class="pill-float">
           ${pulseDot}
           <span class="pill ${item.level}">${item.pill}</span>
@@ -1173,7 +1182,14 @@ function render() {
       </div>
       <div class="exp-body">
         <div class="exp-name">${item.name}</div>
-        <div class="exp-batch-row"><span>${item.batch}</span><span class="qty">${item.qty} units</span></div>
+        <div class="exp-batch-row">
+          <span>${item.batch}</span>
+          <span class="qty">${item.qty} units</span>
+        </div>
+        <div class="exp-batch-row">
+          <span>Stock Status</span>
+          <span class="pill ${statusClass}">${statusLabel}</span>
+        </div>
         <div class="exp-countdown-section">
           <div class="exp-countdown-meta">
             <span class="exp-countdown-label">Time Left</span>
@@ -1185,7 +1201,7 @@ function render() {
         </div>
         <div class="exp-date-row">
           <span>Expires</span>
-          <span class="val">${formatExpiry(item.expiry)}</span>
+          <span class="val">${item.expiry}</span>
         </div>
       </div>
     `;

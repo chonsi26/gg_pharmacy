@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NavItem;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\View\View;
@@ -17,8 +17,8 @@ class ProductController extends Controller
         // ── Site-wide ────────────────────────────────────────────────────────
         $settings = Setting::allAsArray();
 
-        // ── Navigation ────────────────────────────────────────────────────────
-        $navItems = NavItem::topLevel()->with('children')->get();
+        // ── Navigation (categories, same as the homepage nav) ─────────────────
+        $categories = Category::active()->orderBy('sort_order')->get();
 
         // ── Related products (same section, excluding current, max 10) ────────
         $relatedProducts = Product::active()
@@ -29,6 +29,6 @@ class ProductController extends Controller
             ->limit(10)
             ->get();
 
-        return view('product', compact('product', 'settings', 'navItems', 'relatedProducts'));
+        return view('product', compact('product', 'settings', 'categories', 'relatedProducts'));
     }
 }

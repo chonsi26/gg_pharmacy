@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ $siteName }} — Financial Records</title>
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1039,15 +1040,17 @@ overlay.addEventListener('click', () => {
 });
 </script>
 <script>
-// ── Sample Financial Records Data ──────────────────────────────────────
-let records = [
-  { id: 1, date: '2026-07-23', type: 'Income',  category: 'Sales',       description: 'Medicine sales',               amount: 5000.00 },
-  { id: 2, date: '2026-07-23', type: 'Expense', category: 'Utilities',   description: 'Electricity bill',             amount: 1200.00 },
-  { id: 3, date: '2026-07-24', type: 'Expense', category: 'Supplies',    description: 'Purchased medicines',          amount: 3500.00 },
-  { id: 4, date: '2026-07-24', type: 'Income',  category: 'Reservation', description: 'Customer reservation payment', amount: 800.00  },
-];
+// ── Financial Records — backed by AdminFinancialsController ───────────
+const FIN_ROUTES = {
+  data:    "{{ route('admin.financials.data') }}",
+  store:   "{{ route('admin.financials.store') }}",
+  update:  id => `{{ url('admin/financials') }}/${id}`,
+  destroy: id => `{{ url('admin/financials') }}/${id}`,
+};
+const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-let nextId = Math.max(...records.map(r => r.id)) + 1;
+let records = [];     // current page of records, as returned by the server
+let categories = [];  // distinct categories, as returned by the server
 
 const tbody = document.getElementById('recordsBody');
 const emptyState = document.getElementById('emptyState');
@@ -1066,49 +1069,30 @@ function formatDate(iso) {
 }
 
 function refreshCategoryOptions() {
-  const cats = [...new Set(records.map(r => r.category))].sort();
+  const selected = categoryFilter.value;
   categoryFilter.innerHTML = '<option value="all">All Categories</option>' +
-    cats.map(c => `<option value="${c}">${c}</option>`).join('');
+    categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  if (categories.includes(selected)) categoryFilter.value = selected;
   document.getElementById('categoryList').innerHTML =
-    cats.map(c => `<option value="${c}">`).join('');
+    categories.map(c => `<option value="${c}">`).join('');
 }
 
-function renderStats(filtered) {
-  const income = filtered.filter(r => r.type === 'Income').reduce((s, r) => s + r.amount, 0);
-  const expense = filtered.filter(r => r.type === 'Expense').reduce((s, r) => s + r.amount, 0);
-  document.getElementById('statIncome').textContent = peso(income);
-  document.getElementById('statExpense').textContent = peso(expense);
-  document.getElementById('statNet').textContent = peso(income - expense);
-  document.getElementById('statCount').textContent = filtered.length;
+function renderStats(stats) {
+  document.getElementById('statIncome').textContent = peso(stats.income);
+  document.getElementById('statExpense').textContent = peso(stats.expense);
+  document.getElementById('statNet').textContent = peso(stats.net);
+  document.getElementById('statCount').textContent = stats.count;
 }
 
-function getFiltered() {
-  const q = searchInput.value.trim().toLowerCase();
-  const type = typeFilter.value;
-  const cat = categoryFilter.value;
-  const date = dateFilter.value;
-
-  return records
-    .filter(r => type === 'all' || r.type === type)
-    .filter(r => cat === 'all' || r.category === cat)
-    .filter(r => !date || r.date === date)
-    .filter(r => !q || r.description.toLowerCase().includes(q) || r.category.toLowerCase().includes(q))
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
-}
-
-function render() {
-  refreshCategoryOptions();
-  const filtered = getFiltered();
-  renderStats(filtered);
-
-  if (filtered.length === 0) {
+function renderRows() {
+  if (records.length === 0) {
     tbody.innerHTML = '';
     emptyState.style.display = 'block';
     return;
   }
   emptyState.style.display = 'none';
 
-  tbody.innerHTML = filtered.map(r => `
+  tbody.innerHTML = records.map(r => `
     <tr>
       <td>#${String(r.id).padStart(4, '0')}</td>
       <td>${formatDate(r.date)}</td>
@@ -1137,11 +1121,42 @@ function render() {
   `).join('');
 }
 
+// ── READ — fetch records + stats + categories from the server ─────────
+async function loadRecords() {
+  const params = new URLSearchParams();
+  if (typeFilter.value !== 'all') params.set('type', typeFilter.value);
+  if (categoryFilter.value !== 'all') params.set('category', categoryFilter.value);
+  if (dateFilter.value) params.set('date', dateFilter.value);
+  if (searchInput.value.trim()) params.set('search', searchInput.value.trim());
+
+  try {
+    const res = await fetch(`${FIN_ROUTES.data}?${params.toString()}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (!res.ok) throw new Error('Failed to load records.');
+    const data = await res.json();
+
+    records = data.records.map(r => ({ ...r, amount: parseFloat(r.amount) }));
+    categories = data.categories;
+
+    refreshCategoryOptions();
+    renderStats(data.stats);
+    renderRows();
+  } catch (err) {
+    showToast('Could not load financial records.');
+  }
+}
+
 // ── Filters ───────────────────────────────────────────────────────────
 [searchInput, typeFilter, categoryFilter, dateFilter].forEach(el => {
-  el.addEventListener('input', render);
-  el.addEventListener('change', render);
+  el.addEventListener('input', debounce(loadRecords, 300));
+  el.addEventListener('change', loadRecords);
 });
+
+function debounce(fn, wait) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
 
 // ── Modal handling ───────────────────────────────────────────────────
 const modal = document.getElementById('recordModal');
@@ -1152,6 +1167,7 @@ const fCategory = document.getElementById('fCategory');
 const fDescription = document.getElementById('fDescription');
 const fAmount = document.getElementById('fAmount');
 const editRecordId = document.getElementById('editRecordId');
+const saveBtn = document.getElementById('saveBtn');
 
 function openModal() { modal.classList.add('show'); }
 function closeModal() { modal.classList.remove('show'); }
@@ -1180,11 +1196,24 @@ function openEdit(id) {
   openModal();
 }
 
-function deleteRecord(id) {
+// ── DELETE ──────────────────────────────────────────────────────────
+async function deleteRecord(id) {
   if (!confirm('Delete this financial record? This cannot be undone.')) return;
-  records = records.filter(r => r.id !== id);
-  render();
-  showToast('Record deleted.');
+
+  try {
+    const res = await fetch(FIN_ROUTES.destroy(id), {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': CSRF_TOKEN,
+      },
+    });
+    if (!res.ok) throw new Error('Delete failed.');
+    showToast('Record deleted.');
+    loadRecords();
+  } catch (err) {
+    showToast('Could not delete record.');
+  }
 }
 
 document.getElementById('addRecordBtn').addEventListener('click', openAdd);
@@ -1192,7 +1221,8 @@ document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-document.getElementById('saveBtn').addEventListener('click', () => {
+// ── CREATE / UPDATE ─────────────────────────────────────────────────
+saveBtn.addEventListener('click', async () => {
   const date = fDate.value;
   const type = fType.value;
   const category = fCategory.value.trim();
@@ -1204,17 +1234,40 @@ document.getElementById('saveBtn').addEventListener('click', () => {
     return;
   }
 
-  if (editRecordId.value) {
-    const r = records.find(x => x.id === Number(editRecordId.value));
-    Object.assign(r, { date, type, category, description, amount });
-    showToast('Record updated.');
-  } else {
-    records.push({ id: nextId++, date, type, category, description, amount });
-    showToast('Record added.');
-  }
+  const payload = { date, type, category, description, amount };
+  const isEdit = !!editRecordId.value;
 
-  closeModal();
-  render();
+  saveBtn.disabled = true;
+  try {
+    const res = await fetch(
+      isEdit ? FIN_ROUTES.update(editRecordId.value) : FIN_ROUTES.store,
+      {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': CSRF_TOKEN,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const firstError = err.errors ? Object.values(err.errors)[0][0] : null;
+      showToast(firstError || 'Could not save record.');
+      return;
+    }
+
+    const data = await res.json();
+    showToast(data.message || (isEdit ? 'Record updated.' : 'Record added.'));
+    closeModal();
+    loadRecords();
+  } catch (err) {
+    showToast('Could not save record.');
+  } finally {
+    saveBtn.disabled = false;
+  }
 });
 
 // ── Toast helper (falls back if shared.js doesn't define one) ──────────
@@ -1231,7 +1284,7 @@ function showToast(msg) {
 // ── Export CSV ───────────────────────────────────────────────────────
 document.getElementById('exportBtn').addEventListener('click', () => {
   const rows = [['RecordID', 'Date', 'Type', 'Category', 'Description', 'Amount']];
-  getFiltered().forEach(r => rows.push([r.id, r.date, r.type, r.category, r.description, r.amount.toFixed(2)]));
+  records.forEach(r => rows.push([r.id, r.date, r.type, r.category, r.description, r.amount.toFixed(2)]));
   const csv = rows.map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
@@ -1243,8 +1296,8 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   showToast('Exported to CSV.');
 });
 
-// ── Initial render ───────────────────────────────────────────────────
-render();
+// ── Initial load ───────────────────────────────────────────────────────
+loadRecords();
 </script>
 </body>
 </html>

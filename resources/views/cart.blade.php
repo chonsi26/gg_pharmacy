@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ $product->name }} – {{ $settings['site_name'] ?? 'GG Pharmacy' }}</title>
+<title>My Cart – {{ $settings['site_name'] ?? 'GG Pharmacy' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -443,6 +443,111 @@
     .modal-box.wide .modal-subtitle { margin-bottom: 16px; }
     .modal-field { margin-bottom: 10px; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     CART PAGE — Shopee-style full-width table layout
+     ═══════════════════════════════════════════════════════════════════════ */
+  .cart-page { max-width: 100%; margin: 0 auto 90px; padding: 30px 40px 40px; }
+  .cart-page-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .cart-page-title .count-pill { background: #f3f4f6; color: #4b5563; border: 1px solid #d5d8dc; font-size: 11px; border-radius: 3px; padding: 3px 10px; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase; }
+
+  .cart-checkbox { width: 16px; height: 16px; accent-color: #374151; cursor: pointer; flex-shrink: 0; }
+
+  /* ── Table shell ─────────────────────────────────────────────────────── */
+  .cart-table-wrap { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; overflow: hidden; overflow-x: auto; }
+  .cart-table { width: 100%; min-width: 900px; border-collapse: collapse; }
+
+  .cart-table thead th {
+    background: #f3f4f6;
+    border-bottom: 1px solid #d5d8dc;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #4b5563;
+    padding: 10px 14px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .cart-table thead th.col-check { width: 46px; padding-right: 0; }
+  .cart-table thead th.col-product { text-align: left; padding-left: 8px; width: auto; }
+  .cart-table thead th.col-price { width: 140px; text-align: right; }
+  .cart-table thead th.col-qty { width: 170px; }
+  .cart-table thead th.col-total { width: 140px; text-align: right; }
+  .cart-table thead th.col-action { width: 90px; }
+
+  .cart-item td { padding: 14px; border-top: 1px solid #e5e7eb; vertical-align: middle; transition: background 0.15s, opacity 0.25s ease, transform 0.25s ease; }
+  .cart-item:first-child td { border-top: none; }
+  .cart-item:hover td { background: #fafafa; }
+  .cart-item.removing td { opacity: 0; }
+  .cart-item.removing { transform: translateX(30px); }
+  .cart-item td.col-check { text-align: center; padding-right: 0; }
+
+  .cart-item-product { display: flex; align-items: center; gap: 14px; min-width: 0; padding-left: 0; }
+
+  .cart-item-img { width: 48px; height: 48px; border-radius: 2px; object-fit: cover; border: 1px solid #e5e7eb; flex-shrink: 0; background: var(--gray-light); }
+
+  .cart-item-details { min-width: 0; }
+  .cart-item-name { font-weight: 600; font-size: 13px; color: var(--text); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 2px; }
+  .cart-item-name:hover { text-decoration: underline; }
+  .cart-item-meta { font-size: 12px; color: var(--gray); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .cart-item-rx { color: #4b5563; font-weight: 600; font-size: 12px; }
+
+  .cart-item td.col-price { text-align: right; }
+  .cart-item-price .old { display: block; color: #9ca3af; text-decoration: line-through; font-size: 11px; font-weight: 400; }
+  .cart-item-price .now { font-weight: 400; color: var(--gray); font-size: 12.5px; white-space: nowrap; }
+
+  .cart-item td.col-qty { text-align: center; }
+  .qty-stepper { display: flex; align-items: center; border: 1px solid #d5d8dc; border-radius: 3px; overflow: hidden; width: fit-content; margin: 0 auto; }
+  .qty-stepper button { width: 28px; height: 28px; border: none; background: #fff; font-size: 14px; cursor: pointer; color: var(--text); }
+  .qty-stepper button:hover { background: #f3f4f6; }
+  .qty-stepper button:disabled { color: #ccc; cursor: not-allowed; background: #fff; }
+  .qty-stepper input { width: 38px; height: 28px; border: none; border-left: 1px solid #d5d8dc; border-right: 1px solid #d5d8dc; text-align: center; font-size: 13px; font-family: 'Open Sans', sans-serif; -moz-appearance: textfield; }
+  .qty-stepper input::-webkit-outer-spin-button, .qty-stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .cart-item td.col-total { text-align: right; }
+  .cart-item-subtotal { font-weight: 600; color: var(--text); font-size: 13px; white-space: nowrap; }
+
+  .cart-item td.col-action { text-align: center; }
+  .cart-item-remove { border: none; background: transparent; color: var(--gray); font-size: 12.5px; font-weight: 600; cursor: pointer; transition: color 0.15s; }
+  .cart-item-remove:hover { color: var(--dark-red); text-decoration: underline; }
+
+  /* Sticky bottom summary bar */
+  .cart-summary-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #f9fafb; border-top: 1px solid #d5d8dc; z-index: 500; }
+  .cart-summary-inner { max-width: 100%; margin: 0 auto; padding: 12px 40px; display: flex; align-items: center; gap: 18px; }
+  .cart-summary-select-all { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; white-space: nowrap; }
+  .cart-summary-delete { background: #fff; border: 1px solid #d5d8dc; border-radius: 3px; color: #374151; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; padding: 8px 16px; cursor: pointer; white-space: nowrap; }
+  .cart-summary-delete:hover { background: #f3f4f6; border-color: #9ca3af; }
+  .cart-summary-spacer { flex: 1; }
+  .cart-summary-total { text-align: right; font-family: 'Montserrat', sans-serif; white-space: nowrap; }
+  .cart-summary-total .label { font-size: 12px; color: #6b7280; font-weight: 600; }
+  .cart-summary-total .amount { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .cart-checkout-btn { background: var(--green); color: #fff; border: 1px solid var(--dark-green); border-radius: 3px; padding: 0 26px; height: 42px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+  .cart-checkout-btn:hover { background: var(--dark-green); }
+  .cart-checkout-btn:disabled { background: #e5e7eb; border-color: #d5d8dc; color: #9ca3af; cursor: not-allowed; }
+
+  .cart-empty-state { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; padding: 60px 20px; text-align: center; }
+  .cart-empty-state i { font-size: 40px; color: #d1d5db; margin-bottom: 14px; }
+  .cart-empty-state h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+  .cart-empty-state p { color: var(--gray); font-size: 13px; margin-bottom: 20px; }
+  .cart-empty-state .shop-now-btn { display: inline-block; background: var(--green); color: #fff; border: 1px solid var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; padding: 11px 26px; border-radius: 3px; }
+  .cart-empty-state .shop-now-btn:hover { background: var(--dark-green); }
+
+  @media (max-width: 768px) {
+    .cart-page { padding: 20px 12px 30px; margin-bottom: 150px; }
+    .cart-page-title { font-size: 20px; }
+
+    /* Table stays a real table but scrolls sideways on small screens. */
+    .cart-table-wrap { -webkit-overflow-scrolling: touch; }
+
+    .cart-summary-inner { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
+    .cart-summary-select-all { font-size: 12px; }
+    .cart-summary-spacer { display: none; }
+    .cart-summary-total { flex: 1; text-align: left; }
+    .cart-summary-total .amount { font-size: 17px; }
+    .cart-checkout-btn { padding: 0 20px; height: 40px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
@@ -462,10 +567,7 @@
     <span class="sep">|</span>
     <a href="#" id="registerBtn"><i class="fas fa-user-plus"></i> REGISTER</a>
   @else
-    <span style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
-      <i class="fas fa-user-circle"></i> {{ Auth::user()->full_name }}
-    </span>
-    <span class="sep">|</span>
+
     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
       @csrf
       <a href="#" onclick="event.preventDefault();document.getElementById('logoutForm').submit();" style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
@@ -616,279 +718,127 @@
   <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }} &nbsp;|&nbsp;
   <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
 </div>
-
 {{-- ═══════════════════════════════════════════════════════════════════════════
-     PRODUCT PAGE CONTENT
+     CART PAGE CONTENT
      ═══════════════════════════════════════════════════════════════════════════ --}}
 
-<!-- BREADCRUMB -->
-<div class="breadcrumb">
-  <a href="{{ route('home') }}"><i class="fas fa-home" style="font-size:11px;"></i> Home</a>
-  @if($product->section)
-    <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
-    <a href="{{ $product->section->see_all_url ?? '#' }}">{{ $product->section->label }}</a>
-  @endif
-  @if($product->category)
-    <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
-    <a href="{{ route('home', ['category_id' => $product->category->id]) }}">{{ $product->category->name }}</a>
-  @endif
-  <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
-  <span class="current">{{ $product->name }}</span>
-</div>
+<div class="cart-page">
 
-<!-- ═══════════════════════════════════════
-     MEDICINE PAGE CONTENT
-═══════════════════════════════════════ -->
-<div class="med-page">
-
-  <!-- TOP: IMAGE + INFO -->
-  <div class="med-top">
-
-    <!-- IMAGE GALLERY -->
-    <div class="img-gallery">
-      <div class="main-img-wrap">
-        <div class="img-badge-stack">
-          @if($product->isMostSold())
-            <span class="img-badge generic"><i class="fas fa-fire"></i> {{ $product->badge }}</span>
-          @elseif($product->isSaleBadge())
-            <span class="img-badge"><i class="fas fa-tag"></i> {{ $product->badge }}</span>
-          @elseif($product->badge)
-            <span class="img-badge discount">{{ $product->badge }}</span>
-          @endif
-          @if($product->hasDiscount())
-            <span class="img-badge discount"><i class="fas fa-percent"></i> Save {{ $product->discountPercent() }}%</span>
-          @endif
-        </div>
-        <img id="mainImg" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
-      </div>
-    </div>
-
-    <!-- MEDICINE INFO -->
-    <div class="med-info">
-      @if($product->brand)
-        <div class="med-brand"><i class="fas fa-building" style="margin-right:5px;"></i>{{ $product->brand->name }}</div>
-      @endif
-      <h1 class="med-name">{{ $product->name }}</h1>
-      @if($product->generic_name)
-        <p class="med-generic">Generic Name: <span>{{ $product->generic_name }}</span></p>
-      @endif
-
-
-
-      <!-- AVAILABILITY BADGES -->
-      <div class="avail-row">
-        <span class="avail-badge instock"><i class="fas fa-check-circle"></i> In Stock</span>
-        @if($product->requires_prescription)
-          <span class="avail-badge rx"><i class="fas fa-prescription"></i> Prescription Required</span>
-        @else
-          <span class="avail-badge otc"><i class="fas fa-leaf"></i> OTC — No Rx Needed</span>
-        @endif
-      </div>
-
-      <!-- PRICE -->
-      <div class="price-block">
-        @if($product->hasDiscount())
-          <div>
-            <span class="old-price">{{ $product->formattedOldPrice() }}</span>
-            <span class="discount-pill">−{{ $product->discountPercent() }}%</span>
-          </div>
-        @endif
-        <div class="current-price">{{ $product->formattedPrice() }}</div>
-        @if($product->hasDiscount())
-          <div class="savings-note"><i class="fas fa-tag"></i> You save {{ $product->formattedOldPrice() }} − {{ $product->formattedPrice() }} with today's deal!</div>
-        @endif
-      </div>
-
-      <!-- QTY + CART -->
-      <div class="qty-cart-row">
-        <div class="qty-control">
-          <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
-          <input type="number" id="qtyInput" value="1" min="1" max="99" readonly>
-          <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
-        </div>
-        <button
-          class="add-cart-main js-add-to-cart"
-          type="button"
-          data-product-id="{{ $product->id }}"
-          data-qty-target="#qtyInput"
-        ><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
-        <button class="wishlist-btn" id="wishlistBtn" type="button" title="Add to wishlist" aria-label="Add to wishlist"><i class="far fa-heart"></i></button>
-      </div>
-
-      <button class="buy-now-btn js-buy-now" type="button" data-product-id="{{ $product->id }}" data-qty-target="#qtyInput"><i class="fas fa-bolt"></i> BUY NOW</button>
-
-      {{-- Posts straight to the order-review page (myorder.blade.php). Nothing
-           is saved to orders/order_items until "Place Order" is clicked there. --}}
-      <form id="buyNowForm" action="{{ route('order.buyNow') }}" method="POST" style="display:none;">
-        @csrf
-        <input type="hidden" name="product_id" value="{{ $product->id }}">
-        <input type="hidden" name="quantity" id="buyNowQty" value="1">
-      </form>
-
-      <!-- GUARANTEE STRIP -->
-      <div class="guarantees">
-        <div class="guarantee-item">
-          <i class="fas fa-shield-alt"></i>
-          <div><strong>Authentic</strong>Direct from distributor</div>
-        </div>
-        <div class="guarantee-item">
-          <i class="fas fa-truck"></i>
-          <div><strong>Fast Delivery</strong>{{ $settings['location_strip'] ?? 'Local & nearby areas' }}</div>
-        </div>
-        <div class="guarantee-item">
-          <i class="fas fa-undo"></i>
-          <div><strong>Easy Returns</strong>Within 7 days</div>
-        </div>
-      </div>
-
-      <!-- MED TAGS -->
-      @if($product->category || $product->brand || $product->section)
-      <div class="med-tags">
-        @if($product->category)<span class="med-tag"><i class="fas fa-tag"></i> {{ $product->category->name }}</span>@endif
-        @if($product->brand)<span class="med-tag"><i class="fas fa-building"></i> {{ $product->brand->name }}</span>@endif
-        @if($product->section)<span class="med-tag"><i class="fas fa-layer-group"></i> {{ $product->section->label }}</span>@endif
-      </div>
-      @endif
-
-    </div>
-  </div><!-- /.med-top -->
-
-  <!-- ═══════ TABS ═══════ -->
-  <div class="tabs-section">
-    <div class="tabs-nav" role="tablist">
-      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="description">Description</button>
-      @if($product->ingredients)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="ingredients">Ingredients</button>
-      @endif
-      @if($product->product_usage)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="usage">Uses &amp; Dosage</button>
-      @endif
-      @if($product->warnings)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="warnings">Warnings</button>
-      @endif
-      @if($product->hasDimensions() || $product->origin)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="specs">Specifications</button>
-      @endif
-    </div>
-
-    <!-- DESCRIPTION -->
-    <div class="tab-pane active" id="tab-description" role="tabpanel">
-      <div class="desc-grid">
-        <div class="desc-text">
-          <h3>About This Medicine</h3>
-          @if($product->description)
-            <p>{!! nl2br(e($product->description)) !!}</p>
-          @else
-            <div class="tab-empty">
-              <i class="fas fa-align-left"></i>
-              <p>No description available for this product.</p>
-            </div>
-          @endif
-        </div>
-        <div>
-          <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:12px;">Product Details</h3>
-          <table class="info-table">
-            <tr><td>Name</td><td>{{ $product->name }}</td></tr>
-            @if($product->generic_name)<tr><td>Generic Name</td><td>{{ $product->generic_name }}</td></tr>@endif
-            @if($product->brand)<tr><td>Brand</td><td>{{ $product->brand->name }}</td></tr>@endif
-            @if($product->category)<tr><td>Category</td><td>{{ $product->category->name }}</td></tr>@endif
-            @if($product->origin)<tr><td>Country of Origin</td><td>{{ $product->origin }}</td></tr>@endif
-            <tr><td>Prescription</td><td>{{ $product->requires_prescription ? 'Required (Rx)' : 'Not required (OTC)' }}</td></tr>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- INGREDIENTS -->
-    @if($product->ingredients)
-    <div class="tab-pane" id="tab-ingredients" role="tabpanel">
-      <div class="tab-body-text">{!! nl2br(e($product->ingredients)) !!}</div>
-    </div>
+  <h1 class="cart-page-title">
+    <i class="fas fa-shopping-cart" style="color:var(--red);"></i> My Cart
+    @if($cartItems->isNotEmpty())
+      <span class="count-pill" id="cartPageCount">{{ $cartItems->count() }} {{ $cartItems->count() === 1 ? 'item' : 'items' }}</span>
     @endif
+  </h1>
 
-    <!-- USES & DOSAGE -->
-    @if($product->product_usage)
-    <div class="tab-pane" id="tab-usage" role="tabpanel">
-      <div class="tab-body-text">{!! nl2br(e($product->product_usage)) !!}</div>
+  @if($cartItems->isEmpty())
+
+    <div class="cart-empty-state">
+      <i class="fas fa-shopping-cart"></i>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added anything yet. Let's fix that!</p>
+      <a href="{{ route('home') }}" class="shop-now-btn"><i class="fas fa-store"></i> Continue Shopping</a>
     </div>
-    @endif
 
-    <!-- WARNINGS -->
-    @if($product->warnings)
-    <div class="tab-pane" id="tab-warnings" role="tabpanel">
-      <div class="warning-box">
-        <strong>⚠️ Please Read Carefully:</strong> Keep out of reach of children. Consult a healthcare professional if symptoms persist.
-      </div>
-      <div class="tab-body-text">{!! nl2br(e($product->warnings)) !!}</div>
-    </div>
-    @endif
+  @else
 
-    <!-- SPECIFICATIONS -->
-    @if($product->hasDimensions() || $product->origin)
-    <div class="tab-pane" id="tab-specs" role="tabpanel">
-      <table class="spec-table">
-        @if($product->origin)
-          <tr><td><i class="fas fa-globe-asia" style="margin-right:8px;color:var(--gray);"></i> Country of Origin</td><td>{{ $product->origin }}</td></tr>
-        @endif
-        @if($product->width)
-          <tr><td><i class="fas fa-arrows-alt-h" style="margin-right:8px;color:var(--gray);"></i> Width</td><td>{{ $product->width }} cm</td></tr>
-        @endif
-        @if($product->height)
-          <tr><td><i class="fas fa-arrows-alt-v" style="margin-right:8px;color:var(--gray);"></i> Height</td><td>{{ $product->height }} cm</td></tr>
-        @endif
-        @if($product->depth)
-          <tr><td><i class="fas fa-cube" style="margin-right:8px;color:var(--gray);"></i> Depth</td><td>{{ $product->depth }} cm</td></tr>
-        @endif
+    <div class="cart-table-wrap">
+      <table class="cart-table" id="cartList">
+        <thead>
+          <tr>
+            <th class="col-check"><input type="checkbox" class="cart-checkbox" id="selectAllTop"></th>
+            <th class="col-product">Product</th>
+            <th class="col-price">Unit Price</th>
+            <th class="col-qty">Quantity</th>
+            <th class="col-total">Total Price</th>
+            <th class="col-action">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach($cartItems as $item)
+            @php $product = $item->product; @endphp
+            <tr class="cart-item" data-cart-id="{{ $item->id }}" data-price="{{ $product->price }}">
+
+              <td class="col-check">
+                <input type="checkbox" class="cart-checkbox cart-item-checkbox">
+              </td>
+
+              <td class="col-product">
+                <div class="cart-item-product">
+                  <a href="{{ route('product.show', $product) }}">
+                    <img class="cart-item-img" src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                  </a>
+                  <div class="cart-item-details">
+                    <a href="{{ route('product.show', $product) }}" class="cart-item-name">{{ $product->name }}</a>
+                    <div class="cart-item-meta">
+                      @if($product->brand)<span>{{ $product->brand->name }}</span>@endif
+                      @if($product->requires_prescription)
+                        <span class="cart-item-rx"><i class="fas fa-prescription"></i> Rx Required</span>
+                      @endif
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <td class="col-price">
+                <div class="cart-item-price">
+                  @if($product->hasDiscount())
+                    <span class="old">{{ $product->formattedOldPrice() }}</span>
+                  @endif
+                  <span class="now">{{ $product->formattedPrice() }}</span>
+                </div>
+              </td>
+
+              <td class="col-qty">
+                <div class="qty-stepper">
+                  <button type="button" class="qty-minus" {{ $item->quantity <= 1 ? 'disabled' : '' }}>−</button>
+                  <input type="number" class="qty-input" value="{{ $item->quantity }}" min="1" max="99" inputmode="numeric">
+                  <button type="button" class="qty-plus" {{ $item->quantity >= 99 ? 'disabled' : '' }}>+</button>
+                </div>
+              </td>
+
+              <td class="col-total">
+                <div class="cart-item-subtotal">₱{{ number_format($item->subtotal(), 2) }}</div>
+              </td>
+
+              <td class="col-action">
+                <button type="button" class="cart-item-remove" title="Remove from cart" aria-label="Remove from cart">Delete</button>
+              </td>
+
+            </tr>
+          @endforeach
+        </tbody>
       </table>
     </div>
-    @endif
 
-  </div><!-- /.tabs-section -->
-
-  <!-- ═══════ RATINGS & REVIEWS ═══════ -->
-  
-
-  <!-- ═══════ RELATED PRODUCTS ═══════ -->
-  @if($relatedProducts->isNotEmpty())
-  <div class="related-section">
-    <div class="related-header">
-      <h2>{{ $product->section ? 'More from ' . $product->section->label : 'Related Products' }}</h2>
-      @if($product->section && $product->section->see_all_url)
-        <a href="{{ $product->section->see_all_url }}" class="see-all-link">See All <i class="fas fa-arrow-right"></i></a>
-      @endif
+    <!-- STICKY BOTTOM SUMMARY BAR -->
+    <div class="cart-summary-bar">
+      <div class="cart-summary-inner">
+        <div class="cart-summary-select-all">
+          <input type="checkbox" class="cart-checkbox" id="selectAllBottom">
+          <label for="selectAllBottom" style="cursor:pointer;">All</label>
+        </div>
+        <button type="button" class="cart-summary-delete" id="deleteSelectedBtn"><i class="fas fa-trash-alt"></i> Delete Selected</button>
+        <div class="cart-summary-spacer"></div>
+        <div class="cart-summary-total">
+          <div class="label"><span id="selectedCount">{{ $cartItems->count() }}</span> item(s) selected</div>
+          <div class="amount">₱<span id="cartGrandTotal">{{ number_format($cartTotal, 2) }}</span></div>
+        </div>
+        <button type="button" class="cart-checkout-btn" id="checkoutBtn">Checkout</button>
+      </div>
     </div>
-    <div class="related-grid">
-      @foreach($relatedProducts as $related)
-        <a href="{{ route('product.show', $related) }}" class="rel-card">
-          <div class="rel-img">
-            @if($related->isMostSold())
-              <span class="rel-badge most-sold">{{ $related->badge }}</span>
-            @elseif($related->badge)
-              <span class="rel-badge">{{ $related->badge }}</span>
-            @endif
-            <img src="{{ asset('storage/' . $related->image) }}" alt="{{ $related->name }}">
-          </div>
-          <div class="rel-info">
-            @if($related->category)
-              <div class="rel-cat">{{ $related->category->name }}</div>
-            @endif
-            <div class="rel-name">{{ $related->name }}</div>
-            <div class="rel-price">
-              @if($related->old_price)
-                <span class="rel-old-price">{{ $related->formattedOldPrice() }}</span>
-              @endif
-              {{ $related->formattedPrice() }}
-            </div>
-          </div>
-        </a>
-      @endforeach
-    </div>
-  </div>
+
+    {{-- Posts the checked cart-row ids straight to the order-review page
+         (myorder.blade.php). The cart page is already auth-only, so no
+         guest gating is needed here. --}}
+    <form id="checkoutForm" action="{{ route('order.checkout') }}" method="POST" style="display:none;">
+      @csrf
+      <div id="checkoutIdsContainer"></div>
+    </form>
+
   @endif
 
-</div><!-- /.med-page -->
-
-
+</div><!-- /.cart-page -->
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
      FOOTER — identical to home.blade.php
@@ -921,7 +871,7 @@
       <h4>ABOUT ['site_name']</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
-      <a href="#">Store Info</a>
+      <a href="#">Store Finder</a>
       <a href="#">Contact Us</a>
       <a href="#">Terms And Conditions</a>
       <a href="#">Privacy Policy</a>
@@ -1089,15 +1039,6 @@
 <script src="{{ asset('js/cart.js') }}" data-add-url="{{ route('cart.add') }}" data-count-url="{{ route('cart.count') }}"></script>
 
 <script>
-  // ── Qty controls ────────────────────────────────────────────────────────────
-  const qtyInput = document.getElementById('qtyInput');
-  document.getElementById('qtyMinus').addEventListener('click', () => {
-    if (parseInt(qtyInput.value) > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
-  });
-  document.getElementById('qtyPlus').addEventListener('click', () => {
-    if (parseInt(qtyInput.value) < 99) qtyInput.value = parseInt(qtyInput.value) + 1;
-  });
-
   // ── Wishlist toggle ─────────────────────────────────────────────────────────
   const wishlistBtn = document.getElementById('wishlistBtn');
   if (wishlistBtn) {
@@ -1183,32 +1124,6 @@
     rememberPendingCartItem(e.detail?.product_id, e.detail?.quantity);
     openModal(loginModal);
   });
-
-  // ── Buy Now: guest gating + auto-continue after login/register ─────────────
-  // Mirrors the add-to-cart guest flow above, but for a direct purchase.
-  // Logged-in visitors get a real form POST straight to the order-review
-  // page. Guests get the login modal, with the click remembered in
-  // localStorage; login/register always redirect to the homepage, so it's
-  // home.blade.php's own copy of this same auto-continue check that
-  // actually submits the form once the visitor is authenticated.
-  const PENDING_BUY_KEY = 'pendingBuyNowItem';
-  const buyNowBtn = document.querySelector('.js-buy-now');
-  if (buyNowBtn) {
-    buyNowBtn.addEventListener('click', () => {
-      const target = buyNowBtn.dataset.qtyTarget ? document.querySelector(buyNowBtn.dataset.qtyTarget) : null;
-      const quantity = target ? (parseInt(target.value, 10) || 1) : 1;
-
-      @auth
-        document.getElementById('buyNowQty').value = quantity;
-        document.getElementById('buyNowForm').submit();
-      @else
-        try {
-          localStorage.setItem(PENDING_BUY_KEY, JSON.stringify({ product_id: buyNowBtn.dataset.productId, quantity }));
-        } catch (e) {}
-        openModal(loginModal);
-      @endauth
-    });
-  }
 
   // ── Add-to-cart toast + "flying image" animation ────────────────────────────
   // We record which .js-add-to-cart button was clicked (capture phase, so
@@ -1311,28 +1226,6 @@
       localStorage.removeItem(PENDING_CART_KEY);
       window.CartUI.addToCart(pending.product_id, pending.quantity || 1);
     }
-
-    // Defensive duplicate of the check in home.blade.php: login/register
-    // always redirect to the homepage, so that copy is the one that
-    // normally fires — this only matters if a visitor somehow lands back
-    // on this exact product page already authenticated with a pending item.
-    let pendingBuy = null;
-    try { pendingBuy = JSON.parse(localStorage.getItem('pendingBuyNowItem') || 'null'); } catch (e) { pendingBuy = null; }
-
-    if (pendingBuy && pendingBuy.product_id) {
-      localStorage.removeItem('pendingBuyNowItem');
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = '{{ route('order.buyNow') }}';
-      form.style.display = 'none';
-      form.innerHTML = `
-        <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').content}">
-        <input type="hidden" name="product_id" value="${pendingBuy.product_id}">
-        <input type="hidden" name="quantity" value="${pendingBuy.quantity || 1}">
-      `;
-      document.body.appendChild(form);
-      form.submit();
-    }
   });
   @endauth
 
@@ -1400,5 +1293,215 @@
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
 </script>
 @endif
+<script>
+  // ── Cart page interactions (select all, qty steppers, remove, checkout) ────
+  // Only runs on the /cart page (guarded by #cartList existing). Relies on
+  // showCartToast(), which is already defined above for the add-to-cart flow.
+  (function () {
+    const cartList = document.getElementById('cartList');
+    if (!cartList) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    const selectAllTop = document.getElementById('selectAllTop');
+    const selectAllBottom = document.getElementById('selectAllBottom');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const grandTotalEl = document.getElementById('cartGrandTotal');
+    const cartPageCount = document.getElementById('cartPageCount');
+
+    function itemRows() {
+      return Array.from(cartList.querySelectorAll('.cart-item'));
+    }
+
+    function formatPeso(amount) {
+      return amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateCartBadges(count) {
+      if (typeof count === 'undefined') return;
+      document.querySelectorAll('.cart-badge').forEach(b => { b.textContent = count; });
+    }
+
+    function recalcSummary() {
+      const rows = itemRows();
+      let selectedCount = 0;
+      let total = 0;
+
+      rows.forEach(row => {
+        const checkbox = row.querySelector('.cart-item-checkbox');
+        const price = parseFloat(row.dataset.price) || 0;
+        const qty = parseInt(row.querySelector('.qty-input').value, 10) || 1;
+        if (checkbox.checked) {
+          selectedCount++;
+          total += price * qty;
+        }
+      });
+
+      if (selectedCountEl) selectedCountEl.textContent = selectedCount;
+      if (grandTotalEl) grandTotalEl.textContent = formatPeso(total);
+      if (checkoutBtn) checkoutBtn.disabled = selectedCount === 0;
+
+      const allChecked = rows.length > 0 && rows.every(row => row.querySelector('.cart-item-checkbox').checked);
+      [selectAllTop, selectAllBottom].forEach(cb => { if (cb) cb.checked = allChecked; });
+    }
+
+    function setAllChecked(checked) {
+      itemRows().forEach(row => { row.querySelector('.cart-item-checkbox').checked = checked; });
+      recalcSummary();
+    }
+
+    [selectAllTop, selectAllBottom].forEach(cb => {
+      if (cb) cb.addEventListener('change', () => setAllChecked(cb.checked));
+    });
+
+    function updateItemSubtotalDisplay(row) {
+      const price = parseFloat(row.dataset.price) || 0;
+      const qty = parseInt(row.querySelector('.qty-input').value, 10) || 1;
+      const subtotalEl = row.querySelector('.cart-item-subtotal');
+      if (subtotalEl) subtotalEl.textContent = '\u20b1' + formatPeso(price * qty);
+    }
+
+    function sendQuantityUpdate(row, quantity) {
+      const cartId = row.dataset.cartId;
+      fetch(`/cart/${cartId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+        },
+        body: JSON.stringify({ quantity }),
+      })
+        .then(res => { if (!res.ok) throw new Error('update failed'); return res.json(); })
+        .then(data => {
+          updateCartBadges(data.cart_count);
+          updateItemSubtotalDisplay(row);
+          recalcSummary();
+        })
+        .catch(() => showCartToast('Could not update quantity. Please try again.'));
+    }
+
+    function stepQuantity(row, direction) {
+      const input = row.querySelector('.qty-input');
+      let value = parseInt(input.value, 10) || 1;
+      value = direction === 'minus' ? Math.max(1, value - 1) : Math.min(99, value + 1);
+      input.value = value;
+      row.querySelector('.qty-minus').disabled = value <= 1;
+      row.querySelector('.qty-plus').disabled = value >= 99;
+      updateItemSubtotalDisplay(row);
+      recalcSummary();
+      sendQuantityUpdate(row, value);
+    }
+
+    function removeCartItem(row) {
+      const cartId = row.dataset.cartId;
+      fetch(`/cart/${cartId}`, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+      })
+        .then(res => { if (!res.ok) throw new Error('remove failed'); return res.json(); })
+        .then(data => {
+          updateCartBadges(data.cart_count);
+          row.classList.add('removing');
+          row.addEventListener('transitionend', () => {
+            row.remove();
+            const remaining = itemRows().length;
+            if (cartPageCount) cartPageCount.textContent = remaining + (remaining === 1 ? ' item' : ' items');
+            if (remaining === 0) { window.location.reload(); return; }
+            recalcSummary();
+          }, { once: true });
+          showCartToast('Item removed from cart.');
+        })
+        .catch(() => showCartToast('Could not remove item. Please try again.'));
+    }
+
+    cartList.addEventListener('click', (e) => {
+      const minusBtn = e.target.closest('.qty-minus');
+      const plusBtn = e.target.closest('.qty-plus');
+      const removeBtn = e.target.closest('.cart-item-remove');
+      if (minusBtn) stepQuantity(e.target.closest('.cart-item'), 'minus');
+      if (plusBtn) stepQuantity(e.target.closest('.cart-item'), 'plus');
+      if (removeBtn) removeCartItem(e.target.closest('.cart-item'));
+    });
+
+    cartList.addEventListener('change', (e) => {
+      if (e.target.classList.contains('cart-item-checkbox')) {
+        recalcSummary();
+        return;
+      }
+      if (!e.target.classList.contains('qty-input')) return;
+
+      const row = e.target.closest('.cart-item');
+      let value = parseInt(e.target.value, 10);
+      if (isNaN(value) || value < 1) value = 1;
+      if (value > 99) value = 99;
+      e.target.value = value;
+      row.querySelector('.qty-minus').disabled = value <= 1;
+      row.querySelector('.qty-plus').disabled = value >= 99;
+      updateItemSubtotalDisplay(row);
+      recalcSummary();
+      sendQuantityUpdate(row, value);
+    });
+
+    if (deleteSelectedBtn) {
+      deleteSelectedBtn.addEventListener('click', () => {
+        const selectedRows = itemRows().filter(row => row.querySelector('.cart-item-checkbox').checked);
+        if (selectedRows.length === 0) {
+          showCartToast('Select at least one item to delete.');
+          return;
+        }
+        if (!confirm(`Remove ${selectedRows.length} item(s) from your cart?`)) return;
+
+        const ids = selectedRows.map(row => row.dataset.cartId);
+        fetch('/cart/selected', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+          },
+          body: JSON.stringify({ ids }),
+        })
+          .then(res => { if (!res.ok) throw new Error('bulk remove failed'); return res.json(); })
+          .then(data => {
+            updateCartBadges(data.cart_count);
+            selectedRows.forEach(row => row.remove());
+            const remaining = itemRows().length;
+            if (cartPageCount) cartPageCount.textContent = remaining + (remaining === 1 ? ' item' : ' items');
+            if (remaining === 0) { window.location.reload(); return; }
+            recalcSummary();
+            showCartToast('Selected items removed from cart.');
+          })
+          .catch(() => showCartToast('Could not remove selected items. Please try again.'));
+      });
+    }
+
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', () => {
+        const selectedRows = itemRows().filter(row => row.querySelector('.cart-item-checkbox').checked);
+        if (selectedRows.length === 0) {
+          showCartToast('Select at least one item to checkout.');
+          return;
+        }
+
+        const checkoutForm = document.getElementById('checkoutForm');
+        const idsContainer = document.getElementById('checkoutIdsContainer');
+        idsContainer.innerHTML = '';
+        selectedRows.forEach(row => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'cart_ids[]';
+          input.value = row.dataset.cartId;
+          idsContainer.appendChild(input);
+        });
+        checkoutForm.submit();
+      });
+    }
+
+    recalcSummary();
+  })();
+</script>
+
 </body>
 </html>

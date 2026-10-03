@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ $siteName }} — Sections</title>
+<title>{{ $siteName }} — Payment Accounts</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -925,6 +925,7 @@ tbody tr:last-child td { border-bottom: none; }
   .wc-pill{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; display:inline-block; }
   .wc-pill.on{ background:var(--wc-success-light); color:var(--wc-success-dark); }
   .wc-pill.off{ background:var(--wc-bg); color:var(--wc-subtle); border:1px solid var(--wc-border); }
+  .wc-pill.warn{ background:var(--orange-light); color:var(--orange); border:1px solid var(--orange); }
 
   /* Settings form */
   .wc-settings-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:16px 22px; padding:20px; }
@@ -1005,6 +1006,12 @@ tbody tr:last-child td { border-bottom: none; }
   /* Confirm dialog reuse */
   .wc-confirm-text{ font-size:13.5px; color:var(--wc-subtle); line-height:1.6; }
   .wc-confirm-name{ color:var(--wc-text); font-weight:700; }
+</style>
+<style>
+  .toast.err{ background:var(--red); }
+  .wc-thumb.zoomable{ cursor:zoom-in; }
+  .wc-num{ font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+  .wc-upload-box.qr{ width:72px; height:72px; }
 </style>
 </head>
 <body>
@@ -1111,38 +1118,35 @@ tbody tr:last-child td { border-bottom: none; }
 <div style="margin-bottom:4px;">
   <div style="font-size:20px;font-weight:800;color:var(--text);">Website Customization</div>
 </div>
-<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories and sliders. Changes to Settings, Banners and the Promo Banner update existing content; Sections, Brands, Categories and Sliders can be freely added, edited or removed.</p>
+<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, the product catalog's brands, categories and sliders, and the payment accounts customers pay into. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
 
 <div class="wc-wrap">
   <nav class="wc-tabs">
     <a class="wc-tab" href="{{ route('admin.pharmacy') }}"><i class="fas fa-store"></i> Settings</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> FW Banners</a>
-    <a class="wc-tab active" href="{{ route('admin.pharmacy_sections') }}"><i class="fas fa-layer-group"></i> Sections</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_sections') }}"><i class="fas fa-layer-group"></i> Sections</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_promo_banners') }}"><i class="fas fa-bullhorn"></i> Promo Banner</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sliders') }}"><i class="fas fa-images"></i> Sliders</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_categories') }}"><i class="fas fa-th-large"></i> Categories</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
-    <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
+    <a class="wc-tab active" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
-  <div class="wc-group-label active" data-group="storefront">Storefront content · Add, edit &amp; delete</div>
-  <section class="wc-card wc-section active" id="sec-sections">
+  <div class="wc-group-label active" data-group="catalog">Payment setup · Add, edit or remove</div>
+  <section class="wc-card wc-section active" id="sec-payment-accounts">
     <div class="wc-card-head">
       <div class="wc-card-title">
-        <div class="wc-card-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="wc-card-icon"><i class="fas fa-wallet"></i></div>
         <div>
-          <h3>Homepage Sections</h3>
-          <p>Headings and descriptions for each product row on the homepage</p>
+          <h3>Payment accounts</h3>
+          <p>E-wallet and bank accounts customers send payment to, with a QR or profile screenshot</p>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span class="wc-badge-count" id="sectionsCount"></span>
-        <button class="btn btn-primary" type="button" onclick="openModal('sections')"><i class="fas fa-plus"></i> Add Section</button>
-      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal()"><i class="fas fa-plus"></i> Add account</button>
     </div>
     <div class="wc-table-scroll">
       <table class="wc-table">
-        <thead><tr><th>Label</th><th>Key</th><th>Description</th><th>Heading color</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
-        <tbody id="sectionsBody"></tbody>
+        <thead><tr><th>Payment app</th><th>Account name</th><th>Account number</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
+        <tbody id="accountsBody"></tbody>
       </table>
     </div>
   </section>
@@ -1159,6 +1163,22 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="wc-modal-foot">
       <button class="btn btn-outline" onclick="closeModal()" type="button">Cancel</button>
       <button class="btn btn-primary" id="wcModalSaveBtn" type="button"><i class="fas fa-check"></i> Save</button>
+    </div>
+  </div>
+</div>
+<!-- ============ DELETE CONFIRM MODAL ============ -->
+<div class="wc-modal-overlay" id="wcConfirmOverlay">
+  <div class="wc-modal" style="max-width:420px;">
+    <div class="wc-modal-head">
+      <h3><i class="fas fa-triangle-exclamation" style="color:var(--wc-danger);margin-right:8px;"></i>Remove item</h3>
+      <button class="wc-modal-close" onclick="closeConfirm()" type="button"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="wc-modal-body">
+      <p class="wc-confirm-text">This will permanently remove <span class="wc-confirm-name" id="wcConfirmName"></span> and its screenshot. This can't be undone.</p>
+    </div>
+    <div class="wc-modal-foot">
+      <button class="btn btn-outline" onclick="closeConfirm()" type="button">Cancel</button>
+      <button class="btn" id="wcConfirmDeleteBtn" style="background:var(--wc-danger);color:#fff;" type="button"><i class="fas fa-trash"></i> Remove</button>
     </div>
   </div>
 </div>
@@ -1193,53 +1213,54 @@ overlay.addEventListener('click', () => {
   overlay.classList.remove('on');
 });
 </script>
+<div class="wc-lightbox-overlay" id="wcLightboxOverlay" onclick="if(event.target===this) closeLightbox()">
+  <button class="wc-lightbox-close" type="button" onclick="closeLightbox()" aria-label="Close preview"><i class="fas fa-times"></i></button>
+  <img id="wcLightboxImg" src="" alt="">
+</div>
 <script>
 /* ============================================================================
-   DATA — loaded from the `sections` database table (see AdminController::pharmacy_sections)
+   DATA — loaded live from the server (App\Models\PaymentAccount)
 ============================================================================ */
-let sections = @json($sections);
-const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-const SECTION_UPDATE_URL_BASE = @json(url('/admin/pharmacy_sections'));
+let accounts = @json($accounts);
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+const ACCOUNT_STORE_URL = "{{ route('admin.pharmacy_payment_accounts.store') }}";
+function accountUrl(id){ return ACCOUNT_STORE_URL + '/' + id; }
+
+/** Real File pending upload for the open modal. modalState.draft.image only
+ *  holds a preview data-URL / existing server URL (a File can't be cloned). */
+let draftFile = null;
+
 /* ============================================================================
    HELPERS
 ============================================================================ */
-function toast(msg){
+function toast(msg, isError){
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
+  t.classList.toggle('err', !!isError);
+  t.classList.add('on');
   clearTimeout(window._wcToastTimer);
-  window._wcToastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+  window._wcToastTimer = setTimeout(()=> t.classList.remove('on'), 2800);
 }
-
 function esc(str){
   return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-function fileBase(path){
-  if(!path) return '';
-  return path.split('/').pop();
-}
+function fileBase(path){ return path ? path.split('/').pop() : ''; }
 
 function thumbHtml(src, label){
   if(!src){
-    return `<div class="wc-thumb-fallback" title="No image set"><i class="fas fa-image"></i></div>`;
+    return `<div class="wc-thumb-fallback" title="No screenshot uploaded"><i class="fas fa-qrcode"></i></div>`;
   }
-  return `<img class="wc-thumb" src="${esc(src)}" alt="${esc(label||'')}" onerror="this.outerHTML='<div class=&quot;wc-thumb-fallback&quot; title=&quot;${esc(fileBase(src))}&quot;><i class=&quot;fas fa-image&quot;></i></div>'">`;
+  return `<img class="wc-thumb zoomable" src="${esc(src)}" alt="${esc(label||'')}" title="View screenshot" onclick="openLightbox(this.src, this.alt)" onerror="this.outerHTML='<div class=&quot;wc-thumb-fallback&quot; title=&quot;Image not found&quot;><i class=&quot;fas fa-image&quot;></i></div>'">`;
 }
-
-function openFwbLightbox(src, alt){
+function openLightbox(src, alt){
   document.getElementById('wcLightboxImg').src = src;
   document.getElementById('wcLightboxImg').alt = alt || '';
   document.getElementById('wcLightboxOverlay').classList.add('open');
 }
-function closeFwbLightbox(){
+function closeLightbox(){
   document.getElementById('wcLightboxOverlay').classList.remove('open');
   document.getElementById('wcLightboxImg').src = '';
 }
-document.addEventListener('keydown', (e) => {
-  if(e.key === 'Escape') closeFwbLightbox();
-});
-
 function readFileAsDataURL(file){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
@@ -1248,234 +1269,224 @@ function readFileAsDataURL(file){
     reader.readAsDataURL(file);
   });
 }
+
 /* ============================================================================
-   RENDER: SECTIONS (read/update)
+   RENDER
 ============================================================================ */
-function renderSections(){
-  document.getElementById('sectionsCount').textContent = sections.length + ' sections';
-  const sorted = [...sections].sort((a,b)=>a.sort_order-b.sort_order);
-  document.getElementById('sectionsBody').innerHTML = sorted.map(s => `
+function renderAccounts(){
+  const sorted = [...accounts].sort((a,b)=>a.sort_order-b.sort_order || a.id-b.id);
+  document.getElementById('accountsBody').innerHTML = sorted.length ? sorted.map(a => `
     <tr>
-      <td><strong>${esc(s.label)}</strong></td>
-      <td><span class="wc-sub">${esc(s.key)}</span></td>
-      <td><span class="wc-sub">${esc(s.description) || '—'}</span></td>
-      <td><span class="wc-swatch"><i style="background:${esc(s.heading_color)}"></i>${esc(s.heading_color)}</span></td>
-      <td>${s.sort_order}</td>
+      <td>
+        <div class="wc-name-cell">
+          ${thumbHtml(a.image, a.payment_app)}
+          <span>${esc(a.payment_app)}</span>
+        </div>
+      </td>
+      <td>${esc(a.account_name)}</td>
+      <td class="wc-num">${esc(a.account_number)}</td>
+      <td><span class="wc-pill ${a.is_active ? 'on' : 'off'}">${a.is_active ? 'Active' : 'Inactive'}</span></td>
+      <td>${a.sort_order}</td>
       <td>
         <div class="wc-cell-actions">
-          <button class="btn-icon" title="Edit" onclick="openModal('sections', ${s.id})"><i class="fas fa-pen"></i></button>
-          <button class="btn-icon danger" title="Delete" onclick="deleteSection(${s.id})"><i class="fas fa-trash"></i></button>
+          <button class="btn-icon" title="Edit" onclick="openModal(${a.id})"><i class="fas fa-pen"></i></button>
+          <button class="btn-icon danger" title="Delete" onclick="openConfirm(${a.id}, '${esc(a.payment_app)} · ${esc(a.account_number)}')"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     </tr>
-  `).join('');
+  `).join('') : `<tr><td colspan="6" class="wc-empty">No payment accounts yet. Click "Add account" to create one.</td></tr>`;
 }
-renderSections();
+renderAccounts();
+
 /* ============================================================================
-   MODAL ENGINE (add / edit for all entity types)
+   MODAL (add / edit)
 ============================================================================ */
-const ENTITY = {
-  sections: { store: () => sections, titleField: 'label', label:'Section', crud:false }
-};
+let modalState = { id:null, draft:null };
 
-let modalState = { type:null, id:null, draft:null };
-
-function openModal(type, id=null){
-  const cfg = ENTITY[type];
-  const store = cfg.store();
-  const existing = id ? store.find(x => x.id === id) : null;
-  modalState = { type, id, draft: existing ? JSON.parse(JSON.stringify(existing)) : defaultDraft(type) };
-
-  document.getElementById('wcModalTitle').textContent = existing ? `Edit ${cfg.label}` : `Add ${cfg.label}`;
-  document.getElementById('wcModalBody').innerHTML = buildForm(type, modalState.draft);
-  document.getElementById('wcModalOverlay').classList.add('open');
+function defaultDraft(){
+  return {
+    payment_app:'', account_name:'', account_number:'', image:'',
+    is_active:true,
+    sort_order: accounts.length ? Math.max(...accounts.map(a=>a.sort_order)) + 1 : 1,
+  };
 }
 
+function openModal(id=null){
+  const existing = id ? accounts.find(x => x.id === id) : null;
+  modalState = { id, draft: existing ? JSON.parse(JSON.stringify(existing)) : defaultDraft() };
+  draftFile = null;
+  document.getElementById('wcModalTitle').textContent = existing ? 'Edit payment account' : 'Add payment account';
+  document.getElementById('wcModalBody').innerHTML = buildForm(modalState.draft);
+  document.getElementById('wcModalOverlay').classList.add('open');
+  updateSortTakenBadge();
+}
 function closeModal(){
   document.getElementById('wcModalOverlay').classList.remove('open');
-  modalState = { type:null, id:null, draft:null };
-}
-function defaultDraft(type){
-  const bases = {
-    sections: (() => {
-      // Default a new section to the first sort order not already in use.
-      const max = sections.length + 1;
-      let firstAvailable = max;
-      for(let i = 1; i <= max; i++){
-        if(!sections.some(s => s.sort_order === i)){ firstAvailable = i; break; }
-      }
-      return { label:'', description:'', heading_color:'red', sort_order:firstAvailable };
-    })(),
-  };
-  return bases[type] || {};
-}
-
-/**
- * Build <option> tags for the sort-order select. Any sort order already used
- * by another section is labelled "taken" but left selectable — choosing it
- * swaps that section's slot with the one currently being added/edited
- * (handled server-side in AdminController::applySectionSortOrder()).
- */
-function sortOrderOptions(excludeId, current){
-  const max = Math.max(sections.length + 1, current || 1);
-  let html = '';
-  for(let i = 1; i <= max; i++){
-    const takenBy = sections.find(s => s.sort_order === i && s.id !== excludeId);
-    const selected = i === current ? 'selected' : '';
-    html += `<option value="${i}" ${selected}>${i}${takenBy ? ` — taken (swaps with "${esc(takenBy.label)}")` : ''}</option>`;
-  }
-  return html;
+  modalState = { id:null, draft:null };
+  draftFile = null;
 }
 
 function fieldRow(label, controlHtml, hint){
   return `<div class="wc-field"><label>${esc(label)}</label>${controlHtml}${hint ? `<div class="hint">${esc(hint)}</div>` : ''}</div>`;
 }
-function colorControl(fieldKey, currentVal){
-  const val = /^#[0-9a-fA-F]{6}$/.test(currentVal) ? currentVal : '#1a7a35';
+function imageUploadControl(currentVal){
   return `
-    <div class="wc-color-control">
-      <input type="color" value="${val}" oninput="modalState.draft['${fieldKey}']=this.value; document.getElementById('colortext-${fieldKey}').value=this.value;">
-      <input class="wc-input" id="colortext-${fieldKey}" type="text" value="${esc(currentVal)}" oninput="modalState.draft['${fieldKey}']=this.value;" placeholder="#1a7a35">
+    <div class="wc-upload">
+      <div class="wc-upload-box qr" id="upbox-image">${currentVal ? `<img src="${esc(currentVal)}" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-qrcode&quot;></i>'">` : '<i class="fas fa-qrcode"></i>'}</div>
+      <div class="wc-upload-actions">
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+          <i class="fas fa-upload"></i> Choose file
+          <input type="file" class="wc-file-input" accept="image/*" onchange="handleDraftUpload(this)">
+        </label>
+        <span class="wc-upload-filename" id="upname-image">${esc(fileBase(currentVal)) || 'No file selected'}</span>
+      </div>
     </div>`;
 }
-function buildForm(type, d){
-  if(type === 'sections'){
-    return `
-      ${fieldRow('Sort order', `<select class="wc-input" onchange="modalState.draft.sort_order=parseInt(this.value); document.getElementById('sectionKeyPreview').value='section_'+this.value;">${sortOrderOptions(modalState.id, d.sort_order)}</select>`, 'Controls placement on the homepage — picking a taken order swaps the two sections into each other\'s slots')}
-      ${fieldRow('Section key', `<input class="wc-input" id="sectionKeyPreview" value="section_${d.sort_order}" disabled>`, 'Auto-generated from the sort order above — always "section_N"')}
-      ${fieldRow('Label', `<input class="wc-input" value="${esc(d.label)}" oninput="modalState.draft.label=this.value">`)}
-      ${fieldRow('Description', `<textarea class="wc-textarea" oninput="modalState.draft.description=this.value">${esc(d.description)}</textarea>`)}
-      ${fieldRow('Heading color', colorControl('heading_color', d.heading_color))}
-    `;
-  }
-  return '';
+async function handleDraftUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+  draftFile = file;
+  const dataUrl = await readFileAsDataURL(file);
+  modalState.draft.image = dataUrl;
+  document.getElementById('upbox-image').innerHTML = `<img src="${dataUrl}">`;
+  document.getElementById('upname-image').textContent = file.name;
 }
-document.getElementById('wcModalSaveBtn').addEventListener('click', () => {
-  const { type, id, draft } = modalState;
-  if(!type) return;
+function switchControl(currentVal, label){
+  return `
+    <div class="wc-switch-row">
+      <span style="font-size:13px;color:var(--wc-text);">${esc(label)}</span>
+      <label class="wc-switch">
+        <input type="checkbox" ${currentVal ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked;">
+        <span class="track"></span>
+      </label>
+    </div>`;
+}
+function buildForm(d){
+  return `
+    ${fieldRow('Payment app', `
+      <input class="wc-input" list="paymentAppList" value="${esc(d.payment_app)}" oninput="modalState.draft.payment_app=this.value" placeholder="e.g. GCash">
+      <datalist id="paymentAppList"><option value="GCash"><option value="Maya"><option value="GoTyme"><option value="Bank transfer"></datalist>
+    `)}
+    ${fieldRow('Account name', `<input class="wc-input" value="${esc(d.account_name)}" oninput="modalState.draft.account_name=this.value" placeholder="Name registered on the account">`)}
+    ${fieldRow('Account number', `<input class="wc-input wc-num" inputmode="tel" value="${esc(d.account_number)}" oninput="modalState.draft.account_number=this.value" placeholder="e.g. 0917 123 4567">`)}
+    ${fieldRow('Screenshot', imageUploadControl(d.image), 'QR code or account profile screenshot (max 4 MB)')}
+    ${fieldRow('Status', switchControl(d.is_active, 'Account is active'))}
+    ${fieldRow('Sort order', `
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <input class="wc-input" style="max-width:120px;" type="number" min="1" value="${d.sort_order}"
+          oninput="modalState.draft.sort_order=parseInt(this.value)||0; updateSortTakenBadge();">
+        <span id="sortTakenBadge" class="wc-pill warn" style="display:none;"></span>
+      </div>
+    `, 'If another account already has this position, saving swaps the two.')}
+  `;
+}
 
-  // basic validation
-  const nameField = ENTITY[type].titleField;
-  if(!draft[nameField] || !String(draft[nameField]).trim()){
-    toast(`Please fill in the ${nameField === 'alt' ? 'alt text' : nameField} field.`);
-    return;
-  }
-
-  if(type === 'sections'){
-    saveSection(id, draft);
-    return;
-  }
-
-  const store = ENTITY[type].store();
-  if(id){
-    const idx = store.findIndex(x => x.id === id);
-    store[idx] = { ...store[idx], ...draft };
-    toast(`${ENTITY[type].label} updated.`);
+/** Shows a "Taken" badge when the typed sort_order belongs to another account.
+ *  The actual swap happens server-side in reorderPaymentAccountsFor(). */
+function updateSortTakenBadge(){
+  const badge = document.getElementById('sortTakenBadge');
+  if(!badge || !modalState.draft) return;
+  const { id, draft } = modalState;
+  const takenBy = accounts.find(a => Number(a.sort_order) === Number(draft.sort_order) && a.id !== id);
+  if(takenBy){
+    badge.style.display = 'inline-block';
+    badge.textContent = `Taken · will swap with "${takenBy.payment_app}"`;
   } else {
-    const newId = nextId[type]++;
-    store.push({ id:newId, ...draft });
-    toast(`${ENTITY[type].label} added.`);
+    badge.style.display = 'none';
   }
-  closeModal();
-  renderAll();
+}
+
+document.getElementById('wcModalSaveBtn').addEventListener('click', async () => {
+  const { id, draft } = modalState;
+  if(!draft) return;
+  const required = [['payment_app','payment app'],['account_name','account name'],['account_number','account number']];
+  for(const [key,label] of required){
+    if(!draft[key] || !String(draft[key]).trim()){ toast(`Please fill in the ${label}.`, true); return; }
+  }
+  await saveAccount(id, draft);
 });
 
-/**
- * Persist a section add/edit to the database — POST /admin/pharmacy_sections
- * for a new section, PUT /admin/pharmacy_sections/{id} for an existing one —
- * and sync the in-memory store from the server's response on success. The
- * key is never sent from the client; the server always derives it from
- * sort_order.
- */
-async function saveSection(id, draft){
+/** Create or update via the backend; the server resolves any sort_order swap
+ *  and returns the authoritative list, which replaces the table data. */
+async function saveAccount(id, draft){
   const saveBtn = document.getElementById('wcModalSaveBtn');
   saveBtn.disabled = true;
 
-  const isCreate = !id;
-  const url = isCreate ? SECTION_UPDATE_URL_BASE : `${SECTION_UPDATE_URL_BASE}/${id}`;
+  const fd = new FormData();
+  fd.append('payment_app', draft.payment_app.trim());
+  fd.append('account_name', draft.account_name.trim());
+  fd.append('account_number', draft.account_number.trim());
+  fd.append('is_active', draft.is_active ? '1' : '0');
+  fd.append('sort_order', draft.sort_order);
+  if(draftFile) fd.append('image', draftFile);
+
+  let url = ACCOUNT_STORE_URL;
+  if(id){
+    // PHP doesn't populate uploads on a real multipart PUT: POST + _method spoofing.
+    fd.append('_method', 'PUT');
+    url = accountUrl(id);
+  }
 
   try{
-    const response = await fetch(url, {
-      method: isCreate ? 'POST' : 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': CSRF_TOKEN,
-      },
-      body: JSON.stringify({
-        label: draft.label,
-        description: draft.description,
-        heading_color: draft.heading_color,
-        sort_order: draft.sort_order,
-      }),
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+      body: fd,
     });
-
-    const payload = await response.json().catch(() => null);
-
-    if(!response.ok){
-      const message = payload?.message || `Could not ${isCreate ? 'add' : 'update'} this section.`;
-      toast(message);
+    const data = await res.json();
+    if(!res.ok){
+      toast(data.errors ? Object.values(data.errors)[0][0] : (data.message || 'Something went wrong.'), true);
       return;
     }
-
-    if(payload.sections){
-      // A sort-order swap moves two rows at once, so refresh the whole
-      // list from the server rather than patching just this one.
-      sections = payload.sections;
-    } else if(isCreate){
-      sections.push(payload.section);
-    } else {
-      const idx = sections.findIndex(x => x.id === id);
-      if(idx !== -1){
-        sections[idx] = { ...sections[idx], ...payload.section };
-      }
-    }
-
-    toast(payload.message || (isCreate ? 'Section added.' : 'Section updated.'));
+    accounts = data.accounts;
+    toast(data.message || (id ? 'Account updated.' : 'Account added.'));
     closeModal();
-    renderSections();
+    renderAccounts();
   }catch(err){
-    toast(`Network error — could not ${isCreate ? 'add' : 'update'} this section.`);
+    toast('Network error. Check your connection and try again.', true);
   }finally{
     saveBtn.disabled = false;
   }
 }
 
-/**
- * Delete a section via DELETE /admin/pharmacy_sections/{id} after a
- * confirmation prompt, then drop it from the in-memory store on success.
- */
-async function deleteSection(id){
-  const section = sections.find(s => s.id === id);
-  if(!section) return;
-
-  if(!confirm(`Delete section "${section.label}"? This cannot be undone.`)) return;
-
-  try{
-    const response = await fetch(`${SECTION_UPDATE_URL_BASE}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'X-CSRF-TOKEN': CSRF_TOKEN,
-      },
-    });
-
-    const payload = await response.json().catch(() => null);
-
-    if(!response.ok){
-      toast(payload?.message || 'Could not delete this section.');
-      return;
-    }
-
-    sections = sections.filter(s => s.id !== id);
-    toast(payload?.message || 'Section deleted.');
-    renderSections();
-  }catch(err){
-    toast('Network error — could not delete this section.');
-  }
+/* ============================================================================
+   DELETE CONFIRM
+============================================================================ */
+let confirmId = null;
+function openConfirm(id, name){
+  confirmId = id;
+  document.getElementById('wcConfirmName').textContent = name || 'this account';
+  document.getElementById('wcConfirmOverlay').classList.add('open');
 }
+function closeConfirm(){
+  document.getElementById('wcConfirmOverlay').classList.remove('open');
+  confirmId = null;
+}
+document.getElementById('wcConfirmDeleteBtn').addEventListener('click', async () => {
+  if(!confirmId) return;
+  const btn = document.getElementById('wcConfirmDeleteBtn');
+  btn.disabled = true;
+  try{
+    const res = await fetch(accountUrl(confirmId), {
+      method: 'DELETE',
+      headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+    });
+    const data = await res.json();
+    if(!res.ok){ toast(data.message || 'Could not remove this account.', true); return; }
+    accounts = data.accounts;
+    toast(data.message || 'Account removed.');
+    closeConfirm();
+    renderAccounts();
+  }catch(err){
+    toast('Network error. Check your connection and try again.', true);
+  }finally{
+    btn.disabled = false;
+  }
+});
+
 document.getElementById('wcModalOverlay').addEventListener('click', (e) => { if(e.target === e.currentTarget) closeModal(); });
-document.addEventListener('keydown', (e) => { if(e.key === 'Escape'){ closeModal(); } });
+document.getElementById('wcConfirmOverlay').addEventListener('click', (e) => { if(e.target === e.currentTarget) closeConfirm(); });
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape'){ closeModal(); closeConfirm(); closeLightbox(); } });
 </script>
 </body>
 </html>

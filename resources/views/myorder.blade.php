@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
-<title>{{ $settings['site_name'] ?? 'No Pharmacy Name' }} - {{ $settings['tagline'] ?? 'Search for Generic and Branded Medicine' }}</title>
+<title>My Orders – {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -399,6 +399,248 @@
     .cat-item { flex: 0 0 76px; }
     .cat-circle { width: 70px; height: 70px; }
   }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     MY ORDERS — PAGE-SPECIFIC STYLES
+     ══════════════════════════════════════════════════════════════════════ */
+  .page-wrap { max-width: 100%; margin: 0 auto; padding: 30px 40px 70px; }
+  .page-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+  .flash { border-radius: 8px; padding: 14px 18px; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .flash.success { background: #e8f5e9; color: var(--dark-green); border: 1px solid #b6dfb9; }
+  .flash.error   { background: #fdecea; color: var(--dark-red); border: 1px solid #f3c2bd; }
+
+  /* ── REVIEW PANEL (Shopee-style order table) ────────────────────────────── */
+  .review-panel { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; padding: 0; margin-bottom: 34px; overflow: hidden; }
+  .review-panel h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px; margin: 0; padding: 14px 18px; border-bottom: 1px solid #d5d8dc; display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .review-panel h2 i { color: #6b7280; font-size: 14px; }
+
+  /* shared 4-column table grid used by both the review panel and order history */
+  .otable-head, .review-line, .order-item-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 130px 110px 130px;
+    align-items: center;
+    gap: 14px;
+  }
+  .otable-head { padding: 10px 14px; background: #f3f4f6; border-top: 1px solid #d5d8dc; border-bottom: 1px solid #d5d8dc; }
+  .otable-head span { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #4b5563; }
+  .order-card .otable-head, .review-panel .otable-head { padding-left: 18px; padding-right: 18px; border-top: none; }
+  .otable-head span.col-price, .otable-head span.col-sub { text-align: right; }
+  .otable-head span.col-qty { text-align: center; }
+
+  .review-line { padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+  .review-line:last-of-type { border-bottom: 1px solid #d5d8dc; }
+  .review-line-product { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .review-line img { width: 48px; height: 48px; object-fit: cover; border-radius: 2px; border: 1px solid #e5e7eb; flex-shrink: 0; }
+  .review-line-info { flex: 1; min-width: 0; }
+  .review-line-name { font-weight: 600; font-size: 13px; }
+  .review-line-meta { font-size: 12px; color: var(--gray); margin-top: 2px; }
+  .review-line-rx { color: #4b5563; font-weight: 600; }
+  .review-line-price { font-size: 13px; color: var(--gray); text-align: right; white-space: nowrap; }
+  .review-line-qty { font-size: 13px; color: var(--text); text-align: center; white-space: nowrap; }
+  .review-line-sub { font-weight: 600; font-size: 13px; white-space: nowrap; text-align: right; color: var(--text); }
+  .review-warning { background: #fafafa; color: #7a4a00; border: 1px solid #e5e7eb; border-left: 3px solid #b7791f; border-radius: 3px; padding: 10px 14px; font-size: 12.5px; margin: 10px 0; grid-column: 1 / -1; }
+  .review-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 14px 18px; background: #f9fafb; border-top: 1px solid #d5d8dc; }
+  .btn-discard-link { background: #fff; border: 1px solid #d5d8dc; border-radius: 3px; color: #374151; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; padding: 10px 20px; }
+  .btn-discard-link:hover { background: #f3f4f6; border-color: #9ca3af; }
+  .review-footer-summary { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-left: auto; }
+  .review-footer-total { text-align: right; }
+  .review-footer-total .label { display: block; font-size: 12px; color: #6b7280; font-weight: 600; }
+  .review-footer-total .amount { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); line-height: 1.2; }
+  .btn-place-order {
+    background: var(--green); color: #fff; border: 1px solid var(--dark-green); border-radius: 3px;
+    height: 42px; padding: 0 26px; font-family: 'Montserrat', sans-serif;
+    font-weight: 600; font-size: 13px; letter-spacing: 0.3px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-place-order:hover { background: var(--dark-green); }
+  @media (max-width: 560px) {
+    .review-footer { flex-direction: column; align-items: stretch; }
+    .review-footer-summary { margin-left: 0; justify-content: space-between; width: 100%; }
+    .btn-discard-link { width: 100%; }
+    .btn-place-order { flex: 1; }
+  }
+
+  /* ── PAYMENT METHOD (review panel) ─────────────────────────────────────── */
+  .pay-box { padding: 18px; }
+  .pay-box-title { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #4b5563; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .pay-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pay-option { position: relative; cursor: pointer; }
+  .pay-option input { position: absolute; opacity: 0; pointer-events: none; }
+  .pay-option-body { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #d5d8dc; border-radius: 4px; transition: border-color 0.15s, background 0.15s; height: 100%; }
+  .pay-option-body > i { font-size: 20px; color: var(--gray); width: 24px; text-align: center; }
+  .pay-option-body strong { display: block; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; }
+  .pay-option-body small { display: block; font-size: 11.5px; color: var(--gray); margin-top: 2px; line-height: 1.4; }
+  .pay-option:hover .pay-option-body { border-color: #9ca3af; }
+  .pay-option input:checked + .pay-option-body { border-color: #374151; background: #f9fafb; box-shadow: inset 0 0 0 1px #374151; }
+  .pay-option input:checked + .pay-option-body > i { color: #374151; }
+  .pay-option input:focus-visible + .pay-option-body { outline: 2px solid #374151; outline-offset: 2px; }
+  .pay-note { margin-top: 10px; background: #f9fafb; color: #4b5563; border: 1px solid #e5e7eb; border-radius: 3px; padding: 10px 14px; font-size: 12.5px; }
+  .pay-error { color: var(--red); font-size: 12px; margin-top: 6px; }
+  @media (max-width: 560px) { .pay-options { grid-template-columns: 1fr; } }
+
+  /* ── PAYMENT INFO (order history) ──────────────────────────────────────── */
+  .order-pay { padding: 12px 18px; border-top: 1px solid #d5d8dc; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }
+  .order-pay-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .order-pay-label { color: var(--gray); font-weight: 600; }
+  .pay-pill { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11px; padding: 3px 10px; border-radius: 3px; background: #f3f4f6; color: #374151; border: 1px solid #d5d8dc; display: inline-flex; align-items: center; gap: 5px; }
+  .pay-pill.app { background: #f3f4f6; color: #374151; }
+  .pay-pill.cash { background: #f3f4f6; color: #374151; }
+  .proof-box { padding: 10px 12px; background: #f5faff; border: 1px dashed #0b4a8f; border-radius: 6px; }
+  .proof-box .proof-label { color: #0b4a8f; font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .proof-box form { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .proof-box input[type=file] { font-size: 12px; }
+  .proof-upload-btn { background: #0b4a8f; color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .proof-upload-btn:hover { background: #083769; }
+  .proof-hint { color: var(--gray); font-size: 12px; }
+  .proof-uploaded { color: var(--dark-green); font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .proof-error { color: var(--red); font-size: 11.5px; margin-top: 6px; }
+
+  /* ── PAYMENT ACCOUNTS LINK + MODAL ────────────────────────────────────── */
+  .pay-accounts-link { margin-left: auto; color: #0b4a8f; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+  .pay-accounts-link:hover { color: #083769; }
+  .pa-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2100; align-items: center; justify-content: center; padding: 16px; }
+  .pa-overlay.open { display: flex; }
+  .pa-box { background: #fff; border-radius: 12px; width: 100%; max-width: 760px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+  .pa-head { display: flex; align-items: center; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--border); }
+  .pa-head h3 { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; flex: 1; }
+  .pa-back { background: none; border: none; color: #0b4a8f; font-size: 13px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 5px; padding: 0; font-family: 'Montserrat', sans-serif; }
+  .pa-back:hover { text-decoration: underline; }
+  .pa-close { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; line-height: 1; }
+  .pa-close:hover { color: var(--red); }
+  .pa-body { padding: 18px 22px 22px; overflow-y: auto; flex: 1 1 auto; }
+  .pa-hint { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
+  .pa-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .pa-app-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 14px; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
+  .pa-app-btn:hover { border-color: #0b4a8f; background: #f5faff; }
+  .pa-app-btn i { color: #9ca3af; font-size: 12px; }
+  /* Landscape detail: account info on the left, screenshot on the right */
+  .pa-detail { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .pa-detail.no-image { grid-template-columns: 1fr; }
+  .pa-detail-app { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 14px; }
+  .pa-row { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .pa-row .pa-label { font-size: 10.5px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .05em; }
+  .pa-row .pa-value { font-size: 14px; font-weight: 700; word-break: break-all; }
+  .pa-number-line { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .pa-copy { background: #fff; color: #0b4a8f; border: 1px solid #0b4a8f; border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .pa-copy:hover { background: #0b4a8f; color: #fff; }
+  .pa-image { text-align: center; }
+  .pa-image img { max-width: 100%; max-height: 300px; border: 1px solid var(--border); border-radius: 8px; cursor: zoom-in; }
+  .pa-image-hint { font-size: 11px; color: var(--gray); margin-top: 6px; }
+  .pa-empty { text-align: center; color: var(--gray); font-size: 13px; padding: 20px 0; }
+  @media (max-width: 600px) { .pa-detail { grid-template-columns: 1fr; } }
+  /* Full-size image viewer */
+  .pa-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 2200; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; }
+  .pa-lightbox.open { display: flex; }
+  .pa-lightbox img { max-width: 96vw; max-height: 94vh; object-fit: contain; border-radius: 6px; background: #fff; }
+  .pa-lightbox-close { position: absolute; top: 14px; right: 20px; background: none; border: none; color: #fff; font-size: 34px; line-height: 1; cursor: pointer; }
+
+  /* ── ORDER HISTORY ────────────────────────────────────────────────────── */
+  .orders-heading { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 14px; }
+  .order-card { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+  .order-card-head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #fff; border-bottom: 1px solid #d5d8dc; flex-wrap: wrap; gap: 8px; }
+  .order-number { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 14px; }
+  .order-date { font-size: 12px; color: var(--gray); margin-top: 2px; }
+  .status-pill { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 11px; padding: 4px 10px; border-radius: 3px; border: 1px solid transparent; text-transform: uppercase; letter-spacing: 0.5px; }
+  .status-pending   { background: #fafafa; color: #6b5b00; border-color: #d9cf9a; }
+  .status-confirmed { background: #fafafa; color: #1e4f8a; border-color: #b4c9e3; }
+  .status-ready     { background: #fafafa; color: #2b6a30; border-color: #b3d3b6; }
+  .status-picked_up { background: #f3f4f6; color: #4b5563; border-color: #d5d8dc; }
+  .status-cancelled { background: #fafafa; color: #9b2c2c; border-color: #e0b4b4; }
+
+  .order-card-body { padding: 0; }
+  .order-item-row { padding: 14px 18px; border-bottom: 1px solid #e5e7eb; }
+  .order-item-row:last-of-type { border-bottom: none; }
+  .order-item-product { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .order-item-row img { width: 48px; height: 48px; object-fit: cover; border-radius: 2px; border: 1px solid #e5e7eb; flex-shrink: 0; }
+  .order-item-info { flex: 1; min-width: 0; }
+  .order-item-name { font-weight: 600; font-size: 13px; }
+  .order-item-meta { font-size: 12px; color: var(--gray); margin-top: 2px; }
+  .order-item-price { font-size: 12.5px; color: var(--gray); text-align: right; white-space: nowrap; }
+  .order-item-qty { font-size: 13px; color: var(--text); text-align: center; white-space: nowrap; }
+  .order-item-sub { font-weight: 600; font-size: 13px; white-space: nowrap; text-align: right; }
+
+  .rx-box { margin-top: 8px; padding: 10px 12px; background: #fff8f8; border: 1px dashed var(--red); border-radius: 6px; }
+  .rx-box .rx-label { color: var(--red); font-weight: 700; font-size: 12px; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .rx-box form, .rx-box .rx-file-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .rx-box input[type=file] { font-size: 12px; }
+  .rx-upload-btn { background: var(--red); color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .rx-upload-btn:hover { background: var(--dark-red); }
+  .rx-uploaded { color: var(--dark-green); font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  /* Review panel's own Rx box sits as a full-width grid row under its line */
+  .review-line .rx-box { grid-column: 1 / -1; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 3px; }
+  .review-line .rx-box .rx-label { color: #374151; }
+  .rx-box .rx-file-error { color: var(--red); font-size: 11.5px; margin-top: 6px; }
+
+  .order-card-foot { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; background: #f9fafb; border-top: 1px solid #d5d8dc; flex-wrap: wrap; gap: 10px; }
+  .order-total { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px; }
+  .order-cancel-btn { background: #fff; color: var(--red); border: 1px solid var(--red); border-radius: 3px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; }
+  .order-cancel-btn:hover { background: var(--red); color: #fff; }
+  .cancel-reason { font-size: 12px; color: var(--dark-red); font-style: italic; }
+
+  /* ── VIEW RECEIPT / PROOF OF REFUND BUTTONS + RECEIPT MODAL ───────────── */
+  .order-receipt-btn { background: #fff; color: var(--dark-green); border: 1px solid var(--dark-green); border-radius: 3px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .order-receipt-btn:hover { background: var(--dark-green); color: #fff; }
+  .order-track-btn { background: var(--dark-green); color: #fff; border: 1px solid var(--dark-green); border-radius: 3px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .order-track-btn:hover { background: var(--green); border-color: var(--green); }
+  .refund-proof-btn { background: #fff; color: #0b4a8f; border: 1px solid #0b4a8f; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .refund-proof-btn:hover { background: #0b4a8f; color: #fff; }
+  .rcpt-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2100; align-items: center; justify-content: center; padding: 16px; }
+  .rcpt-overlay.open { display: flex; }
+  .rcpt-box { background: #fff; border-radius: 12px; width: 100%; max-width: 460px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+  .rcpt-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--border); }
+  .rcpt-head h3 { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; }
+  .rcpt-close { background: none; border: none; font-size: 22px; color: #888; cursor: pointer; line-height: 1; }
+  .rcpt-close:hover { color: var(--red); }
+  .rcpt-body { padding: 18px 22px; overflow-y: auto; flex: 1 1 auto; }
+  .rcpt-header { text-align: center; padding-bottom: 14px; border-bottom: 1px dashed var(--border); margin-bottom: 14px; }
+  .rcpt-logo { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 800; }
+  .rcpt-sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .rcpt-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px; margin-bottom: 14px; }
+  .rcpt-meta .rm-label { color: var(--gray); }
+  .rcpt-meta .rm-value { font-weight: 600; text-align: right; }
+  .rcpt-items { width: 100%; font-size: 12px; border-collapse: collapse; margin-bottom: 12px; }
+  .rcpt-items thead th { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--gray); padding: 4px 0; border-bottom: 1px solid var(--border); text-align: left; }
+  .rcpt-items thead th:last-child, .rcpt-items tbody td:last-child, .rcpt-items tfoot td:last-child { text-align: right; }
+  .rcpt-items tbody td { padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .rcpt-items tbody td:last-child { font-weight: 600; }
+  .rcpt-items tfoot td { padding: 8px 0 2px; font-size: 13px; font-weight: 700; }
+  .rcpt-proof { margin-bottom: 14px; }
+  .rcpt-proof-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .rcpt-proof img { max-width: 100%; max-height: 220px; border: 1px solid var(--border); border-radius: 8px; display: block; }
+  .rcpt-proof-note { font-size: 12px; color: var(--gray); margin-top: 6px; }
+  .rcpt-status { padding: 10px 12px; border-radius: 10px; background: #f0fdf4; color: #166534; font-size: 13px; font-weight: 600; }
+  .rcpt-foot { padding: 12px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
+  .rcpt-btn { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
+  .rcpt-btn:hover { background: #e8e8e8; }
+  @media print {
+    body > *:not(#receiptModal) { display: none !important; }
+    #receiptModal { display: block !important; position: static; background: none; padding: 0; }
+    .rcpt-box { box-shadow: none; max-height: none; max-width: 100%; }
+    .rcpt-foot, .rcpt-close { display: none !important; }
+  }
+
+  .empty-orders { text-align: center; padding: 60px 20px; color: var(--gray); }
+  .empty-orders i { font-size: 40px; color: var(--border); margin-bottom: 14px; }
+  .empty-orders a { color: var(--red); font-weight: 700; }
+
+  /* ── ORDER TABLE — mobile: collapse the 4 columns into a stacked card row ─ */
+  @media (max-width: 600px) {
+    .otable-head { display: none; }
+    .review-line, .order-item-row {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "product product" "price qty" "sub sub";
+      row-gap: 6px;
+    }
+    .review-line-product, .order-item-product { grid-area: product; }
+    .review-line-price, .order-item-price { grid-area: price; text-align: left; }
+    .review-line-qty, .order-item-qty { grid-area: qty; text-align: right; }
+    .review-line-qty::before, .order-item-qty::before { content: "Qty: "; color: var(--gray); }
+    .review-line-sub, .order-item-sub { grid-area: sub; text-align: right; padding-top: 4px; border-top: 1px solid #e5e7eb; }
+    .order-card .otable-head { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -572,530 +814,270 @@
   <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }} &nbsp;|&nbsp;
   <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}
 </div>
+<div class="page-wrap">
 
-@if(isset($searchResults))
-  <div class="section-header">
-    @if(request()->filled('query'))
-      <h2>Search Results for "{{ $searchQuery }}"</h2>
-    @elseif(isset($selectedCategory))
-      <h2>Category: {{ $selectedCategory->name }}</h2>
-    @elseif(isset($selectedSection))
-      <h2>{{ $selectedSection->label }}</h2>
-    @elseif(isset($selectedBrand))
-      <h2>Brand: {{ $selectedBrand->name }}</h2>
-    @else
-      <h2>All Products</h2>
-    @endif
-    <p>Found {{ $searchResults->count() ?? 0 }} matching items</p>
-  </div>
+  <h1 class="page-title"><i class="fas fa-receipt" style="color:var(--red);"></i> My Orders</h1>
 
-  <div style="padding: 0 40px 40px;">
-    @if(($searchResults ?? collect())->isEmpty())
-      <div style="text-align: center; padding: 60px 20px; color: var(--gray);">
-        <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
-        <p style="font-size: 16px; font-weight: 600;">No medicines found under this view.</p>
-        <p style="font-size: 13px; margin-top: 5px;">Please check back later or modify your query keywords.</p>
-        <a href="{{ route('home') }}" class="see-all-btn" style="display: inline-block; margin-top: 20px; float: none;">Clear Filter</a>
-      </div>
-    @else
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
-        @foreach($searchResults as $product)
-          @include('partials.product-card', ['product' => $product])
-        @endforeach
-      </div>
-    @endif
-  </div>
-@else
-  <div class="image-slider">
-  <div class="slider-container">
-    @forelse(($sliders ?? []) as $index => $slide)
-      <div class="slide {{ $index === 0 ? 'active' : '' }}">
-        <img src="{{ asset($slide->image ?? '') }}" alt="{{ $slide->alt ?? '' }}">
-      </div>
-    @empty
-      <div class="slide active" style="display:flex;align-items:center;justify-content:center;background:#f5f5f5;height:100%;">
-        <span style="color:#bbb;font-size:13px;">No banner available</span>
-      </div>
-    @endforelse
-  </div>
-  <button class="slider-arrow prev" onclick="changeSlide(-1)" title="Previous"><i class="fas fa-chevron-left"></i></button>
-  <button class="slider-arrow next" onclick="changeSlide(1)" title="Next"><i class="fas fa-chevron-right"></i></button>
-  <div class="slider-controls">
-    @foreach(($sliders ?? []) as $index => $slide)
-      <span class="slider-dot {{ $index === 0 ? 'active' : '' }}" onclick="currentSlide({{ $index + 1 }})" title="Slide {{ $index + 1 }}"></span>
-    @endforeach
-  </div>
-</div>
+  @if(session('success'))
+    <div class="flash success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
+  @endif
+  @if(session('error'))
+    <div class="flash error"><i class="fas fa-exclamation-circle"></i> {{ session('error') }}</div>
+  @endif
 
-<script>
-let currentIndex = 1, autoplayTimer;
-function showSlide(n) {
-  const slides = document.querySelectorAll('.slide');
-  const dots = document.querySelectorAll('.slider-dot');
-  if (!slides.length) return;
-  if (n > slides.length) currentIndex = 1;
-  if (n < 1) currentIndex = slides.length;
-  slides.forEach(s => s.classList.remove('active'));
-  dots.forEach(d => d.classList.remove('active'));
-  if (slides[currentIndex - 1]) slides[currentIndex - 1].classList.add('active');
-  if (dots[currentIndex - 1]) dots[currentIndex - 1].classList.add('active');
-}
-function changeSlide(n) { clearTimeout(autoplayTimer); showSlide(currentIndex += n); autoplay(); }
-function currentSlide(n) { clearTimeout(autoplayTimer); showSlide(currentIndex = n); autoplay(); }
-function autoplay() { autoplayTimer = setTimeout(() => { currentIndex++; showSlide(currentIndex); autoplay(); }, 4000); }
-showSlide(currentIndex); autoplay();
-</script>
+  {{-- ═══════════════════════════════════════════════════════════════════
+       REVIEW PANEL — staged by "Buy Now" or the cart's "Checkout" button.
+       Nothing here is in the database yet.
+       ═══════════════════════════════════════════════════════════════════ --}}
+  @if($review)
+    <div class="review-panel">
+      <h2><i class="fas fa-clipboard-check"></i> Review Your Order</h2>
 
-<!-- BRAND LOGOS — loaded via Brand::ticker() scope -->
-<div class="brands-ticker">
-  <div class="brands-row">
-    @forelse(($tickerBrands ?? []) as $brand)
-      <a href="{{ route('home', ['brand_id' => $brand->id]) }}" title="View {{ $brand->name ?? 'brand' }} products">
-        <img class="brand-logo" src="{{ asset($brand->ticker_image ?? '') }}" alt="{{ $brand->name ?? '' }}">
-      </a>
-    @empty
-      <span style="color:#bbb;font-size:12px;">No brands available</span>
-    @endforelse
-  </div>
-</div>
+      {{-- One form wraps the whole review + the Place Order button, since a
+           required item's prescription file now has to travel in with the
+           order-placement request itself (enctype must be multipart). The
+           "Cancel" button below submits a separate, unnested tiny form. --}}
+      <form action="{{ route('order.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-<!-- SHOP BY CATEGORY -->
-<div class="section-header">
-  <h2>Shop by Category</h2>
-  <p>View all products per category</p>
-</div>
-<div class="category-grid">
-  @forelse(($categories ?? []) as $cat)
-    <div class="cat-item">
-      <a href="{{ route('home', ['category_id' => $cat->id]) }}">
-        <div class="cat-circle" style="background:{{ $cat->bg_color ?? '#f5f5f5' }};">
-          <i class="{{ $cat->icon_class ?? 'fas fa-pills' }}" style="font-size:40px;color:{{ $cat->icon_color ?? '#ccc' }};"></i>
+        <div class="otable-head">
+          <span class="col-product">Product</span>
+          <span class="col-price">Unit Price</span>
+          <span class="col-qty">Quantity</span>
+          <span class="col-sub">Item Subtotal</span>
         </div>
-        <span>{{ $cat->name ?? '' }}</span>
-      </a>
-    </div>
-  @empty
-      @for($i = 0; $i < 7; $i++)
-    <div class="cat-item">
-      <div class="cat-circle"><i class="fas fa-pills" style="font-size:40px;color:#ccc;"></i></div>
-      <span style="color:#bbb;">No categories</span>
-    </div>
-    @endfor
-  @endforelse
-</div>
 
-<!-- PROMO BANNERS -->
-<div class="promo-banners">
-  @forelse(($promoBanners ?? []) as $banner)
-    <div class="promo-banner {{ $banner->type ?? '' }}" style="gap:20px;justify-content:space-between;padding:0;">
-      <img src="{{ $banner->image ?? '' }}" alt="{{ $banner->alt ?? '' }}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
-    </div>
-  @empty
-  @for($i = 0; $i < 2; $i++)
-    <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;">No promo banners</div>
-    @endfor
-  @endforelse
-</div>
-
-<!-- FEATURED BRANDS — loaded via Brand::featured() scope -->
-<div class="section-header">
-  <h2>Featured Brands</h2>
-  <p>All our exclusive brand selection</p>
-</div>
-<div class="featured-brands">
-  <div class="brands-grid">
-    @forelse(($featuredBrands ?? []) as $brand)
-      <a href="{{ route('home', ['brand_id' => $brand->id]) }}" class="brand-card {{ $brand->featured_color ?? '' }}" title="View {{ $brand->name ?? 'brand' }} products">
-        <img src="{{ asset($brand->featured_image ?? '') }}" alt="{{ $brand->name ?? '' }}" style="width:100%;height:100%;object-fit:cover;">
-      </a>
-    @empty
-    @for($i = 0; $i < 6; $i++)
-      <div class="brand-card white"><span>No brands available</span></div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- OMRON BANNER -->
-@if($fbanner_1)
-<div class="fw-banner">
-  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-    <img src="{{ $fbanner_1->image }}" alt="{{ $fbanner_1->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
-  </div>
-</div>
-@else
-<<div class="fw-banner">
-  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-  <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;">No promo banners</div>  
-  </div>
-</div>
-@endif
-
-<!-- HOT DEALS — products via Section hasMany relationship -->
-<div style="padding: 0 40px 40px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-    <div>
-      <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $section1?->label ?? 'Section 1' }}</h2>
-      <p style="color:var(--gray);font-size:12px;">{{ $section1?->description ?? '' }}</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;">End in:</span>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <div><div class="count-block">00</div><div class="count-label">Days</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Hours</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Minutes</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Seconds</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="product-carousel">
-    @forelse(($section1?->products ?? []) as $product)
-      @include('partials.product-card', ['product' => $product, 'showQty' => true])
-    @empty
-      @for($i = 0; $i < 5; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- RITEMED BANNER -->
-@if($fbanner_2)
-<div class="fw-banner">
-  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-    <img src="{{ $fbanner_2->image }}" alt="{{ $fbanner_2->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
-  </div>
-</div>
-@else
-  <div class="fw-banner">
-  <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
-    <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
-  </div>
-</div>
-@endif
-
-<!-- SALE SECTION — products via Section hasMany relationship -->
-<div class="section-row">
-  <div>
-    <h2>{{ $section2?->label ?? 'Section 2' }}</h2>
-    <p>{{ $section2?->description ?? '' }}</p>
-  </div>
-  <a href="{{ $section2 ? route('home', ['section_id' => $section2->id]) : '#' }}" class="see-all-btn">See all products</a>
-</div>
-<div class="product-section">
-  <div class="product-carousel">
-    @forelse(($section2?->products ?? []) as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 6; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- PROMO PACKS — products via Section hasMany relationship -->
-<div class="section-row">
-  <div>
-    <h2 style="color:var(--text);">{{ $section3?->label ?? 'Section 3' }}</h2>
-    <p>{{ $section3?->description ?? '' }}</p>
-  </div>
-  <a href="{{ $section3 ? route('home', ['section_id' => $section3->id]) : '#' }}" class="see-all-btn">See all products</a>
-</div>
-<div class="product-section">
-  <div class="product-carousel">
-    @forelse(($section3?->products ?? []) as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 6; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- ALAXAN BANNER -->
-<div class="fw-banner">
-  <div style="border-radius:12px;padding:0;min-height:200px;overflow:hidden;">
-    @php $bannerAlaxan = \App\Models\FullWidthBanner::forSection('alaxan'); @endphp
-    @if($bannerAlaxan)
-      <img src="{{ $fbanner_3->image }}" alt="{{ $fbanner_3->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      @else
-      <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
-</div>
-    @endif
-  </div>
-</div>
-
-<!-- BEST SELLERS -->
-<div class="section-row">
-  <div>
-    <h2 style="color:var(--text);">{{ $section4?->label ?? 'Section 4' }}</h2>
-    <p>{{ $section4?->description ?? '' }}</p>
-  </div>
-  <a href="{{ $section4 ? route('home', ['section_id' => $section4->id]) : '#' }}" class="see-all-btn">See all products</a>
-</div>
-<div class="product-section">
-  <div class="product-carousel">
-    @forelse(($section4?->products ?? []) as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 6; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- GUARDIAN SPECIAL DEALS — products via Section hasMany relationship -->
-<div class="section-row">
-  <div>
-    <h2>{{ $section5?->label ?? 'Section 5' }}</h2>
-    <p>{{ $section5?->description ?? '' }}</p>
-  </div>
-  <a href="{{ $section5 ? route('home', ['section_id' => $section5->id]) : '#' }}" class="see-all-btn">See all products</a>
-</div>
-<div class="dual-row-wrap">
-  <div class="dual-row-grid">
-    <div style="border:2px solid var(--red);border-radius:8px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;">
-      <div class="most-sold" style="position:static;margin-bottom:10px;">MOST SOLD</div>
-      <i class="fas fa-pump-soap" style="font-size:80px;color:#e91e63;margin-bottom:16px;"></i>
-      <div style="font-size:9px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;">BABY LIQUID SOAP, PROMOTION</div>
-      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;text-align:center;margin-top:4px;">Guardian Kids Strawberry Yogurt He...</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-top:8px;">₱189.00</div>
-    </div>
-    @forelse(($section5_top ?? []) as $product)
-      @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
-    @empty
-      @for($i = 0; $i < 4; $i++)
-        <div class="product-card">
-          <div class="product-img" style="height:150px;"><i class="fas fa-box-open" style="font-size:36px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-    <div class="dual-row-bottom-grid">
-      @forelse(($section5_bottom ?? []) as $product)
-        @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
-      @empty
-        @for($i = 0; $i < 4; $i++)
-          <div class="product-card">
-            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
-            <div class="product-info">
-              <div class="product-cat">&nbsp;</div>
-              <div class="product-name" style="color:#ccc;">No product available</div>
-              <div class="product-price" style="color:#ccc;">—</div>
+        @foreach($review['lines'] as $line)
+          @php $product = $line['product']; @endphp
+          <div class="review-line">
+            <div class="review-line-product">
+              <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+              <div class="review-line-info">
+                <div class="review-line-name">{{ $product->name }}</div>
+                @if($product->requires_prescription)
+                  <div class="review-line-meta"><span class="review-line-rx"><i class="fas fa-prescription"></i> Rx Required</span></div>
+                @endif
+              </div>
             </div>
-          </div>
-        @endfor
-      @endforelse
-    </div>
-  </div>
-</div>
-
-<!-- SMART REFILLS BANNER -->
-<div class="fw-banner">
-  <div style="background:linear-gradient(135deg,var(--red),#880e4f,#4a148c);border-radius:12px;padding:40px 60px;color:#fff;display:flex;align-items:center;justify-content:space-between;min-height:220px;">
-    <div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:2px;margin-bottom:6px;">{{ $settings['site_name'] ?? 'GGPharmacy' }}</div>
-      <h2 style="font-family:'Montserrat',sans-serif;font-size:44px;font-weight:900;line-height:1.1;">SMART REFILLS,<br>BIGGER SAVINGS!</h2>
-    </div>
-    <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:8px;padding:20px;text-align:center;">
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:4px;">{{ $settings['site_name'] ?? 'GGPharmacy' }}</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:#fff;">Paracetamol</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);">500mg Tablet<br>Analgesic/Antipyretic</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#ffd600;margin-top:6px;">100 Tablets</div>
-    </div>
-  </div>
-</div>
-
-<!-- GG PHARMACY GENERICS — products split into top/bottom rows -->
-<div class="section-row">
-  <div>
-    <h2>{{ $section6?->label ?? 'Section 6' }}</h2>
-    <p>{{ $section6?->description ?? '' }}</p>
-  </div>
-  <a href="{{ $section6 ? route('home', ['section_id' => $section6->id]) : '#' }}" class="see-all-btn">See all products</a>
-</div>
-<div class="dual-row-wrap">
-  <div class="dual-row-grid">
-    <div style="border:2px solid var(--red);border-radius:8px;padding:24px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;">
-      <div>
-        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">{{ $settings['site_name'] ?? 'No Pharmacy Name' }} Generics</h3>
-        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">the Brand you can Trust with Assured Quality &amp; Big Savings</p>
-        <div style="font-size:12px;color:#555;margin-bottom:16px;">Safe • Quality • Effective</div>
-        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--red);">Low Price Everyday</div>
-      </div>
-      <div>
-        <a href="#" style="background:var(--green);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:10px 20px;border-radius:6px;display:inline-block;margin-bottom:12px;">SHOP NOW</a>
-        <a href="#" style="display:block;text-align:center;background:var(--red);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:12px;border-radius:6px;">VIEW ALL NOW</a>
-      </div>
-    </div>
-    @forelse(($section6_top ?? []) as $product)
-      @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
-    @empty
-      @for($i = 0; $i < 4; $i++)
-        <div class="product-card">
-          <div class="product-img" style="height:150px;"><i class="fas fa-box-open" style="font-size:36px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-    <div class="dual-row-bottom-grid">
-      @forelse(($section6_bottom ?? []) as $product)
-        @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
-      @empty
-        @for($i = 0; $i < 4; $i++)
-          <div class="product-card">
-            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
-            <div class="product-info">
-              <div class="product-cat">&nbsp;</div>
-              <div class="product-name" style="color:#ccc;">No product available</div>
-              <div class="product-price" style="color:#ccc;">—</div>
-            </div>
-          </div>
-        @endfor
-      @endforelse
-    </div>
-  </div>
-</div>
-
-<!-- FEATURED PRODUCTS — products via Section hasMany relationship -->
-<div class="featured-section">
-  <h2>{{ $section7?->label ?? 'Section 7' }}</h2>
-  <div class="product-carousel">
-    @forelse(($section7?->products ?? []) as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 6; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-
-<!-- SECTION 8 to ... — every remaining section (sort_order > 7) is pulled straight
-     from the database, so new sections added via the admin panel appear here
-     automatically without touching this template. -->
-@foreach(($extraSections ?? []) as $section)
-<div class="section-row">
-  <div>
-    <h2 style="color:var(--text);">{{ $section->label }}</h2>
-    <p>{{ $section->description }}</p>
-  </div>
-  <a href="{{ route('home', ['section_id' => $section->id]) }}" class="see-all-btn">See all products</a>
-</div>
-<div class="product-section">
-  <div class="product-carousel">
-    @forelse($section->products as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 5; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-@endforeach
-
-<!-- EXCLUSIVELY FOR YOU -->
-<div class="exclusively" style="padding:40px;">
-  <div style="height:2px;background:var(--border);margin-bottom:20px;"></div>
-  <h2>EXCLUSIVELY FOR YOU</h2>
-  <div style="height:2px;background:var(--border);margin-top:20px;"></div>
-</div>
-
-<!-- BLOGS — category loaded via BelongsTo relationship -->
-<div class="blogs">
-  <h2>CATCH UP WITH OUR LATEST BLOGS</h2>
-  <div class="blogs-grid">
-    @forelse(($blogs ?? []) as $blog)
-      <div class="blog-card">
-        @if($blog->hasImage())
-          <div class="blog-img">
-            <img src="{{ asset($blog->image) }}" alt="{{ $blog->title ?? '' }}">
-          </div>
-        @elseif($blog->hasIcon())
-          <div class="blog-img" style="height:150px;background:{{ $blog->icon_bg ?? '#f0f0f0' }};display:flex;align-items:center;justify-content:center;">
-            <i class="{{ $blog->icon_class ?? 'fas fa-newspaper' }}" style="font-size:60px;color:{{ $blog->icon_color ?? '#999' }};opacity:0.4;"></i>
-          </div>
-        @endif
-        <div style="display:flex;">
-          <div class="blog-date" style="min-width:50px;"><span>{{ $blog->day ?? '' }}</span><small>{{ $blog->month ?? '' }}</small></div>
-          <div class="blog-body" style="padding:14px 14px 10px;">
-            {{-- Category name shown via BelongsTo relationship --}}
-            @if($blog->category)
-              <div class="product-cat" style="margin-bottom:4px;">{{ $blog->category->name ?? '' }}</div>
+            <div class="review-line-price">{{ $product->formattedPrice() }}</div>
+            <div class="review-line-qty">{{ $line['quantity'] }}</div>
+            <div class="review-line-sub">₱{{ number_format($line['subtotal'], 2) }}</div>
+            @if($line['available_stock'] < $line['quantity'])
+              <div class="review-warning">Only {{ $line['available_stock'] }} left in stock — reduce the quantity to place this order.</div>
             @endif
-            <h4>{{ $blog->title ?? '' }}</h4>
-            <p>{{ $blog->excerpt ?? '' }}</p>
-            <div class="no-comments">{{ $blog->commentLabel() ?? '' }}</div>
+
+            {{-- Rx items must have a prescription attached before the order
+                 can be placed at all — no more "upload it after" for these. --}}
+            @if($product->requires_prescription)
+              <div class="rx-box">
+                <div class="rx-label"><i class="fas fa-prescription"></i> Upload prescription to place this order</div>
+                <div class="rx-file-row">
+                  <input type="file" name="prescriptions[{{ $product->id }}]" accept=".jpg,.jpeg,.png,.pdf" required>
+                </div>
+                @error('prescriptions.' . $product->id)
+                  <div class="rx-file-error">{{ $message }}</div>
+                @enderror
+              </div>
+            @endif
+          </div>
+        @endforeach
+
+        {{-- Payment method — chosen here, before the order is placed. Proof of
+             payment (for "app") can only be uploaded later, once the pharmacy
+             has confirmed the order. --}}
+        @php $selectedPayment = old('payment_method', 'cash'); @endphp
+        <div class="pay-box">
+          <div class="pay-box-title"><i class="fas fa-wallet" style="color:#6b7280;"></i> Payment Method</div>
+          <div class="pay-options">
+            <label class="pay-option">
+              <input type="radio" name="payment_method" value="cash" {{ $selectedPayment === 'cash' ? 'checked' : '' }} required>
+              <span class="pay-option-body">
+                <i class="fas fa-money-bill-wave"></i>
+                <span><strong>Cash</strong><small>Pay at the pharmacy when you pick up your order</small></span>
+              </span>
+            </label>
+            <label class="pay-option">
+              <input type="radio" name="payment_method" value="app" {{ $selectedPayment === 'app' ? 'checked' : '' }} required>
+              <span class="pay-option-body">
+                <i class="fas fa-mobile-alt"></i>
+                <span><strong>App</strong><small>Pay through an online app (e.g. GCash, Maya)</small></span>
+              </span>
+            </label>
+          </div>
+          <div class="pay-note" id="payAppNote" style="{{ $selectedPayment === 'app' ? '' : 'display:none;' }}">
+            <i class="fas fa-info-circle"></i> You'll be able to upload your proof of payment here in My Orders once the pharmacy confirms your order.
+          </div>
+          @error('payment_method')
+            <div class="pay-error">{{ $message }}</div>
+          @enderror
+        </div>
+
+        <div class="review-footer">
+          <button type="button" class="btn-discard-link" onclick="document.getElementById('discardReviewForm').submit();">Cancel</button>
+
+          <div class="review-footer-summary">
+            <div class="review-footer-total">
+              <span class="label">Total ({{ count($review['lines']) }} item{{ count($review['lines']) == 1 ? '' : 's' }})</span>
+              <span class="amount">₱{{ number_format($review['total'], 2) }}</span>
+            </div>
+            <button type="submit" class="btn-place-order"><i class="fas fa-check"></i> Place Order</button>
           </div>
         </div>
-      </div>
-    @empty
-    @for($i = 0; $i < 4; $i++)
-      <div class="blog-card" style="padding:30px;text-align:center;color:#bbb;">
-        <i class="fas fa-newspaper" style="font-size:36px;margin-bottom:10px;display:block;color:#ddd;"></i>
-        No blog posts available yet.
-      </div>
-      @endfor
-      
-    @endforelse
-  </div>
-</div>
-@endif
+      </form>
 
+      <form id="discardReviewForm" action="{{ route('order.review.discard') }}" method="POST" style="display:none;">
+        @csrf
+      </form>
+    </div>
+  @endif
+
+  {{-- ═══════════════════════════════════════════════════════════════════
+       ORDER HISTORY
+       ═══════════════════════════════════════════════════════════════════ --}}
+  @if($orders->isEmpty())
+
+    <div class="empty-orders">
+      <i class="fas fa-receipt"></i>
+      <h2 style="margin-bottom:8px;">No orders yet</h2>
+      <p>Once you place an order, it'll show up here.</p>
+      <p style="margin-top:14px;"><a href="{{ route('home') }}">Start shopping →</a></p>
+    </div>
+
+  @else
+
+    <div class="orders-heading">Order History</div>
+
+    @foreach($orders as $order)
+      <div class="order-card">
+        <div class="order-card-head">
+          <div>
+            <div class="order-number">{{ $order->order_number }}</div>
+            <div class="order-date">Placed {{ $order->created_at->format('M j, Y g:i A') }}</div>
+          </div>
+          <span class="status-pill status-{{ $order->status }}">{{ str_replace('_', ' ', $order->status) }}</span>
+        </div>
+
+        <div class="order-card-body">
+          <div class="otable-head">
+            <span class="col-product">Product</span>
+            <span class="col-price">Unit Price</span>
+            <span class="col-qty">Quantity</span>
+            <span class="col-sub">Item Subtotal</span>
+          </div>
+
+          @foreach($order->items as $item)
+            @php $product = $item->product; @endphp
+            <div class="order-item-row">
+              <div class="order-item-product">
+                @if($product)
+                  <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
+                @endif
+                <div class="order-item-info">
+                  <div class="order-item-name">{{ $product->name ?? 'Product no longer available' }}</div>
+
+                  @if($item->requiresPrescription())
+                    @if($item->prescription_file)
+                      <div class="rx-uploaded"><i class="fas fa-check-circle"></i> Prescription uploaded &nbsp;·&nbsp; <a href="{{ asset($item->prescription_file) }}" target="_blank" style="text-decoration:underline;">View</a></div>
+                    @elseif(!$order->isTerminal())
+                      <div class="rx-box">
+                        <div class="rx-label"><i class="fas fa-prescription"></i> Prescription required for this item</div>
+                        <form action="{{ route('order.prescription.upload', $item) }}" method="POST" enctype="multipart/form-data">
+                          @csrf
+                          <input type="file" name="prescription" accept=".jpg,.jpeg,.png,.pdf" required>
+                          <button type="submit" class="rx-upload-btn">Upload</button>
+                        </form>
+                      </div>
+                    @else
+                      <div class="rx-box"><span style="color:var(--gray);font-size:12px;">Prescription was not uploaded before this order was closed.</span></div>
+                    @endif
+                  @endif
+                </div>
+              </div>
+              <div class="order-item-price">₱{{ number_format($item->unit_price, 2) }}</div>
+              <div class="order-item-qty">{{ $item->quantity }}</div>
+              <div class="order-item-sub">₱{{ number_format($item->subtotal, 2) }}</div>
+            </div>
+          @endforeach
+        </div>
+
+        {{-- Payment method + proof of payment. Proof can only be uploaded while
+             the order is "confirmed". --}}
+        <div class="order-pay">
+          <div class="order-pay-row">
+            <span class="order-pay-label">Payment:</span>
+            @if($order->isOnlinePayment())
+              <span class="pay-pill app"><i class="fas fa-mobile-alt"></i> App</span>
+              @if($order->status === 'confirmed')
+                <a href="#" class="pay-accounts-link" onclick="openPaymentAccounts(); return false;">Payment Accounts</a>
+              @endif
+            @else
+              <span class="pay-pill cash"><i class="fas fa-money-bill-wave"></i> Cash</span>
+            @endif
+          </div>
+
+          @if($order->isOnlinePayment())
+            @if($order->canUploadProofOfPayment())
+              <div class="proof-box">
+                <div class="proof-label"><i class="fas fa-receipt"></i> {{ $order->hasProofOfPayment() ? 'Replace your proof of payment' : 'Your order is confirmed — upload your proof of payment' }}</div>
+                @if($order->hasProofOfPayment())
+                  <div class="proof-uploaded" style="margin-bottom:8px;"><i class="fas fa-check-circle"></i> Proof uploaded &nbsp;·&nbsp; <a href="{{ asset($order->proof_of_payment) }}" target="_blank" style="text-decoration:underline;">View</a></div>
+                @endif
+                <form action="{{ route('order.proof.upload', $order) }}" method="POST" enctype="multipart/form-data">
+                  @csrf
+                  <input type="file" name="proof_of_payment" accept=".jpg,.jpeg,.png,.pdf" required>
+                  <button type="submit" class="proof-upload-btn">Upload</button>
+                </form>
+                @if($errors->getBag('proof_' . $order->id)->has('proof_of_payment'))
+                  <div class="proof-error">{{ $errors->getBag('proof_' . $order->id)->first('proof_of_payment') }}</div>
+                @endif
+              </div>
+            @elseif($order->hasProofOfPayment())
+              <div class="proof-uploaded"><i class="fas fa-check-circle"></i> Proof of payment uploaded &nbsp;·&nbsp; <a href="{{ asset($order->proof_of_payment) }}" target="_blank" style="text-decoration:underline;">View</a></div>
+            @elseif($order->status === 'pending')
+              <div class="proof-hint"><i class="fas fa-hourglass-half"></i> You can upload your proof of payment once the pharmacy confirms this order.</div>
+            @elseif($order->status !== 'cancelled')
+              <div class="proof-hint">No proof of payment was uploaded for this order.</div>
+            @endif
+
+            {{-- Cancelled after paying online and the pharmacy has already refunded --}}
+            @if($order->status === 'cancelled' && $order->hasProofOfRefund())
+              <div class="proof-uploaded"><i class="fas fa-check-circle"></i> Your refund has been sent &nbsp;·&nbsp;
+                <a href="{{ asset($order->proof_of_refund) }}" target="_blank" rel="noopener" style="text-decoration:underline;">View</a>
+              </div>
+            @endif
+          @endif
+        </div>
+
+        <div class="order-card-foot">
+          <div>
+            <div class="order-total">Total: ₱{{ number_format($order->total, 2) }}</div>
+            @if($order->status === 'cancelled' && $order->cancellation_reason)
+              <div class="cancel-reason">Reason: {{ $order->cancellation_reason }}</div>
+            @endif
+          </div>
+
+          @if($order->status === 'picked_up')
+            <button type="button" class="order-receipt-btn" onclick="openReceipt({{ $order->id }})"><i class="fas fa-receipt"></i> View Receipt</button>
+          @endif
+
+          @if($order->status === 'ready')
+            <a href="{{ route('order.track', $order) }}" class="order-track-btn"><i class="fas fa-map-marked-alt"></i> Track Order</a>
+          @endif
+
+          @if($order->isCancellable())
+            <form action="{{ route('order.cancel', $order) }}" method="POST" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
+              @csrf
+              @method('PUT')
+              <button type="submit" class="order-cancel-btn"><i class="fas fa-times"></i> Cancel Order</button>
+            </form>
+          @endif
+        </div>
+      </div>
+    @endforeach
+
+  @endif
+
+</div><!-- /.page-wrap -->
 <!-- FOOTER -->
 
 <footer>
@@ -1319,6 +1301,276 @@ showSlide(currentIndex); autoplay();
 <div class="shipping-bar">
   {{ $settings['shipping_message'] ?? 'No shipping message' }} &nbsp;<a href="#">Dismiss</a>
 </div>
+{{-- ═══════════ PAYMENT ACCOUNTS MODAL (confirmed app-payment orders) ═══════════ --}}
+@php
+  $paymentAccountsData = collect($paymentAccounts ?? [])->map(fn ($a) => [
+      'id'     => $a->id,
+      'app'    => $a->payment_app,
+      'name'   => $a->account_name,
+      'number' => $a->account_number,
+      'image'  => $a->image_url,
+  ])->values();
+@endphp
+<div class="pa-overlay" id="paymentAccountsModal">
+  <div class="pa-box">
+    <div class="pa-head">
+      <button type="button" class="pa-back" id="paBack"><i class="fas fa-arrow-left"></i> Back</button>
+      <h3 id="paTitle">Payment Accounts</h3>
+      <button type="button" class="pa-close" aria-label="Close" onclick="closePaymentAccounts()">&times;</button>
+    </div>
+    <div class="pa-body">
+      <div id="paListView">
+        <div class="pa-hint">Choose a payment app to see where to send your payment.</div>
+        <div class="pa-list" id="paList"></div>
+        <div class="pa-empty" id="paEmpty" style="display:none;">No payment accounts are available right now. Please contact the pharmacy.</div>
+      </div>
+      <div id="paDetailView" style="display:none;">
+        <div class="pa-detail" id="paDetail">
+          <div class="pa-info">
+            <div class="pa-detail-app" id="paDetailApp"></div>
+            <div class="pa-row"><span class="pa-label">Account Name</span><span class="pa-value" id="paDetailName"></span></div>
+            <div class="pa-row">
+              <span class="pa-label">Account Number</span>
+              <div class="pa-number-line">
+                <span class="pa-value" id="paDetailNumber"></span>
+                <button type="button" class="pa-copy" id="paCopy">Copy</button>
+              </div>
+            </div>
+          </div>
+          <div class="pa-image" id="paDetailImage" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{{-- Full-size viewer for the payment account image --}}
+<div class="pa-lightbox" id="paLightbox">
+  <button type="button" class="pa-lightbox-close" aria-label="Close">&times;</button>
+  <img src="" alt="Payment account full image" id="paLightboxImg">
+</div>
+
+<script>
+(function () {
+  const ACCOUNTS = @json($paymentAccountsData);
+  const modal    = document.getElementById('paymentAccountsModal');
+  const lightbox = document.getElementById('paLightbox');
+  const $        = id => document.getElementById(id);
+
+  function showList() {
+    $('paListView').style.display   = '';
+    $('paDetailView').style.display = 'none';
+    $('paBack').style.display       = 'none';
+    $('paTitle').textContent        = 'Payment Accounts';
+  }
+
+  function openLightbox(src, alt) {
+    $('paLightboxImg').src = src;
+    $('paLightboxImg').alt = alt || 'Payment account full image';
+    lightbox.classList.add('open');
+  }
+  function closeLightbox() { lightbox.classList.remove('open'); }
+
+  function showDetail(acc) {
+    $('paDetailApp').textContent    = acc.app;
+    $('paDetailName').textContent   = acc.name;
+    $('paDetailNumber').textContent = acc.number;
+    $('paCopy').textContent         = 'Copy';
+
+    const imgBox = $('paDetailImage');
+    imgBox.innerHTML = '';
+    if (acc.image) {
+      const img = document.createElement('img');
+      img.src = acc.image;
+      img.alt = acc.app + ' account';
+      img.title = 'Click to view full image';
+      img.addEventListener('click', () => openLightbox(acc.image, img.alt));
+      const hint = document.createElement('div');
+      hint.className = 'pa-image-hint';
+      hint.textContent = 'Click the image to view it full size';
+      imgBox.appendChild(img);
+      imgBox.appendChild(hint);
+      imgBox.style.display = '';
+      $('paDetail').classList.remove('no-image');
+    } else {
+      imgBox.style.display = 'none';
+      $('paDetail').classList.add('no-image');
+    }
+
+    $('paListView').style.display   = 'none';
+    $('paDetailView').style.display = '';
+    $('paBack').style.display       = 'inline-flex';
+    $('paTitle').textContent        = acc.app;
+  }
+
+  // Build the list of payment apps once
+  const list = $('paList');
+  ACCOUNTS.forEach(acc => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'pa-app-btn';
+    const label = document.createElement('span');
+    label.textContent = acc.app;
+    const chev = document.createElement('i');
+    chev.className = 'fas fa-chevron-right';
+    btn.appendChild(label);
+    btn.appendChild(chev);
+    btn.addEventListener('click', () => showDetail(acc));
+    list.appendChild(btn);
+  });
+  $('paEmpty').style.display = ACCOUNTS.length ? 'none' : '';
+
+  $('paBack').addEventListener('click', showList);
+
+  $('paCopy').addEventListener('click', function () {
+    const text = $('paDetailNumber').textContent;
+    const done = () => { this.textContent = 'Copied!'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => {});
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  });
+
+  window.openPaymentAccounts  = function () { showList(); modal.classList.add('open'); };
+  window.closePaymentAccounts = function () { closeLightbox(); modal.classList.remove('open'); };
+  modal.addEventListener('click', e => { if (e.target === modal) closePaymentAccounts(); });
+  lightbox.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (lightbox.classList.contains('open')) closeLightbox();
+    else closePaymentAccounts();
+  });
+})();
+</script>
+
+{{-- ═══════════ RECEIPT MODAL (picked-up orders) — same layout as the admin receipt ═══════════ --}}
+@php
+  $receiptData = $orders->where('status', 'picked_up')->mapWithKeys(function ($o) {
+      return [$o->id => [
+          'orderNumber' => $o->order_number,
+          'placed'      => $o->created_at->format('M j, Y g:i A'),
+          'pickedUp'    => optional($o->picked_up_at)->format('M j, Y g:i A'),
+          'method'      => $o->isOnlinePayment() ? 'App' : 'Cash',
+          'online'      => $o->isOnlinePayment(),
+          'total'       => (float) $o->total,
+          'proof'       => $o->hasProofOfPayment() ? asset($o->proof_of_payment) : null,
+          'items'       => $o->items->map(fn ($i) => [
+              'name'  => $i->product->name ?? 'Product no longer available',
+              'qty'   => (int) $i->quantity,
+              'price' => (float) $i->unit_price,
+              'sub'   => (float) $i->subtotal,
+          ])->values(),
+      ]];
+  });
+  $receiptCustomer = Auth::user() ? Auth::user()->full_name : '';
+@endphp
+<div class="rcpt-overlay" id="receiptModal">
+  <div class="rcpt-box">
+    <div class="rcpt-head">
+      <h3>Order Receipt — <span id="rcptOrderId"></span></h3>
+      <button type="button" class="rcpt-close" aria-label="Close" onclick="closeReceipt()">&times;</button>
+    </div>
+    <div class="rcpt-body">
+      <div class="rcpt-header">
+        <div class="rcpt-logo">💊 {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</div>
+        <div class="rcpt-sub">Official Sales Receipt</div>
+      </div>
+      <div class="rcpt-meta">
+        <span class="rm-label">Customer</span><span class="rm-value" id="rcptCustomer">—</span>
+        <span class="rm-label">Order #</span><span class="rm-value" id="rcptNumber">—</span>
+        <span class="rm-label">Date</span><span class="rm-value" id="rcptDate">—</span>
+        <span class="rm-label">Picked up</span><span class="rm-value" id="rcptPickedUp">—</span>
+        <span class="rm-label">Payment</span><span class="rm-value" id="rcptMethod">—</span>
+      </div>
+      <table class="rcpt-items">
+        <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
+        <tbody id="rcptItems"></tbody>
+        <tfoot><tr><td colspan="3">Total</td><td id="rcptTotal">—</td></tr></tfoot>
+      </table>
+      <div class="rcpt-proof" id="rcptProofSection" style="display:none;">
+        <div class="rcpt-proof-label">Proof of Payment</div>
+        <div id="rcptProofMedia"></div>
+        <div class="rcpt-proof-note" id="rcptProofNote"></div>
+      </div>
+      <div class="rcpt-status">Transaction completed.</div>
+    </div>
+    <div class="rcpt-foot">
+      <button type="button" class="rcpt-btn" onclick="window.print()"><i class="fas fa-print"></i> Print Receipt</button>
+      <button type="button" class="rcpt-btn" onclick="closeReceipt()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const RECEIPTS  = @json($receiptData);
+  const CUSTOMER  = @json($receiptCustomer);
+  const modal     = document.getElementById('receiptModal');
+  const peso      = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const $         = id => document.getElementById(id);
+
+  window.openReceipt = function (id) {
+    const r = RECEIPTS[id];
+    if (!r) return;
+
+    $('rcptOrderId').textContent  = r.orderNumber;
+    $('rcptNumber').textContent   = r.orderNumber;
+    $('rcptCustomer').textContent = CUSTOMER || '—';
+    $('rcptDate').textContent     = r.placed;
+    $('rcptPickedUp').textContent = r.pickedUp || '—';
+    $('rcptMethod').textContent   = r.method;
+    $('rcptTotal').textContent    = peso(r.total);
+
+    const tbody = $('rcptItems');
+    tbody.innerHTML = '';
+    r.items.forEach(item => {
+      const tr = document.createElement('tr');
+      [item.name, item.qty, peso(item.price), peso(item.sub)].forEach(val => {
+        const td = document.createElement('td');
+        td.textContent = val;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    // Proof of payment — app orders only (image if uploaded, notice if not)
+    const section = $('rcptProofSection');
+    const media   = $('rcptProofMedia');
+    media.innerHTML = '';
+    if (r.proof) {
+      if (/\.pdf$/i.test(r.proof)) {
+        const a = document.createElement('a');
+        a.href = r.proof; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = 'Open proof of payment (PDF)';
+        media.appendChild(a);
+      } else {
+        const img = document.createElement('img');
+        img.src = r.proof; img.alt = 'Proof of payment';
+        media.appendChild(img);
+      }
+      $('rcptProofNote').textContent = 'Customer already paid via online app.';
+      section.style.display = '';
+    } else if (r.online) {
+      $('rcptProofNote').textContent = 'No proof of payment uploaded.';
+      section.style.display = '';
+    } else {
+      section.style.display = 'none';
+    }
+
+    modal.classList.add('open');
+  };
+
+  window.closeReceipt = function () { modal.classList.remove('open'); };
+  modal.addEventListener('click', e => { if (e.target === modal) closeReceipt(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReceipt(); });
+})();
+</script>
 
 {{-- Shared add-to-cart logic: POSTs to /cart/add, updates .cart-badge elements,
      and fires cart:guest / cart:added / cart:error events on document. --}}
@@ -1646,6 +1898,18 @@ showSlide(currentIndex); autoplay();
     refreshBadge();
   })();
 
+  // ── Payment method: show the "proof comes later" note when App is chosen ───
+  (function () {
+    const note = document.getElementById('payAppNote');
+    if (!note) return;
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const chosen = document.querySelector('input[name="payment_method"]:checked');
+        note.style.display = chosen && chosen.value === 'app' ? '' : 'none';
+      });
+    });
+  })();
+
   document.querySelectorAll('.qty-btn').forEach(btn => {
     btn.addEventListener('click', function() {
       const input = this.parentElement.querySelector('.qty-input');
@@ -1662,5 +1926,19 @@ showSlide(currentIndex); autoplay();
 (function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
 </script>
 @endif
+
+<script>
+  // Keep the header cart badge in sync on load (cart.js also updates it on
+  // every add-to-cart, this just covers the initial page load).
+  document.addEventListener('DOMContentLoaded', () => {
+    fetch('{{ route('cart.count') }}', { headers: { 'Accept': 'application/json' } })
+      .then(res => res.json())
+      .then(data => {
+        document.querySelectorAll('.cart-badge').forEach(b => { b.textContent = data.cart_count; });
+      })
+      .catch(() => {});
+  });
+</script>
+
 </body>
 </html>

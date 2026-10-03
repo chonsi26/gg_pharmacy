@@ -927,9 +927,20 @@ tbody tr:last-child td { border-bottom: none; }
   .wc-pill.off{ background:var(--wc-bg); color:var(--wc-subtle); border:1px solid var(--wc-border); }
 
   /* Settings form */
-  .wc-settings-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:16px 22px; padding:20px; }
-  @media (max-width: 760px){ .wc-settings-grid{ grid-template-columns:1fr; } }
-  .wc-field{ display:flex; flex-direction:column; gap:6px; }
+  /* Settings: grouped sections */
+  .wc-settings-grid{ display:flex; flex-direction:column; }
+  .wc-group{ padding:22px 20px 24px; border-bottom:1px solid var(--wc-border); }
+  .wc-group:last-child{ border-bottom:0; }
+  .wc-group-head{ display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .wc-group-icon{
+    width:28px; height:28px; border-radius:8px; background:var(--wc-primary-light); color:var(--wc-primary-dark);
+    display:flex; align-items:center; justify-content:center; font-size:12px; flex-shrink:0;
+  }
+  .wc-group-title{ font-size:13px; font-weight:800; color:var(--wc-text); margin:0; letter-spacing:.01em; }
+  .wc-group-desc{ font-size:12px; color:var(--wc-subtle); margin:1px 0 0; }
+  .wc-group-fields{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:18px 22px; align-items:start; }
+  @media (max-width: 760px){ .wc-group-fields{ grid-template-columns:1fr; } }
+  .wc-field{ display:flex; flex-direction:column; gap:6px; min-width:0; }
   .wc-field.span-2{ grid-column: span 2; }
   @media (max-width: 760px){ .wc-field.span-2{ grid-column: span 1; } }
   .wc-field label{ font-size:12px; font-weight:700; color:var(--wc-text); }
@@ -940,16 +951,16 @@ tbody tr:last-child td { border-bottom: none; }
     outline:none; transition:border-color .15s ease; width:100%;
   }
   .wc-input:focus, .wc-textarea:focus, .wc-select:focus{ border-color:var(--wc-primary); background:var(--wc-card); }
-  .wc-textarea{ resize:vertical; min-height:56px; font-family:inherit; }
+  .wc-textarea{ resize:vertical; min-height:72px; font-family:inherit; line-height:1.5; }
   .wc-card-foot{ display:flex; justify-content:flex-end; gap:10px; padding:16px 20px; border-top:1px solid var(--wc-border); background:var(--wc-bg); }
 
   /* File upload control */
-  .wc-upload{ display:flex; align-items:center; gap:10px; }
+  .wc-upload{ display:flex; align-items:center; gap:14px; padding:10px 12px; border:1px solid var(--wc-border); border-radius:10px; background:var(--wc-bg); }
   .wc-upload-box{
-    width:56px; height:56px; border-radius:10px; border:1.5px dashed var(--wc-border);
+    width:96px; height:64px; border-radius:10px; border:1.5px dashed var(--wc-border); background:var(--wc-card); padding:6px;
     display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0; background:var(--wc-bg);
   }
-  .wc-upload-box img{ width:100%; height:100%; object-fit:cover; }
+  .wc-upload-box img{ width:100%; height:100%; object-fit:contain; }
   .wc-upload-box svg{ width:18px; height:18px; color:var(--wc-subtle); }
   .wc-upload-actions{ display:flex; flex-direction:column; gap:4px; }
   .wc-upload-filename{ font-size:11.5px; color:var(--wc-subtle); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -1116,12 +1127,13 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="wc-wrap">
   <nav class="wc-tabs">
     <a class="wc-tab active" href="{{ route('admin.pharmacy') }}"><i class="fas fa-store"></i> Settings</a>
-    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> Full-Width Banners</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> FW Banners</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sections') }}"><i class="fas fa-layer-group"></i> Sections</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_promo_banners') }}"><i class="fas fa-bullhorn"></i> Promo Banner</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sliders') }}"><i class="fas fa-images"></i> Sliders</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_categories') }}"><i class="fas fa-th-large"></i> Categories</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i> Accounts</a>
   </nav>
   <div class="wc-group-label active" data-group="storefront">Storefront content · Edit only</div>
   <section class="wc-card wc-section active" id="sec-settings">
@@ -1185,29 +1197,41 @@ overlay.addEventListener('click', () => {
 // silently drops when saving — so nothing would ever get inserted.
 let settings = Object.assign({}, {!! json_encode($settings ?? [], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_FORCE_OBJECT) !!});
 const settingsBackup = JSON.parse(JSON.stringify(settings));
-const SETTINGS_FIELDS = [
-  { key:'site_name',        label:'Site name',            type:'text' },
-  { key:'tagline',           label:'Tagline',               type:'text', span2:true },
-  { key:'logo',               label:'Logo',                   type:'image' },
-  { key:'logo2',               label:'Logo2',                   type:'image' },
-  { key:'phone',              label:'Phone number',           type:'text' },
-  { key:'phone_label',        label:'Phone label',            type:'text' },
-  { key:'email',              label:'Email address',          type:'text' },
-  { key:'working_hours',      label:'Working hours',          type:'text' },
-  { key:'address_line1',      label:'Address line 1',         type:'text' },
-  { key:'address_line2',      label:'Address line 2',         type:'text' },
-  { key:'address_line3',      label:'Address line 3',         type:'text' },
-  { key:'location_strip',     label:'Location strip text',    type:'text' },
-  { key:'facebook_url',       label:'Facebook URL',           type:'text' },
-  { key:'instagram_url',      label:'Instagram URL',          type:'text' },
-  { key:'payment_methods',    label:'Payment methods',        type:'text', hint:'Comma-separated, e.g. VISA,MC,GCash,PayMaya', span2:true },
-  { key:'shipping_message',   label:'Shipping message',       type:'textarea', span2:true },
-  { key:'footer_top_text',    label:'Footer top text',        type:'text' },
-  { key:'copyright',          label:'Copyright text',         type:'text', span2:true },
-  { key:'newsletter_intro',   label:'Newsletter intro text',  type:'textarea', span2:true },
-  { key:'newsletter_note',    label:'Newsletter privacy note',type:'textarea', span2:true },
-  { key:'chatbase_id',        label:'Chatbase widget ID',     type:'text' },
+const SETTINGS_GROUPS = [
+  { title:'Branding', desc:'Site name, tagline and logos', icon:'fa-store', fields:[
+    { key:'site_name',  label:'Site name', type:'text' },
+    { key:'tagline',    label:'Tagline',   type:'text' },
+    { key:'logo',       label:'Logo',      type:'image' },
+    { key:'logo2',      label:'Logo 2',    type:'image' },
+  ]},
+  { title:'Contact', desc:'How customers can reach you', icon:'fa-phone', fields:[
+    { key:'phone',         label:'Phone number',  type:'text' },
+    { key:'phone_label',   label:'Phone label',   type:'text' },
+    { key:'email',         label:'Email address', type:'text' },
+    { key:'working_hours', label:'Working hours', type:'text' },
+  ]},
+  { title:'Location', desc:'Store address and map', icon:'fa-map-marker-alt', fields:[
+    { key:'address_line1',  label:'Address line 1',      type:'text' },
+    { key:'address_line2',  label:'Address line 2',      type:'text' },
+    { key:'address_line3',  label:'Address line 3',      type:'text' },
+    { key:'location_strip', label:'Location strip text', type:'text' },
+    { key:'map_link',       label:'Google Map embed link', type:'map', span2:true, hint:'Google Maps → Share → Embed a map → paste the iframe code or just its src link.' },
+  ]},
+  { title:'Social, Payments & Integrations', desc:'Social profiles, accepted payments and chat widget', icon:'fa-share-alt', fields:[
+    { key:'facebook_url',    label:'Facebook URL',      type:'text' },
+    { key:'instagram_url',   label:'Instagram URL',     type:'text' },
+    { key:'payment_methods', label:'Payment methods',   type:'text', hint:'Comma-separated, e.g. VISA,MC,GCash,PayMaya' },
+    { key:'chatbase_id',     label:'Chatbase widget ID', type:'text' },
+  ]},
+  { title:'Messaging & Footer', desc:'Shipping notice, footer and newsletter text', icon:'fa-align-left', fields:[
+    { key:'shipping_message', label:'Shipping message',        type:'textarea', span2:true },
+    { key:'footer_top_text',  label:'Footer top text',         type:'text' },
+    { key:'copyright',        label:'Copyright text',          type:'text' },
+    { key:'newsletter_intro', label:'Newsletter intro text',   type:'textarea' },
+    { key:'newsletter_note',  label:'Newsletter privacy note', type:'textarea' },
+  ]},
 ];
+const SETTINGS_FIELDS = SETTINGS_GROUPS.flatMap(g => g.fields);
 /* ============================================================================
    HELPERS
 ============================================================================ */
@@ -1221,6 +1245,15 @@ function toast(msg){
 
 function esc(str){
   return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// Stored logo paths are relative (the layout renders them with asset()), so resolve
+// them against the site's asset root; otherwise they 404 under /admin/... URLs.
+const ASSET_BASE = {!! json_encode(rtrim(asset(''), '/')) !!};
+function assetUrl(path){
+  if(!path) return '';
+  if(/^(https?:)?\/\//i.test(path) || /^(data|blob):/i.test(path)) return path;
+  return ASSET_BASE + '/' + String(path).replace(/^\/+/, '');
 }
 
 function fileBase(path){
@@ -1259,50 +1292,153 @@ function readFileAsDataURL(file){
 /* ============================================================================
    RENDER: SETTINGS
 ============================================================================ */
+function settingsControl(f){
+  const val = settings[f.key] ?? '';
+  if(f.type === 'textarea'){
+    return `<textarea class="wc-textarea" data-setting="${f.key}" oninput="settings['${f.key}']=this.value">${esc(val)}</textarea>`;
+  }
+  if(f.type === 'image'){
+    return `
+      <div class="wc-upload">
+        <div class="wc-upload-box" id="settingsPreview_${f.key}">${val ? `<img src="${esc(assetUrl(val))}" alt="${esc(f.label)}" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-image&quot;></i>'">` : '<i class="fas fa-image"></i>'}</div>
+        <div class="wc-upload-actions">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+            <i class="fas fa-upload"></i> Upload ${esc(f.label.toLowerCase())}
+            <input type="file" class="wc-file-input" accept="image/*" onchange="handleSettingsLogoUpload(this,'${f.key}')">
+          </label>
+          <span class="wc-upload-filename" id="settingsFilename_${f.key}">${esc(fileBase(val)) || 'No file selected'}</span>
+        </div>
+      </div>`;
+  }
+  if(f.type === 'map'){
+    return `
+      <div style="display:flex; gap:8px;">
+        <input class="wc-input" type="text" id="mapLinkInput" data-setting="${f.key}" value="${esc(val)}"
+               placeholder="https://www.google.com/maps/embed?pb=..." autocomplete="off"
+               oninput="handleMapLinkInput(this)" onpaste="setTimeout(()=>handleMapLinkInput(this),0)">
+        <button type="button" class="btn btn-outline btn-sm" onclick="clearMapLink()" title="Remove map link"><i class="fas fa-times"></i> Clear</button>
+      </div>
+      <div class="hint" id="mapLinkStatus"></div>
+      <div id="mapLinkPreview" style="margin-top:6px; border:1px solid var(--wc-border); border-radius:10px; overflow:hidden; background:var(--wc-bg); aspect-ratio:16/7; min-height:180px;"></div>`;
+  }
+  return `<input class="wc-input" type="text" data-setting="${f.key}" value="${esc(val)}" oninput="settings['${f.key}']=this.value">`;
+}
+
 function renderSettings(){
   const grid = document.getElementById('settingsGrid');
   document.getElementById('settingsCount').textContent = SETTINGS_FIELDS.length + ' fields';
-  grid.innerHTML = SETTINGS_FIELDS.map(f => {
-    const val = settings[f.key] ?? '';
-    const spanClass = f.span2 ? ' span-2' : '';
-    let control = '';
-    if(f.type === 'textarea'){
-      control = `<textarea class="wc-textarea" data-setting="${f.key}" oninput="settings['${f.key}']=this.value">${esc(val)}</textarea>`;
-    } else if(f.type === 'image'){
-      control = `
-        <div class="wc-upload">
-          <div class="wc-upload-box" id="settingsLogoPreviewBox">${val ? `<img src="${esc(val)}" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-image&quot;></i>'">` : '<i class="fas fa-image"></i>'}</div>
-          <div class="wc-upload-actions">
-            <label class="btn btn-outline btn-sm" style="cursor:pointer;">
-              <i class="fas fa-upload"></i> Upload logo
-              <input type="file" class="wc-file-input" accept="image/*" onchange="handleSettingsLogoUpload(this)">
-            </label>
-            <span class="wc-upload-filename" id="settingsLogoFilename">${esc(fileBase(val)) || 'No file selected'}</span>
-          </div>
-        </div>`;
-    } else {
-      control = `<input class="wc-input" type="text" data-setting="${f.key}" value="${esc(val)}" oninput="settings['${f.key}']=this.value">`;
-    }
-    return `
-      <div class="wc-field${spanClass}">
-        <label>${esc(f.label)}</label>
-        ${control}
-        ${f.hint ? `<div class="hint">${esc(f.hint)}</div>` : ''}
-      </div>`;
-  }).join('');
+  grid.innerHTML = SETTINGS_GROUPS.map(g => `
+    <div class="wc-group">
+      <div class="wc-group-head">
+        <div class="wc-group-icon"><i class="fas ${g.icon}"></i></div>
+        <div>
+          <h4 class="wc-group-title">${esc(g.title)}</h4>
+          <p class="wc-group-desc">${esc(g.desc)}</p>
+        </div>
+      </div>
+      <div class="wc-group-fields">
+        ${g.fields.map(f => `
+          <div class="wc-field${f.span2 ? ' span-2' : ''}">
+            <label>${esc(f.label)}</label>
+            ${settingsControl(f)}
+            ${f.hint ? `<div class="hint">${esc(f.hint)}</div>` : ''}
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  renderMapPreview();
 }
 
-async function handleSettingsLogoUpload(input){
+/* ---- Google Map embed link ------------------------------------------------ */
+// Accepts a pasted <iframe ...> snippet or a bare URL and returns just the URL.
+function extractMapSrc(raw){
+  raw = (raw || '').trim();
+  if(/<iframe/i.test(raw)){
+    const m = raw.match(/\bsrc\s*=\s*["']([^"']+)["']/i);
+    raw = m ? m[1] : '';
+  }
+  return raw.replace(/&amp;/g, '&').trim();
+}
+
+// Only genuine https Google Maps embed URLs are accepted.
+function isValidMapEmbed(url){
+  try {
+    const u = new URL(url);
+    const okHost = ['www.google.com', 'google.com', 'maps.google.com'].includes(u.hostname);
+    const isEmbed = u.pathname.startsWith('/maps/embed') || u.searchParams.get('output') === 'embed';
+    return u.protocol === 'https:' && okHost && isEmbed;
+  } catch(e){
+    return false;
+  }
+}
+
+function renderMapPreview(){
+  const box    = document.getElementById('mapLinkPreview');
+  const status = document.getElementById('mapLinkStatus');
+  if(!box || !status) return;
+
+  const url = settings.map_link || '';
+  if(!url){
+    status.textContent = 'Google Maps → Share → Embed a map → paste the iframe code or just its src link.';
+    status.style.color = '';
+    box.innerHTML = `<div class="wc-empty" style="padding:50px 20px;"><i class="fas fa-map-marked-alt" style="font-size:22px;display:block;margin-bottom:8px;"></i>No map link set</div>`;
+    return;
+  }
+  if(!isValidMapEmbed(url)){
+    status.textContent = 'This isn\'t a valid Google Maps embed link. Use Share → Embed a map and copy the src URL (it starts with https://www.google.com/maps/embed).';
+    status.style.color = 'var(--wc-danger)';
+    box.innerHTML = `<div class="wc-empty" style="padding:50px 20px;"><i class="fas fa-exclamation-triangle" style="font-size:22px;display:block;margin-bottom:8px;"></i>Preview unavailable</div>`;
+    return;
+  }
+  status.textContent = 'Looks good — this is how the map will appear.';
+  status.style.color = 'var(--wc-success)';
+  // Rebuild the iframe only when the URL changed, so typing doesn't cause needless reloads.
+  const current = box.querySelector('iframe');
+  if(!current || current.getAttribute('src') !== url){
+    box.innerHTML = '';
+    const frame = document.createElement('iframe');
+    frame.src = url;
+    frame.loading = 'lazy';
+    frame.allowFullscreen = true;
+    frame.referrerPolicy = 'no-referrer-when-downgrade';
+    frame.title = 'Pharmacy location map';
+    frame.style.cssText = 'width:100%;height:100%;min-height:180px;border:0;display:block;';
+    box.appendChild(frame);
+  }
+}
+
+function handleMapLinkInput(input){
+  // If a whole <iframe> snippet was pasted, keep only its src URL.
+  const cleaned = /<iframe/i.test(input.value) ? extractMapSrc(input.value) : input.value.trim();
+  if(cleaned !== input.value) input.value = cleaned;
+  settings.map_link = cleaned;
+  renderMapPreview();
+}
+
+function clearMapLink(){
+  settings.map_link = '';
+  const input = document.getElementById('mapLinkInput');
+  if(input) input.value = '';
+  renderMapPreview();
+}
+
+async function handleSettingsLogoUpload(input, key){
   const file = input.files[0];
   if(!file) return;
   const dataUrl = await readFileAsDataURL(file);
-  settings.logo = dataUrl;
-  document.getElementById('settingsLogoPreviewBox').innerHTML = `<img src="${dataUrl}">`;
-  document.getElementById('settingsLogoFilename').textContent = file.name;
+  settings[key] = dataUrl;
+  document.getElementById('settingsPreview_' + key).innerHTML = `<img src="${dataUrl}">`;
+  document.getElementById('settingsFilename_' + key).textContent = file.name;
 }
 
 document.getElementById('settingsSaveBtn').addEventListener('click', async () => {
   const btn = document.getElementById('settingsSaveBtn');
+  if(settings.map_link && !isValidMapEmbed(settings.map_link)){
+    renderMapPreview();
+    document.getElementById('mapLinkInput')?.focus();
+    toast('Please enter a valid Google Maps embed link.');
+    return;
+  }
+
   const originalHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';

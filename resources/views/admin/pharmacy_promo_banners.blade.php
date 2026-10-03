@@ -919,6 +919,34 @@ tbody tr:last-child td { border-bottom: none; }
     grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--wc-subtle); font-size:13px;
   }
 
+  /* Promo banner cards (2021 x 528 images) */
+  .wc-promo-grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; padding:18px 20px;
+  }
+  .wc-promo-card{
+    border:1px solid var(--wc-border); border-radius:var(--wc-radius); overflow:hidden;
+    background:var(--wc-bg); display:flex; flex-direction:column; transition:border-color .15s, box-shadow .15s;
+  }
+  .wc-promo-card:hover{ border-color:var(--wc-primary); box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  .wc-promo-card-media{
+    position:relative; width:100%; aspect-ratio:2021/528; background:var(--wc-card); overflow:hidden;
+  }
+  .wc-promo-card-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .wc-promo-card-media .wc-thumb-fallback{ width:100%; height:100%; border-radius:0; border:none; }
+  .wc-promo-card-order{
+    position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; color:#fff;
+    background:rgba(0,0,0,.55); padding:2px 8px; border-radius:999px; letter-spacing:.2px;
+  }
+  .wc-promo-card-type{ position:absolute; top:8px; right:8px; }
+  .wc-promo-card-body{ padding:12px 14px; display:flex; flex-direction:column; gap:2px; }
+  .wc-promo-card-title{ font-size:13px; font-weight:700; color:var(--wc-text); line-height:1.3; }
+  .wc-promo-card-meta{ font-size:11.5px; color:var(--wc-subtle); }
+  .wc-promo-card-actions{ display:flex; gap:8px; padding:0 14px 14px; margin-top:auto; }
+  .wc-promo-card-actions .btn-icon{ flex:1; border-radius:8px; }
+  .wc-promo-empty{
+    grid-column:1/-1; text-align:center; padding:40px 20px; color:var(--wc-subtle); font-size:13px;
+  }
+
   /* Color swatch */
   .wc-swatch{ display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--wc-subtle); }
   .wc-swatch i{ width:16px; height:16px; border-radius:5px; border:1px solid var(--wc-border); display:inline-block; }
@@ -1007,6 +1035,18 @@ tbody tr:last-child td { border-bottom: none; }
   /* Confirm dialog reuse */
   .wc-confirm-text{ font-size:13.5px; color:var(--wc-subtle); line-height:1.6; }
   .wc-confirm-name{ color:var(--wc-text); font-weight:700; }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<style>
+  /* Crop dialog */
+  .wc-crop-overlay{ position:fixed; inset:0; background:rgba(10,12,15,.75); display:none; align-items:center; justify-content:center; z-index:1100; padding:20px; }
+  .wc-crop-overlay.open{ display:flex; }
+  .wc-crop-modal{ background:var(--wc-card); border:1px solid var(--wc-border); border-radius:16px; width:100%; max-width:820px; max-height:94vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.4); overflow:hidden; }
+  .wc-crop-stage{ background:#111; flex:1; min-height:0; height:min(56vh, 460px); }
+  .wc-crop-stage img{ display:block; max-width:100%; }
+  .wc-crop-info{ padding:12px 22px 0; font-size:12.5px; color:var(--wc-subtle); line-height:1.5; }
+  .wc-crop-info strong{ color:var(--wc-text); }
+  .wc-crop-warn{ color:#e07b00; font-weight:600; }
 </style>
 </head>
 <body>
@@ -1118,12 +1158,13 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="wc-wrap">
   <nav class="wc-tabs">
     <a class="wc-tab" href="{{ route('admin.pharmacy') }}"><i class="fas fa-store"></i> Settings</a>
-    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> Full-Width Banners</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_full_width_banners') }}"><i class="fas fa-image"></i> FW Banners</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sections') }}"><i class="fas fa-layer-group"></i> Sections</a>
     <a class="wc-tab active" href="{{ route('admin.pharmacy_promo_banners') }}"><i class="fas fa-bullhorn"></i> Promo Banner</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_sliders') }}"><i class="fas fa-images"></i> Sliders</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_categories') }}"><i class="fas fa-th-large"></i> Categories</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
+    <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
   <div class="wc-group-label active" data-group="storefront">Storefront content · Edit only</div>
   <section class="wc-card wc-section active" id="sec-promo">
@@ -1142,12 +1183,7 @@ tbody tr:last-child td { border-bottom: none; }
         </button>
       </div>
     </div>
-    <div class="wc-table-scroll">
-      <table class="wc-table">
-        <thead><tr><th>Banner</th><th>Alt text</th><th>Type</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
-        <tbody id="promoBody"></tbody>
-      </table>
-    </div>
+    <div class="wc-promo-grid" id="promoGrid"></div>
   </section>
 </div>
 </main>
@@ -1165,6 +1201,22 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 </div>
+<!-- ============ CROP MODAL ============ -->
+<div class="wc-crop-overlay" id="wcCropOverlay">
+  <div class="wc-crop-modal">
+    <div class="wc-modal-head">
+      <h3>Crop banner image</h3>
+      <button class="wc-modal-close" onclick="cancelCrop()" type="button"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="wc-crop-stage"><img id="wcCropImg" alt="Crop preview"></div>
+    <div class="wc-crop-info" id="wcCropInfo"></div>
+    <div class="wc-modal-foot">
+      <button class="btn btn-outline" onclick="cancelCrop()" type="button">Cancel</button>
+      <button class="btn btn-primary" id="wcCropApplyBtn" onclick="applyCrop()" type="button"><i class="fas fa-crop-alt"></i> Crop &amp; use image</button>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <script>
 // ── Theme ──────────────────────────────────────────────
 const html = document.documentElement;
@@ -1271,25 +1323,25 @@ function renderPromo(){
   }
 
   const sorted = [...promoBanners].sort((a,b)=>a.sort_order-b.sort_order);
-  document.getElementById('promoBody').innerHTML = sorted.length ? sorted.map(p => `
-    <tr>
-      <td>
-        <div class="wc-name-cell">
-          ${thumbHtml(p.image, p.alt)}
-          <span>${esc(p.alt || '—')}</span>
-        </div>
-      </td>
-      <td>${esc(p.alt || '—')}</td>
-      <td><span class="wc-pill ${p.type==='red' ? 'on' : 'off'}">${esc(p.type)}</span></td>
-      <td>${p.sort_order}</td>
-      <td>
-        <div class="wc-cell-actions">
-          <button class="btn-icon" title="Edit" onclick="openModal('promo', ${p.id})"><i class="fas fa-pen"></i></button>
-          <button class="btn-icon danger" title="Delete" onclick="confirmDeletePromo(${p.id})"><i class="fas fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('') : `<tr><td colspan="5" class="wc-empty">No promo banners yet — add one to get started.</td></tr>`;
+  document.getElementById('promoGrid').innerHTML = sorted.length ? sorted.map(p => `
+    <div class="wc-promo-card">
+      <div class="wc-promo-card-media">
+        ${p.image
+          ? `<img src="${esc(p.image)}" alt="${esc(p.alt || '')}" onerror="this.outerHTML='<div class=&quot;wc-thumb-fallback&quot; title=&quot;${esc(fileBase(p.image))}&quot;><i class=&quot;fas fa-image&quot;></i></div>'">`
+          : `<div class="wc-thumb-fallback" title="No image set"><i class="fas fa-image"></i></div>`}
+        <span class="wc-promo-card-order">Slot ${p.sort_order}</span>
+        <span class="wc-pill wc-promo-card-type ${p.type==='red' ? 'on' : 'off'}">${esc(p.type)}</span>
+      </div>
+      <div class="wc-promo-card-body">
+        <div class="wc-promo-card-title">${esc(p.alt || '—')}</div>
+        <div class="wc-promo-card-meta">${esc(fileBase(p.image)) || 'No image'}</div>
+      </div>
+      <div class="wc-promo-card-actions">
+        <button class="btn-icon" title="Edit" onclick="openModal('promo', ${p.id})"><i class="fas fa-pen"></i></button>
+        <button class="btn-icon danger" title="Delete" onclick="confirmDeletePromo(${p.id})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('') : `<div class="wc-promo-empty">No promo banners yet — add one to get started.</div>`;
 }
 renderPromo();
 
@@ -1368,6 +1420,7 @@ function openModal(type, id=null){
 }
 
 function closeModal(){
+  if(document.getElementById('wcCropOverlay').classList.contains('open')) cancelCrop();
   document.getElementById('wcModalOverlay').classList.remove('open');
   modalState = { type:null, id:null, draft:null, files:{} };
 }
@@ -1394,15 +1447,113 @@ function imageUploadControl(fieldKey, currentVal){
       </div>
     </div>`;
 }
-async function handleDraftUpload(input, fieldKey){
+/* Required output size (px) for each cropped image field */
+const CROP_SPECS = {
+  image: { w: 2021, h: 528 }
+};
+let cropState = { cropper:null, input:null, fieldKey:null, file:null, objectUrl:null };
+
+/* Picking a file no longer sets it directly — it opens the crop dialog first. */
+function handleDraftUpload(input, fieldKey){
   const file = input.files[0];
   if(!file) return;
-  const dataUrl = await readFileAsDataURL(file);
-  modalState.draft[fieldKey] = dataUrl;
-  modalState.files[fieldKey] = file;
-  document.getElementById(`upbox-${fieldKey}`).innerHTML = `<img src="${dataUrl}">`;
-  document.getElementById(`upname-${fieldKey}`).textContent = file.name;
+  if(!file.type.startsWith('image/')){
+    toast('Please choose an image file.');
+    input.value = '';
+    return;
+  }
+  const spec = CROP_SPECS[fieldKey];
+  if(!spec){ return; }
+
+  teardownCropper();
+  const url = URL.createObjectURL(file);
+  cropState = { cropper:null, input, fieldKey, file, objectUrl:url };
+
+  const img = document.getElementById('wcCropImg');
+  img.onload = () => {
+    const tooSmall = img.naturalWidth < spec.w || img.naturalHeight < spec.h;
+    document.getElementById('wcCropInfo').innerHTML =
+      `Drag and zoom to choose the area. Output is exactly <strong>${spec.w} × ${spec.h}px</strong>. ` +
+      `Original: ${img.naturalWidth} × ${img.naturalHeight}px.` +
+      (tooSmall ? ` <span class="wc-crop-warn">This image is smaller than the required size and will be upscaled, so it may look blurry.</span>` : '');
+    if(cropState.cropper) cropState.cropper.destroy();
+    cropState.cropper = new Cropper(img, {
+      aspectRatio: spec.w / spec.h,
+      viewMode: 1,
+      dragMode: 'move',
+      autoCropArea: 1,
+      background: false,
+      responsive: true,
+      zoomOnWheel: true,
+      cropBoxMovable: true,
+      cropBoxResizable: true,
+    });
+  };
+  img.src = url;
+  document.getElementById('wcCropOverlay').classList.add('open');
 }
+
+function teardownCropper(){
+  if(cropState.cropper){ cropState.cropper.destroy(); }
+  if(cropState.objectUrl){ URL.revokeObjectURL(cropState.objectUrl); }
+  const img = document.getElementById('wcCropImg');
+  img.onload = null;
+  img.removeAttribute('src');
+  cropState = { cropper:null, input:null, fieldKey:null, file:null, objectUrl:null };
+}
+
+function cancelCrop(){
+  document.getElementById('wcCropOverlay').classList.remove('open');
+  if(cropState.input) cropState.input.value = '';   // allow re-choosing the same file
+  teardownCropper();
+}
+
+function applyCrop(){
+  const { cropper, fieldKey, file, input } = cropState;
+  if(!cropper || !fieldKey) return;
+  const spec = CROP_SPECS[fieldKey];
+  const keepPng = file.type === 'image/png';
+  const mime = keepPng ? 'image/png' : 'image/jpeg';
+
+  const canvas = cropper.getCroppedCanvas({
+    width: spec.w,
+    height: spec.h,
+    fillColor: keepPng ? undefined : '#ffffff',
+    imageSmoothingEnabled: true,
+    imageSmoothingQuality: 'high',
+  });
+  if(!canvas){ toast('Could not crop that image — please try again.'); return; }
+
+  const btn = document.getElementById('wcCropApplyBtn');
+  btn.disabled = true;
+  canvas.toBlob((blob) => {
+    btn.disabled = false;
+    if(!blob){ toast('Could not crop that image — please try again.'); return; }
+
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'banner';
+    const ext = keepPng ? 'png' : 'jpg';
+    const cropped = new File([blob], `${baseName}-${spec.w}x${spec.h}.${ext}`, { type: mime });
+
+    modalState.files[fieldKey] = cropped;
+    const dataUrl = canvas.toDataURL(mime, 0.92);
+    modalState.draft[fieldKey] = dataUrl;
+    document.getElementById(`upbox-${fieldKey}`).innerHTML = `<img src="${dataUrl}">`;
+    document.getElementById(`upname-${fieldKey}`).textContent = cropped.name;
+
+    document.getElementById('wcCropOverlay').classList.remove('open');
+    if(input) input.value = '';
+    teardownCropper();
+  }, mime, 0.92);
+}
+
+/* Escape closes only the crop dialog when it is open (not the form underneath) */
+window.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && document.getElementById('wcCropOverlay').classList.contains('open')){
+    e.stopPropagation();
+    cancelCrop();
+  }
+}, true);
+
 function buildForm(type, d){
   if(type === 'promo'){
     const taken = takenPromoSortOrders(modalState.id);
@@ -1413,7 +1564,7 @@ function buildForm(type, d){
     }
 
     return `
-      ${fieldRow('Banner image', imageUploadControl('image', d.image))}
+      ${fieldRow('Banner image', imageUploadControl('image', d.image), 'After choosing a file you will crop it to 2021 × 528px.')}
       ${fieldRow('Alt text', `<input class="wc-input" value="${esc(d.alt)}" oninput="modalState.draft.alt=this.value">`)}
       ${fieldRow('Type', `<select class="wc-select" onchange="modalState.draft.type=this.value">
           <option value="red" ${d.type==='red'?'selected':''}>Red</option>

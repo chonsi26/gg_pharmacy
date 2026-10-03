@@ -666,6 +666,103 @@ tbody tr:last-child td { border-bottom: none; }
   line-height: 1.4;
 }
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── View-modal product image + full-image lightbox ── */
+.view-img-wrap { position: relative; width: 96px; height: 96px; flex-shrink: 0; border-radius: 10px; overflow: hidden; }
+.view-img-zoom-btn {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0);
+  border: none; padding: 0; cursor: pointer;
+  color: #fff;
+  opacity: 0;
+  transition: background .15s, opacity .15s;
+}
+.view-img-zoom-btn:hover { background: rgba(0,0,0,.45); opacity: 1; }
+.view-img-zoom-btn svg { width: 20px; height: 20px; }
+
+/* ── View Product modal — landscape layout ── */
+.modal.modal-view { max-width: 920px; overflow: hidden; }
+.view-layout { display: grid; grid-template-columns: 280px 1fr; align-items: stretch; }
+.view-aside {
+  padding: 24px;
+  background: var(--surface2);
+  border-right: 1px solid var(--border);
+  border-radius: 0 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.view-aside .view-img-wrap { width: 100%; height: 200px; border-radius: 10px; }
+.view-aside-name { font-size: 16.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.view-aside-generic { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.view-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.view-price-block { padding-top: 4px; border-top: 1px solid var(--border); }
+.view-price { font-size: 21px; font-weight: 800; color: var(--text); }
+.view-price-old { text-decoration: line-through; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+.view-stock-box {
+  margin-top: auto;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.view-stock-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.view-stock-value { font-size: 14.5px; font-weight: 700; color: var(--text); }
+.view-main {
+  padding: 24px;
+  max-height: 66vh;
+  overflow-y: auto;
+}
+.view-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.view-field { margin-bottom: 4px; }
+.view-field.full { grid-column: 1 / -1; }
+.view-field label {
+  display: block;
+  font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.view-field .view-value {
+  font-size: 13.5px; color: var(--text); line-height: 1.55;
+}
+.view-divider { grid-column: 1 / -1; border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.view-empty-note { font-size: 13px; color: var(--subtle); text-align: center; padding: 20px 0; }
+
+@media (max-width: 720px) {
+  .modal.modal-view { max-width: 480px; }
+  .view-layout { grid-template-columns: 1fr; }
+  .view-aside { border-right: none; border-bottom: 1px solid var(--border); border-radius: 0; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .view-aside .view-img-wrap { width: 84px; height: 84px; flex-shrink: 0; }
+  .view-aside-text { flex: 1; min-width: 0; }
+  .view-price-block { width: 100%; border-top: 1px solid var(--border); padding-top: 12px; }
+  .view-stock-box { width: 100%; margin-top: 0; }
+  .view-field-grid { grid-template-columns: 1fr; }
+  .view-main { max-height: 60vh; }
+}
+.lightbox-bg {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.8);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.lightbox-bg.on { display: flex; }
+.lightbox-close {
+  position: absolute; top: 18px; right: 18px;
+  background: rgba(255,255,255,.12); border: none; cursor: pointer;
+  color: #fff; padding: 8px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.lightbox-close:hover { background: rgba(255,255,255,.25); }
+.lightbox-close svg { width: 20px; height: 20px; }
+.lightbox-img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 8px; animation: fadeUp .25s ease both; }
 .modal-foot {
   padding: 14px 20px;
   border-top: 1px solid var(--border);
@@ -1148,6 +1245,30 @@ tbody tr:last-child td { border-bottom: none; }
   [data-theme="dark"] .btn-chip { border-color: var(--border, #3a3b3c); color: var(--muted, #b0b3b8); }
   [data-theme="dark"] .btn-chip:hover { background: var(--hover, #2a452f); }
 
+  /* ── Sort by chip + dropdown ────────────────────────── */
+  .sort-chip-wrap { position: relative; }
+  .btn-chip.active { border-color: var(--primary, #5cc06d); color: var(--primary, #5cc06d); }
+  .sort-menu {
+    display: none; position: absolute; top: calc(100% + 6px); left: 0;
+    min-width: 190px; background: var(--card, #fff);
+    border: 1px solid var(--border, #e8eaf0); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12); padding: 6px; z-index: 40;
+    flex-direction: column; gap: 2px;
+  }
+  .sort-menu.on { display: flex; }
+  .sort-menu-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; text-align: left; border: none; background: transparent;
+    padding: 8px 9px; border-radius: 7px; font-size: 12.5px; font-weight: 600;
+    color: var(--text, #111); cursor: pointer; white-space: nowrap;
+  }
+  .sort-menu-item:hover { background: var(--hover, #f5faf6); }
+  .sort-menu-item.selected { color: var(--primary, #5cc06d); }
+  .sort-menu-item.selected::after { content: '✓'; font-weight: 700; }
+  [data-theme="dark"] .sort-menu { background: var(--input-bg, #2a2b2d); border-color: var(--border, #3a3b3c); }
+  [data-theme="dark"] .sort-menu-item { color: var(--text, #e4e6eb); }
+  [data-theme="dark"] .sort-menu-item:hover { background: var(--hover, #2a452f); }
+
   /* ── Manage (Categories / Brand) list modal ────────── */
   #categoriesModalBg .modal, #brandsModalBg .modal { max-width: 460px; }
   #categoryFormModalBg .modal, #brandFormModalBg .modal { max-width: 440px; }
@@ -1391,6 +1512,19 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head">
       <h3>All Medicines</h3>
       <div class="card-head-right">
+        <div class="sort-chip-wrap" id="sortChipWrap">
+          <button class="btn-chip" onclick="toggleSortMenu()" id="sortChipBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+            <span id="sortChipLabel">Sort by</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;margin-left:1px;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="sort-menu" id="sortMenu">
+            <button class="sort-menu-item" data-by="alphabetical" onclick="sortProducts('alphabetical')">A-Z</button>
+            <button class="sort-menu-item" data-by="date" onclick="sortProducts('date')">Date</button>
+            <button class="sort-menu-item" data-by="category" onclick="sortProducts('category')">Category</button>
+            <button class="sort-menu-item" data-by="brand" onclick="sortProducts('brand')">Brand</button>
+          </div>
+        </div>
         <button class="btn-chip" onclick="openCategoriesModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
           Categories
@@ -1422,7 +1556,7 @@ tbody tr:last-child td { border-bottom: none; }
           $barWidth   = min($qty, 100);
           $badgeClass = $product->badge_type === 'sale-badge' ? 'warning' : 'ok';
         @endphp
-        <div class="med-card" data-name="{{ $searchKey }}"
+        <div class="med-card" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
              data-id="{{ $product->id }}"
              data-generic-name="{{ $product->generic_name }}"
              data-brand-name="{{ $brand->name ?? '' }}"
@@ -1442,11 +1576,11 @@ tbody tr:last-child td { border-bottom: none; }
              data-depth="{{ $product->depth }}"
              data-requires-rx="{{ $product->requires_prescription ? 'true' : 'false' }}"
              @if($product->badge) data-badge-text="{{ $product->badge }}" data-badge-type="{{ $product->badge_type }}" @endif>
-          <div class="med-img-wrap" style="background: linear-gradient(135deg, {{ $catBg }}, {{ $catBg }});">
+          <div class="med-img-wrap" style="background: {{ $product->image ? '#fff' : 'linear-gradient(135deg, '.$catBg.', '.$catBg.')' }};">
             @if($product->badge)
-              <span class="pill-float pill {{ $badgeClass }}" style="cursor:pointer;" onclick="openBadgeModal(this)">{{ $product->badge }}</span>
+              <span class="pill-float pill {{ $badgeClass }}" style="cursor:pointer;" onclick="event.stopPropagation(); openBadgeModal(this)">{{ $product->badge }}</span>
             @else
-              <span class="pill-float pill add-badge" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;" onclick="openBadgeModal(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Badge</span>
+              <span class="pill-float pill add-badge" style="cursor:pointer;display:inline-flex;align-items:center;gap:4px;" onclick="event.stopPropagation(); openBadgeModal(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;flex-shrink:0;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Badge</span>
             @endif
             @if($product->image)
               <img class="med-img-main" src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;">
@@ -1474,8 +1608,8 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
           </div>
           <div class="med-foot">
-            <button class="btn-edit-full" onclick="openEditModal(this)">Edit</button>
-            <button class="btn-delete-full" onclick="openDeleteModal(this)">
+            <button class="btn-edit-full" onclick="event.stopPropagation(); openEditModal(this)">Edit</button>
+            <button class="btn-delete-full" onclick="event.stopPropagation(); openDeleteModal(this)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               Delete
             </button>
@@ -1778,6 +1912,38 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
   </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     VIEW PRODUCT MODAL (read-only, populated from
+     AdminInventoryController@show)
+     ════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="viewModalBg">
+  <div class="modal modal-view">
+    <div class="modal-head">
+      <h3 id="viewModalTitle">Product Details</h3>
+      <button class="modal-close" onclick="closeViewModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="viewModalBody">
+      <!-- filled by renderViewModal() -->
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeViewModal()">Close</button>
+      <button class="btn primary" id="viewModalEditBtn" onclick="editFromViewModal()">Edit Product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     FULL PRODUCT IMAGE LIGHTBOX
+     ════════════════════════════════════════════════════ -->
+<div class="lightbox-bg" id="imageLightboxBg">
+  <button class="lightbox-close" onclick="closeImageLightbox()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <img class="lightbox-img" id="imageLightboxImg" src="" alt="">
 </div>
 
 <!-- ════════════════════════════════════════════════════
@@ -2131,8 +2297,10 @@ function previewImg(input, previewId) {
 /* ══════════════════════════════════════════════════════
    BACKEND HELPERS  (AdminInventoryController)
    ══════════════════════════════════════════════════════ */
-const INVENTORY_URL = "{{ route('admin.inventory') }}";
-const CSRF_TOKEN    = document.querySelector('meta[name="csrf-token"]').content;
+const INVENTORY_URL        = "{{ route('admin.inventory') }}";
+const INVENTORY_SEARCH_URL = "{{ route('admin.inventory.search') }}";
+const INVENTORY_SORT_URL   = "{{ route('admin.inventory.sort') }}";
+const CSRF_TOKEN           = document.querySelector('meta[name="csrf-token"]').content;
 
 /**
  * Map of section_id → sort_order → { id, name } for every product currently
@@ -2170,6 +2338,159 @@ async function sendForm(url, formData, method = 'POST') {
     throw new Error(firstError);
   }
   return body;
+}
+
+/* ══════════════════════════════════════════════════════
+   VIEW PRODUCT MODAL
+   Clicking a card fetches full details from
+   AdminInventoryController@show (GET /admin/inventory/{product})
+   rather than re-reading the card's data-* attributes, so fields
+   the card doesn't carry (usage/directions, stock qty, etc.) are
+   always there too.
+   ══════════════════════════════════════════════════════ */
+let _viewTargetCard = null;
+
+async function openViewModal(card) {
+  _viewTargetCard = card;
+  const id = card.dataset.id;
+
+  document.getElementById('viewModalTitle').textContent = card.dataset.medicine || 'Product Details';
+  document.getElementById('viewModalBody').innerHTML =
+    '<div style="padding:60px 24px;text-align:center;color:var(--muted);font-size:13px;">Loading…</div>';
+  document.getElementById('viewModalBg').classList.add('on');
+
+  try {
+    const res = await fetch(`${INVENTORY_URL}/${id}`, {
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.message || 'Could not load this product.');
+    renderViewModal(body.product);
+  } catch (err) {
+    document.getElementById('viewModalBody').innerHTML =
+      `<div style="padding:50px 24px;text-align:center;color:var(--red);font-size:13px;">${err.message}</div>`;
+  }
+}
+
+function renderViewModal(p) {
+  document.getElementById('viewModalTitle').textContent = p.name;
+
+  const esc = s => (s ?? '').toString()
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const priceHtml = `
+    <span class="view-price">${p.formatted_price}</span>
+    ${p.has_discount ? `
+      <span class="view-price-old">${p.formatted_old_price}</span>
+      <span class="pill warning" style="margin-left:6px;">-${p.discount_percent}%</span>
+    ` : ''}
+  `;
+
+  // Short facts sit two-up in the grid; long free-text fields span the full width.
+  const field = (label, value, { full = false, multiline = false } = {}) => value
+    ? `<div class="view-field${full ? ' full' : ''}">
+         <label>${label}</label>
+         <div class="view-value"${multiline ? ' style="white-space:pre-wrap;"' : ''}>${esc(value)}</div>
+       </div>`
+    : '';
+
+  const divider = '<hr class="view-divider">';
+
+  const dims = p.has_dimensions
+    ? [p.width, p.height, p.depth].filter(v => v !== null && v !== undefined).join(' × ') + ' cm'
+    : null;
+
+  const topFacts = [
+    field('Origin / Manufacturer', p.origin),
+    field('Dimensions (W × H × D)', dims),
+  ].filter(Boolean).join('');
+
+  const longSections = [
+    field('Description', p.description, { full: true, multiline: true }),
+    field('Directions / Usage', p.product_usage, { full: true, multiline: true }),
+    field('Ingredients', p.ingredients, { full: true, multiline: true }),
+    field('Warnings', p.warnings, { full: true, multiline: true }),
+  ].filter(Boolean).join(divider);
+
+  const mainContent = [topFacts, longSections].filter(Boolean).join(topFacts && longSections ? divider : '')
+    || '<div class="view-empty-note">No additional details on file for this product.</div>';
+
+  document.getElementById('viewModalBody').innerHTML = `
+    <div class="view-layout">
+      <div class="view-aside">
+        <div class="view-img-wrap" style="background:linear-gradient(135deg, ${p.category_bg}, ${p.category_bg});display:flex;align-items:center;justify-content:center;">
+          ${p.image_url
+            ? `<img src="${p.image_url}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:contain;">
+               <button type="button" class="view-img-zoom-btn" title="View full image" data-img="${esc(p.image_url)}" data-alt="${esc(p.name)}" onclick="openImageLightbox(this.dataset.img, this.dataset.alt)">
+                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+               </button>`
+            : `<svg viewBox="0 0 80 80" width="60" height="60"><circle cx="40" cy="40" r="24" fill="${p.category_color}"/><text x="40" y="45" text-anchor="middle" font-size="11" font-family="Inter,sans-serif" font-weight="700" fill="white">${esc(p.name.slice(0, 2).toUpperCase())}</text></svg>`}
+        </div>
+
+        <div class="view-aside-text">
+          <div class="view-aside-name">${esc(p.name)}</div>
+          ${p.generic_name ? `<div class="view-aside-generic">${esc(p.generic_name)}</div>` : ''}
+          <div class="view-badges" style="margin-top:8px;">
+            <span class="pill" style="background:${p.category_bg};color:${p.category_color};">${esc(p.category_name)}</span>
+            ${p.brand_name ? `<span class="pill ok">${esc(p.brand_name)}</span>` : ''}
+            ${p.section_label ? `<span class="pill blue">${esc(p.section_label)}</span>` : ''}
+            ${p.requires_prescription ? `<span class="pill warning">Rx Only</span>` : ''}
+            ${!p.is_active ? `<span class="pill danger">Inactive</span>` : ''}
+          </div>
+        </div>
+
+        <div class="view-price-block">${priceHtml}</div>
+
+        <div class="view-stock-box">
+          <span class="view-stock-label">Stock on hand</span>
+          <span class="view-stock-value">${p.stock_quantity} units</span>
+        </div>
+      </div>
+
+      <div class="view-main">
+        <div class="view-field-grid">
+          ${mainContent}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeViewModal() {
+  document.getElementById('viewModalBg').classList.remove('on');
+  _viewTargetCard = null;
+}
+document.getElementById('viewModalBg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeViewModal();
+});
+
+/** Full-size product image lightbox, opened from the View Product modal. */
+function openImageLightbox(src, alt) {
+  if (!src) return;
+  const img = document.getElementById('imageLightboxImg');
+  img.src = src;
+  img.alt = alt || '';
+  document.getElementById('imageLightboxBg').classList.add('on');
+}
+function closeImageLightbox() {
+  document.getElementById('imageLightboxBg').classList.remove('on');
+  document.getElementById('imageLightboxImg').src = '';
+}
+document.getElementById('imageLightboxBg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeImageLightbox();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('imageLightboxBg').classList.contains('on')) {
+    closeImageLightbox();
+  }
+});
+
+/** Jump straight from the details view into the edit modal for the same product. */
+function editFromViewModal() {
+  if (!_viewTargetCard) return;
+  const card = _viewTargetCard;
+  closeViewModal();
+  openEditModal({ closest: () => card });
 }
 
 /** Collect the Add / Edit modal fields into a FormData. `p` is 'm' or 'e'. */
@@ -2561,7 +2882,11 @@ function applyProductToCard(card, p) {
   if (catDot) catDot.style.background = p.icon_color;
 
   const imgWrap = card.querySelector('.med-img-wrap');
-  if (imgWrap) imgWrap.style.background = `linear-gradient(135deg, ${p.bg_color}, ${p.bg_color})`;
+  if (imgWrap) {
+    imgWrap.style.background = p.image_url
+      ? '#fff'
+      : `linear-gradient(135deg, ${p.bg_color}, ${p.bg_color})`;
+  }
 
   const priceEl = card.querySelector('.med-price');
   if (priceEl) {
@@ -2637,12 +2962,93 @@ async function confirmDelete() {
   }
 }
 
-/* ── Card search ─────────────────────────────────────── */
+/* ── Card search (backed by AdminInventoryController@search) ──────────
+   Debounced so we don't fire a request on every keystroke; the matching
+   is done server-side (name / generic name / category / brand), and we
+   just show/hide the already-rendered cards by id. */
+let _cardSearchTimer = null;
+
 function filterCards(q) {
-  const val = q.toLowerCase();
-  document.querySelectorAll('#medGrid .med-card').forEach(card => {
-    card.style.display = card.dataset.name.includes(val) ? '' : 'none';
-  });
+  clearTimeout(_cardSearchTimer);
+  _cardSearchTimer = setTimeout(() => runCardSearch(q.trim()), 250);
+}
+
+async function runCardSearch(q) {
+  const cards = document.querySelectorAll('#medGrid .med-card');
+
+  try {
+    const res  = await fetch(`${INVENTORY_SEARCH_URL}?q=${encodeURIComponent(q)}`, {
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) throw new Error('Search request failed');
+    const body = await res.json();
+    const ids  = new Set((body.ids || []).map(String));
+
+    cards.forEach(card => {
+      card.style.display = ids.has(card.dataset.id) ? '' : 'none';
+    });
+  } catch (err) {
+    // If the search request fails, fall back to the old client-side
+    // substring match on name/category/brand rather than hiding everything.
+    const val = q.toLowerCase();
+    cards.forEach(card => {
+      card.style.display = card.dataset.name.includes(val) ? '' : 'none';
+    });
+  }
+}
+
+/* ── Sort by (backed by AdminInventoryController@sort) ─────────────────
+   Same "server decides the order, JS just re-appends the already-rendered
+   cards by id" approach as card search above — nothing is re-fetched or
+   re-rendered, the grid is just reordered in place. */
+const SORT_LABELS = {
+  alphabetical: 'A-Z',
+  date:         'Date',
+  category:     'Category',
+  brand:        'Brand',
+};
+let _currentSort = null;
+
+function toggleSortMenu() {
+  document.getElementById('sortMenu').classList.toggle('on');
+}
+
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('sortChipWrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('sortMenu').classList.remove('on');
+  }
+});
+
+async function sortProducts(by) {
+  const grid = document.getElementById('medGrid');
+  const menu = document.getElementById('sortMenu');
+  menu.classList.remove('on');
+
+  try {
+    const res = await fetch(`${INVENTORY_SORT_URL}?by=${encodeURIComponent(by)}`, {
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    });
+    if (!res.ok) throw new Error('Sort request failed');
+    const body = await res.json();
+    const ids  = (body.ids || []).map(String);
+
+    const cards = new Map();
+    document.querySelectorAll('#medGrid .med-card').forEach(card => cards.set(card.dataset.id, card));
+
+    // Re-append in the server-decided order; any card not in the list
+    // (shouldn't happen, but just in case) stays put at the end.
+    ids.forEach(id => { const card = cards.get(id); if (card) grid.appendChild(card); });
+
+    _currentSort = by;
+    document.getElementById('sortChipLabel').textContent = SORT_LABELS[by] || 'Sort by';
+    document.getElementById('sortChipBtn').classList.add('active');
+    document.querySelectorAll('.sort-menu-item').forEach(item => {
+      item.classList.toggle('selected', item.dataset.by === by);
+    });
+  } catch (err) {
+    showToast('Could not sort products. Please try again.');
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2761,8 +3167,8 @@ document.getElementById('confirmAddStock').addEventListener('click', function ()
   ])->values()->toJson();
 @endphp
 let categories = {!! $categoriesJson !!};
-let _catNextId  = {{ $categories->max('id') + 1 }};
 let _catEditId  = null;
+const CATEGORIES_URL = "{{ route('admin.inventory.categories.store') }}";
 
 function renderCategories() {
   const list = document.getElementById('categoriesList');
@@ -2827,38 +3233,56 @@ function updateCatPreview() {
 document.getElementById('catIconColor').addEventListener('input', updateCatPreview);
 document.getElementById('catBgColor').addEventListener('input', updateCatPreview);
 
-function saveCategory() {
+async function saveCategory() {
   const nameEl = document.getElementById('catName');
   const name = nameEl.value.trim();
   if (!name) { nameEl.style.borderColor = 'var(--red)'; nameEl.focus(); return; }
   nameEl.style.borderColor = '';
 
-  const data = {
-    name,
-    icon_class: document.getElementById('catIconClass').value.trim(),
-    icon_color: document.getElementById('catIconColor').value,
-    bg_color: document.getElementById('catBgColor').value,
-    status: document.getElementById('catStatus').value,
-  };
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('icon_class', document.getElementById('catIconClass').value.trim());
+  fd.append('icon_color', document.getElementById('catIconColor').value);
+  fd.append('bg_color', document.getElementById('catBgColor').value);
+  fd.append('is_active', document.getElementById('catStatus').value === 'Active' ? 1 : 0);
 
-  if (_catEditId) {
-    Object.assign(categories.find(x => x.id === _catEditId), data);
-  } else {
-    categories.push({ id: _catNextId++, ...data });
+  const btn = document.querySelector('#categoryFormModalBg .btn.primary');
+  btn.disabled = true;
+
+  try {
+    const url    = _catEditId ? `${CATEGORIES_URL}/${_catEditId}` : CATEGORIES_URL;
+    const method = _catEditId ? 'PUT' : 'POST';
+    const result = await sendForm(url, fd, method);
+
+    if (_catEditId) {
+      Object.assign(categories.find(x => x.id === _catEditId), result.category);
+    } else {
+      categories.push(result.category);
+    }
+
+    closeCategoryForm();
+    renderCategories();
+    showToast(result.message);
+  } catch (err) {
+    showToast(err.message);
+  } finally {
+    btn.disabled = false;
   }
-
-  closeCategoryForm();
-  renderCategories();
-  showToast(`Category "${name}" saved.`);
 }
 
-function deleteCategory(id) {
+async function deleteCategory(id) {
   const c = categories.find(x => x.id === id);
   if (!c) return;
   if (!confirm(`Delete category "${c.name}"? Medicines using this category will keep their existing tag.`)) return;
-  categories = categories.filter(x => x.id !== id);
-  renderCategories();
-  showToast(`Category "${c.name}" deleted.`);
+
+  try {
+    const result = await sendForm(`${CATEGORIES_URL}/${id}`, new FormData(), 'DELETE');
+    categories = categories.filter(x => x.id !== id);
+    renderCategories();
+    showToast(result.message);
+  } catch (err) {
+    showToast(err.message);
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2868,8 +3292,8 @@ function deleteCategory(id) {
   $brandsJson = $brands->map(fn($b) => [
   'id'               => $b->id,
   'name'             => $b->name,
-  'ticker_image'     => $b->ticker_image ? asset('storage/'.$b->ticker_image) : null,
-  'featured_image'   => $b->featured_image ? asset('storage/'.$b->featured_image) : null,
+  'ticker_image'     => $b->ticker_image ? asset($b->ticker_image) : null,
+  'featured_image'   => $b->featured_image ? asset($b->featured_image) : null,
   'featured_color'   => $b->featured_color,
   'show_in_ticker'   => (bool) $b->show_in_ticker,
   'show_in_featured' => (bool) $b->show_in_featured,
@@ -2877,8 +3301,8 @@ function deleteCategory(id) {
   ])->values()->toJson();
 @endphp
 let brands = {!! $brandsJson !!};
-let _brandNextId = {{ $brands->max('id') + 1 }};
 let _brandEditId = null;
+const BRANDS_URL = "{{ route('admin.inventory.brands.store') }}";
 
 function renderBrands() {
   const list = document.getElementById('brandsList');
@@ -2963,43 +3387,63 @@ function openBrandForm(id) {
 function closeBrandForm() { document.getElementById('brandFormModalBg').classList.remove('on'); }
 document.getElementById('brandFormModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeBrandForm(); });
 
-function saveBrand() {
+async function saveBrand() {
   const nameEl = document.getElementById('brandName');
   const name = nameEl.value.trim();
-  if (!name) { nameEl.style.borderColor = 'var(--red)'; nameEl.focus(); return; }
+  if (!name) { flagField(nameEl); return; }
   nameEl.style.borderColor = '';
 
-  const tickerPreview = document.getElementById('brandTickerPreview');
-  const featuredPreview = document.getElementById('brandFeaturedPreview');
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('featured_color', document.getElementById('brandFeaturedColor').value);
+  fd.append('show_in_ticker', document.getElementById('brandShowTicker').checked ? 1 : 0);
+  fd.append('show_in_featured', document.getElementById('brandShowFeatured').checked ? 1 : 0);
+  fd.append('is_active', document.getElementById('brandStatus').value === 'Active' ? 1 : 0);
 
-  const data = {
-    name,
-    ticker_image: tickerPreview.style.display !== 'none' ? tickerPreview.src : null,
-    featured_image: featuredPreview.style.display !== 'none' ? featuredPreview.src : null,
-    featured_color: document.getElementById('brandFeaturedColor').value,
-    show_in_ticker: document.getElementById('brandShowTicker').checked,
-    show_in_featured: document.getElementById('brandShowFeatured').checked,
-    status: document.getElementById('brandStatus').value,
-  };
+  // Only attach a file when the admin actually picked a new one — leaving
+  // the input empty on edit tells the backend to keep the existing image.
+  const tickerFile   = document.getElementById('brandTickerImage').files[0];
+  const featuredFile = document.getElementById('brandFeaturedImage').files[0];
+  if (tickerFile)   fd.append('ticker_image', tickerFile);
+  if (featuredFile) fd.append('featured_image', featuredFile);
 
-  if (_brandEditId) {
-    Object.assign(brands.find(x => x.id === _brandEditId), data);
-  } else {
-    brands.push({ id: _brandNextId++, ...data });
+  const btn = document.querySelector('#brandFormModalBg .btn.primary');
+  btn.disabled = true;
+
+  try {
+    const url    = _brandEditId ? `${BRANDS_URL}/${_brandEditId}` : BRANDS_URL;
+    const method = _brandEditId ? 'PUT' : 'POST';
+    const result = await sendForm(url, fd, method);
+
+    if (_brandEditId) {
+      Object.assign(brands.find(x => x.id === _brandEditId), result.brand);
+    } else {
+      brands.push(result.brand);
+    }
+
+    closeBrandForm();
+    renderBrands();
+    showToast(result.message);
+  } catch (err) {
+    showToast(err.message);
+  } finally {
+    btn.disabled = false;
   }
-
-  closeBrandForm();
-  renderBrands();
-  showToast(`Brand "${name}" saved.`);
 }
 
-function deleteBrand(id) {
+async function deleteBrand(id) {
   const b = brands.find(x => x.id === id);
   if (!b) return;
   if (!confirm(`Delete brand "${b.name}"?`)) return;
-  brands = brands.filter(x => x.id !== id);
-  renderBrands();
-  showToast(`Brand "${b.name}" deleted.`);
+
+  try {
+    const result = await sendForm(`${BRANDS_URL}/${id}`, new FormData(), 'DELETE');
+    brands = brands.filter(x => x.id !== id);
+    renderBrands();
+    showToast(result.message);
+  } catch (err) {
+    showToast(err.message);
+  }
 }
 </script>
 </body>

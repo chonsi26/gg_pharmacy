@@ -43,6 +43,25 @@ class DatabaseSeeder extends Seeder
             'deleted_at'       => null,
         ]);
 
+        // ── 0b. Users ────────────────────────────────────────────────────────
+        // Note: the users table has no middle_name / username columns, and uses
+        // contact_number instead of phone_number, so those are mapped/omitted.
+        DB::table('users')->truncate();
+        DB::table('users')->insert([
+            'id'               => 1,
+            'first_name'       => 'Chauncey',
+            'last_name'        => 'Edulan',
+            'email'            => 'chaunceyedulan2020@gmail.com',
+            'contact_number'   => '+639973666290',
+            'password'         => '$2y$12$MSVt47dkbARniImcC5JeIOoSz8ndlWyfKVgOJ3NC9LX.2cepXv6Se',
+            'profile_picture'  => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
+            'is_active'        => 1,
+            'remember_token'   => null,
+            'created_at'       => '2026-09-10 10:35:13',
+            'updated_at'       => '2026-09-10 10:35:13',
+            'deleted_at'       => null,
+        ]);
+
         // ── 1. Settings ──────────────────────────────────────────────────────
         foreach ([
             'site_name'        => 'GG Pharmacy',

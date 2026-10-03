@@ -15,6 +15,7 @@ use App\Models\FullWidthBanner;
 use App\Models\PromoBanner;
 use App\Models\Section;
 use App\Models\Slider;
+use App\Models\PaymentAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -254,7 +255,14 @@ class AdminController extends Controller
 {
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
-    return view('admin.stocks', compact('logo2', 'siteName'));
+
+    // Products for the Add/Edit Stock modal's medicine dropdown.
+    $products = Product::active()->orderBy('name')->get(['id', 'name']);
+
+    // All stock batches for the table, newest first.
+    $stocks = AdminStocksController::formattedStocks();
+
+    return view('admin.stocks', compact('logo2', 'siteName', 'products', 'stocks'));
 }
 
        // ── Reports ─────────────────────────────────────────────────────────────
@@ -360,8 +368,88 @@ class AdminController extends Controller
 {
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
-    return view('admin.expiry', compact('logo2', 'siteName'));
+
+    // Every batch that has an expiry date, soonest-to-expire first, so the
+    // most urgent batches are always what the admin sees at the top.
+    $stocks = Stock::with('product:id,name,image')
+        ->whereNotNull('expiry_date')
+        ->orderBy('expiry_date', 'asc')
+        ->get()
+        ->map(fn (Stock $stock) => $this->formatExpiryStock($stock))
+        ->values();
+
+    return view('admin.expiry', compact('logo2', 'siteName', 'stocks'));
 }
+
+    /**
+     * Shape a Stock model into the flat array the expiry.blade.php grid
+     * expects. Buckets each batch into a level (danger/warning/ok) based on
+     * days remaining until expiry, and includes the is_active flag with a
+     * human-readable label so the frontend can show a status badge without
+     * re-deriving it from a boolean.
+     */
+    private function formatExpiryStock(Stock $stock): array
+    {
+        $today  = now()->startOfDay();
+        $expiry = $stock->expiry_date->copy()->startOfDay();
+
+        // Positive = days remaining, negative = days already expired.
+        $daysLeft = (int) $today->diffInDays($expiry, false);
+
+        if ($daysLeft < 0) {
+            $level = 'danger';
+            $pill  = 'Expired';
+        } elseif ($daysLeft <= 30) {
+            $level = 'danger';
+            $pill  = $daysLeft . ' Days';
+        } elseif ($daysLeft <= 90) {
+            $level = 'warning';
+            $pill  = round($daysLeft / 30) . ' Months';
+        } else {
+            $level = 'ok';
+            $pill  = '6+ Months';
+        }
+
+        return [
+            'id'           => $stock->id,
+            'name'         => $stock->product->name ?? 'Unknown Product',
+            'image'        => $this->productImageUrl($stock->product->image ?? null),
+            'batch'        => $stock->stockNo(),
+            'qty'          => $stock->quantity,
+            'expiry'       => $stock->expiry_date->format('M j, Y'),
+            'days_left'    => $daysLeft,
+            'level'        => $level,
+            'pill'         => $pill,
+            'is_active'    => $stock->is_active,
+            'status'       => $stock->status,                 // Active | Inactive | Out of Stock | Expired
+            'status_label' => $stock->is_active ? 'Active' : 'Inactive',
+            'max_days'     => 365,
+        ];
+    }
+
+    /**
+     * Resolve a product's `image` column into a browser-usable URL.
+     * - Full remote URLs (seeded/imported) are returned as-is.
+     * - Anything already prefixed with "storage/" is passed through asset().
+     * - Otherwise it's treated as a bare filename living in the products
+     *   upload folder (public/storage/products/) and built up from there.
+     */
+    private function productImageUrl(?string $image): ?string
+    {
+        if (! $image) {
+            return null;
+        }
+
+        if (Str::startsWith($image, ['http://', 'https://'])) {
+            return $image;
+        }
+
+        if (Str::startsWith($image, 'storage/')) {
+            return asset($image);
+        }
+
+        return asset('storage/' . ltrim($image, '/'));
+    }
 
        // ── Pharmacy ─────────────────────────────────────────────────────────────
 
@@ -1573,6 +1661,178 @@ class AdminController extends Controller
             ->values();
     }
 
+
+    // ── Pharmacy Payment Accounts ─────────────────────────────────────────────
+
+    public function pharmacy_payment_accounts(): View
+    {
+        $logo2 = Setting::get('logo2');
+        $siteName = Setting::get('site_name', 'Pharmacy');
+        $accounts = $this->allPaymentAccountsFormatted();
+        return view('admin.pharmacy_payment_accounts', compact('logo2', 'siteName', 'accounts'));
+    }
+
+    /**
+     * Create a payment account (GCash, Maya, ...). sort_order does not have
+     * to be free — if it's taken, reorderPaymentAccountsFor() bumps the
+     * occupying account to the end instead of rejecting the request.
+     */
+    public function storePaymentAccount(Request $request)
+    {
+        $data = $this->validatedPaymentAccountData($request);
+
+        $this->reorderPaymentAccountsFor($data['sort_order']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('payment_accounts', 'public');
+        } else {
+            unset($data['image']);
+        }
+
+        $data['is_active'] = $request->boolean('is_active', true);
+
+        $account = PaymentAccount::create($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => "Payment account \"{$account->payment_app}\" added successfully.",
+                'account'  => $this->formatPaymentAccount($account),
+                'accounts' => $this->allPaymentAccountsFormatted(),
+            ], 201);
+        }
+
+        return redirect()->route('admin.pharmacy_payment_accounts')
+            ->with('status', "Payment account \"{$account->payment_app}\" added successfully.");
+    }
+
+    /**
+     * Update a payment account. If the requested sort_order is held by a
+     * different account, the two swap positions.
+     */
+    public function updatePaymentAccount(Request $request, PaymentAccount $paymentAccount)
+    {
+        $data = $this->validatedPaymentAccountData($request, $paymentAccount->id);
+
+        if ((int) $data['sort_order'] !== (int) $paymentAccount->sort_order) {
+            $this->reorderPaymentAccountsFor($data['sort_order'], $paymentAccount->id, (int) $paymentAccount->sort_order);
+        }
+
+        if ($request->hasFile('image')) {
+            if ($paymentAccount->image) {
+                Storage::disk('public')->delete($paymentAccount->image);
+            }
+            $data['image'] = $request->file('image')->store('payment_accounts', 'public');
+        } else {
+            unset($data['image']);
+        }
+
+        $data['is_active'] = $request->boolean('is_active', $paymentAccount->is_active);
+
+        $paymentAccount->update($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => "Payment account \"{$paymentAccount->payment_app}\" updated successfully.",
+                'account'  => $this->formatPaymentAccount($paymentAccount),
+                'accounts' => $this->allPaymentAccountsFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_payment_accounts')
+            ->with('status', "Payment account \"{$paymentAccount->payment_app}\" updated successfully.");
+    }
+
+    /**
+     * Delete a payment account and its uploaded screenshot.
+     */
+    public function destroyPaymentAccount(Request $request, PaymentAccount $paymentAccount)
+    {
+        $name = $paymentAccount->payment_app;
+
+        if ($paymentAccount->image) {
+            Storage::disk('public')->delete($paymentAccount->image);
+        }
+
+        $paymentAccount->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => "Payment account \"{$name}\" deleted successfully.",
+                'accounts' => $this->allPaymentAccountsFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_payment_accounts')
+            ->with('status', "Payment account \"{$name}\" deleted successfully.");
+    }
+
+    /**
+     * Validate payment account form data. sort_order is deliberately not
+     * unique — a duplicate is resolved by reorderPaymentAccountsFor().
+     */
+    private function validatedPaymentAccountData(Request $request, ?int $ignoreId = null): array
+    {
+        return $request->validate([
+            'payment_app'    => ['required', 'string', 'max:255'],
+            'account_name'   => ['required', 'string', 'max:255'],
+            'account_number' => ['required', 'string', 'max:255'],
+            'image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
+            'sort_order'     => ['required', 'integer', 'min:1'],
+            'is_active'      => ['nullable', 'boolean'],
+        ]);
+    }
+
+    /**
+     * If $desiredOrder is already held by another account, free it up:
+     *  - Editing ($currentOldOrder supplied): the occupant takes the
+     *    sort_order the current account is vacating — a straight swap.
+     *  - Creating: the occupant is bumped to the end of the list.
+     */
+    private function reorderPaymentAccountsFor(int $desiredOrder, ?int $currentId = null, ?int $currentOldOrder = null): void
+    {
+        $occupant = PaymentAccount::where('sort_order', $desiredOrder)
+            ->when($currentId, fn ($query) => $query->where('id', '!=', $currentId))
+            ->first();
+
+        if (!$occupant) {
+            return;
+        }
+
+        if ($currentOldOrder !== null) {
+            $occupant->update(['sort_order' => $currentOldOrder]);
+        } else {
+            $occupant->update(['sort_order' => (PaymentAccount::max('sort_order') ?? 0) + 1]);
+        }
+    }
+
+    /**
+     * Shape a PaymentAccount into the flat array the payment accounts blade
+     * JS expects.
+     */
+    private function formatPaymentAccount(PaymentAccount $account): array
+    {
+        return [
+            'id'             => $account->id,
+            'payment_app'    => $account->payment_app,
+            'account_name'   => $account->account_name,
+            'account_number' => $account->account_number,
+            'image'          => $account->image ? asset('storage/' . $account->image) : null,
+            'sort_order'     => $account->sort_order,
+            'is_active'      => $account->is_active,
+        ];
+    }
+
+    /**
+     * All payment accounts, ordered and formatted — used to refresh the
+     * whole list after any operation that may have moved more than one row.
+     */
+    private function allPaymentAccountsFormatted()
+    {
+        return PaymentAccount::ordered()
+            ->get()
+            ->map(fn (PaymentAccount $account) => $this->formatPaymentAccount($account))
+            ->values();
+    }
 
     /**
      * Persist the general site settings (key/value pairs) edited from the
