@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminChartController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminFinancialsController;
 use App\Http\Controllers\AdminInventoryController;
@@ -80,6 +81,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Auth-only: dashboard & inventory
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+        // ── Dashboard charts (AdminChartController, JSON) ─────────────────
+        Route::get('/charts/sales', [AdminChartController::class, 'weeklySales'])->name('charts.sales');
+        Route::get('/charts/order-status', [AdminChartController::class, 'orderStatus'])->name('charts.orderStatus');
+        Route::get('/charts/revenue-by-product', [AdminChartController::class, 'revenueByProduct'])->name('charts.revenueByProduct');
+        Route::get('/charts/recent-transactions', [AdminChartController::class, 'recentTransactions'])->name('charts.recentTransactions');
         // ── Inventory / Products (AdminInventoryController) ──────────────
         Route::get('/inventory', [AdminInventoryController::class, 'index'])->name('inventory');
         Route::get('/inventory/search', [AdminInventoryController::class, 'search'])->name('inventory.search');

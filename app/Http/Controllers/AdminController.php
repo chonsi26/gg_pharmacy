@@ -34,6 +34,7 @@ class AdminController extends Controller
 
     public function index(): View
 {
+    $map_link = Setting::get('map_link');
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
     $totalMedicines = Product::count();
@@ -42,7 +43,7 @@ class AdminController extends Controller
         ->where('quantity', '<=', 10)
         ->count();
  
-    return view('admin.index', compact('logo2', 'siteName', 'totalMedicines', 'totalCustomers', 'lowStockItems'));
+    return view('admin.index', compact('map_link', 'logo2', 'siteName', 'totalMedicines', 'totalCustomers', 'lowStockItems'));
 }
 
     // ── Inventory ────────────────────────────────────────────────────────────
@@ -1840,21 +1841,55 @@ class AdminController extends Controller
      */
     public function updateSettings(Request $request): JsonResponse
     {
+        // Logos are real file uploads (multipart), NOT base64 strings in the
+        // settings payload. Base64 images overflow the TEXT column (64 KB) and
+        // can't be rendered by asset() in the layout.
+        $logoKeys = ['logo', 'logo2'];
+
         $data = $request->validate([
-            'settings'   => ['required', 'array'],
-            'settings.*' => ['nullable', 'string'],
+            'settings'     => ['nullable', 'array'],
+            'settings.*'   => ['nullable', 'string'],
+            'logos'        => ['nullable', 'array'],
+            'logos.logo'   => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'logos.logo2'  => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+        ], [
+            'logos.*.image' => 'The logo must be an image.',
+            'logos.*.mimes' => 'Allowed logo formats: JPG, PNG, WEBP, GIF.',
+            'logos.*.max'   => 'Each logo must not exceed 2 MB.',
         ]);
 
         Setting::dedupe();
 
-        foreach ($data['settings'] as $key => $value) {
+        // Plain text settings — never let the logo keys be overwritten by text.
+        $textSettings = array_diff_key($data['settings'] ?? [], array_flip($logoKeys));
+
+        foreach ($textSettings as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+        }
+
+        // Uploaded logo files.
+        foreach ($logoKeys as $key) {
+            $file = $request->file("logos.$key");
+
+            if (!$file) {
+                continue;
+            }
+
+            $old = Setting::get($key);
+            $path = $file->store('settings', 'public');
+
+            Setting::updateOrCreate(['key' => $key], ['value' => 'storage/' . $path]);
+
+            // Clean up the previous upload (only files we stored ourselves).
+            if ($old && Str::startsWith($old, 'storage/settings/')) {
+                Storage::disk('public')->delete(Str::after($old, 'storage/'));
+            }
         }
 
         Setting::enforceRowLimit();
 
         return response()->json([
-            'message'  => 'Settings updated.',
+            'message'  => 'Updated Successfully',
             'settings' => Setting::allAsArray(),
         ]);
     }

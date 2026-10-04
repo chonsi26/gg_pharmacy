@@ -753,7 +753,7 @@
   <div class="t-card">
     <div class="t-map">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3924.477005243957!2d124.9791196!3d10.383636999999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x330711003a8752d3%3A0xd1071976d4de1a36!2sGG%20Pharmacy!5e0!3m2!1sen!2sph!4v1790821033638!5m2!1sen!2sph"
+        src="{{ $settings['map_link'] ?? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d125558.09496252601!2d124.99607994999998!3d10.44611855!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x330711db96aa79ff%3A0xc658142f36148f6c!2sSogod%2C%20Southern%20Leyte!5e0!3m2!1sen!2sph!4v1791036364789!5m2!1sen!2sph' }}"
         title="Map showing {{ $placeName }}"
         allowfullscreen=""
         loading="lazy"

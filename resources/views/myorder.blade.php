@@ -583,6 +583,14 @@
   /* ── VIEW RECEIPT / PROOF OF REFUND BUTTONS + RECEIPT MODAL ───────────── */
   .order-receipt-btn { background: #fff; color: var(--dark-green); border: 1px solid var(--dark-green); border-radius: 3px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .order-receipt-btn:hover { background: var(--dark-green); color: #fff; }
+  .order-card-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; margin-left: auto; }
+  .order-card-actions form { margin: 0; display: flex; }
+  .order-card-actions .order-receipt-btn, .order-card-actions .order-track-btn, .order-card-actions .order-cancel-btn { height: 36px; line-height: 1; text-decoration: none; justify-content: center; white-space: nowrap; }
+  @media (max-width: 560px) {
+    .order-card-actions { width: 100%; margin-left: 0; }
+    .order-card-actions > a, .order-card-actions > button, .order-card-actions > form { flex: 1 1 0; }
+    .order-card-actions .order-receipt-btn, .order-card-actions .order-track-btn, .order-card-actions .order-cancel-btn { width: 100%; }
+  }
   .order-track-btn { background: var(--dark-green); color: #fff; border: 1px solid var(--dark-green); border-radius: 3px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .order-track-btn:hover { background: var(--green); border-color: var(--green); }
   .refund-proof-btn { background: #fff; color: #0b4a8f; border: 1px solid #0b4a8f; border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
@@ -1056,21 +1064,23 @@
             @endif
           </div>
 
-          @if($order->status === 'picked_up')
-            <button type="button" class="order-receipt-btn" onclick="openReceipt({{ $order->id }})"><i class="fas fa-receipt"></i> View Receipt</button>
-          @endif
+          <div class="order-card-actions">
+            @if($order->status === 'picked_up')
+              <button type="button" class="order-receipt-btn" onclick="openReceipt({{ $order->id }})"><i class="fas fa-receipt"></i> View Receipt</button>
+            @endif
 
-          @if($order->status === 'ready')
-            <a href="{{ route('order.track', $order) }}" class="order-track-btn"><i class="fas fa-map-marked-alt"></i> Track Order</a>
-          @endif
+            @if($order->status === 'ready')
+              <a href="{{ route('order.track', $order) }}" class="order-track-btn"><i class="fas fa-map-marked-alt"></i> Track Order</a>
+            @endif
 
-          @if($order->isCancellable())
-            <form action="{{ route('order.cancel', $order) }}" method="POST" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
-              @csrf
-              @method('PUT')
-              <button type="submit" class="order-cancel-btn"><i class="fas fa-times"></i> Cancel Order</button>
-            </form>
-          @endif
+            @if($order->isCancellable())
+              <form action="{{ route('order.cancel', $order) }}" method="POST" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
+                @csrf
+                @method('PUT')
+                <button type="submit" class="order-cancel-btn"><i class="fas fa-times"></i> Cancel Order</button>
+              </form>
+            @endif
+          </div>
         </div>
       </div>
     @endforeach

@@ -1013,6 +1013,16 @@ tbody tr:last-child td { border-bottom: none; }
     position:sticky; bottom:0; background:var(--wc-card);
   }
 
+  /* Success modal */
+  .wc-success-modal{ max-width:380px; text-align:center; padding:34px 28px 26px; }
+  .wc-success-icon{
+    width:64px; height:64px; border-radius:50%; margin:0 auto 16px;
+    background:var(--wc-success-light); color:var(--wc-success);
+    display:flex; align-items:center; justify-content:center; font-size:28px;
+  }
+  .wc-success-modal h3{ font-size:18px; font-weight:800; color:var(--wc-text); margin:0 0 6px; }
+  .wc-success-modal p{ font-size:13.5px; color:var(--wc-subtle); margin:0 0 22px; }
+
   /* Confirm dialog reuse */
   .wc-confirm-text{ font-size:13.5px; color:var(--wc-subtle); line-height:1.6; }
   .wc-confirm-name{ color:var(--wc-text); font-weight:700; }
@@ -1022,6 +1032,15 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="toast" id="toast">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
   <span id="toastMsg">Done.</span>
+</div>
+
+<div class="wc-modal-overlay" id="settingsSuccessModal" role="dialog" aria-modal="true" aria-labelledby="settingsSuccessTitle">
+  <div class="wc-modal wc-success-modal">
+    <div class="wc-success-icon"><i class="fas fa-check"></i></div>
+    <h3 id="settingsSuccessTitle">Updated Successfully</h3>
+    <p>Your settings have been saved.</p>
+    <button type="button" class="btn btn-primary" id="settingsSuccessOk">OK</button>
+  </div>
 </div>
 <div class="overlay" id="overlay"></div>
 <aside class="sidebar" id="sidebar">
@@ -1238,9 +1257,9 @@ const SETTINGS_FIELDS = SETTINGS_GROUPS.flatMap(g => g.fields);
 function toast(msg){
   const t = document.getElementById('toast');
   document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
+  t.classList.add('on');
   clearTimeout(window._wcToastTimer);
-  window._wcToastTimer = setTimeout(()=> t.classList.remove('show'), 2600);
+  window._wcToastTimer = setTimeout(()=> t.classList.remove('on'), 2600);
 }
 
 function esc(str){
@@ -1421,14 +1440,42 @@ function clearMapLink(){
   renderMapPreview();
 }
 
-async function handleSettingsLogoUpload(input, key){
+// Pending logo files (sent as real uploads on save — never as base64 text).
+const LOGO_KEYS = ['logo', 'logo2'];
+let pendingLogos = {};
+
+function handleSettingsLogoUpload(input, key){
   const file = input.files[0];
   if(!file) return;
-  const dataUrl = await readFileAsDataURL(file);
-  settings[key] = dataUrl;
-  document.getElementById('settingsPreview_' + key).innerHTML = `<img src="${dataUrl}">`;
+  if(!file.type.startsWith('image/')){
+    toast('Please choose an image file.');
+    input.value = '';
+    return;
+  }
+  if(file.size > 2 * 1024 * 1024){
+    toast('Logo must not exceed 2 MB.');
+    input.value = '';
+    return;
+  }
+  pendingLogos[key] = file;
+  // Preview only (blob URL) — settings[key] keeps the stored path.
+  const url = URL.createObjectURL(file);
+  document.getElementById('settingsPreview_' + key).innerHTML = `<img src="${url}" alt="">`;
   document.getElementById('settingsFilename_' + key).textContent = file.name;
 }
+
+function showSettingsSuccess(){
+  document.getElementById('settingsSuccessModal').classList.add('open');
+  document.getElementById('settingsSuccessOk').focus();
+}
+function hideSettingsSuccess(){
+  document.getElementById('settingsSuccessModal').classList.remove('open');
+}
+document.getElementById('settingsSuccessOk').addEventListener('click', hideSettingsSuccess);
+document.getElementById('settingsSuccessModal').addEventListener('click', e => {
+  if(e.target.id === 'settingsSuccessModal') hideSettingsSuccess();
+});
+document.addEventListener('keydown', e => { if(e.key === 'Escape') hideSettingsSuccess(); });
 
 document.getElementById('settingsSaveBtn').addEventListener('click', async () => {
   const btn = document.getElementById('settingsSaveBtn');
@@ -1444,31 +1491,52 @@ document.getElementById('settingsSaveBtn').addEventListener('click', async () =>
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
 
   try {
+    // Multipart so logo files upload properly. PHP can't parse multipart on a
+    // real PUT, so POST + _method spoofing is used (the route is still PUT).
+    const fd = new FormData();
+    fd.append('_method', 'PUT');
+    Object.keys(settings).forEach(key => {
+      if (LOGO_KEYS.includes(key)) return;            // logos travel as files
+      fd.append(`settings[${key}]`, settings[key] ?? '');
+    });
+    Object.entries(pendingLogos).forEach(([key, file]) => fd.append(`logos[${key}]`, file));
+
     const response = await fetch('{{ route('admin.pharmacy.settings.update') }}', {
-      method: 'PUT',
+      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
       },
-      body: JSON.stringify({ settings }),
+      body: fd,
     });
 
-    if (!response.ok) throw new Error('Request failed');
+    const result = await response.json().catch(() => ({}));
 
-    const result = await response.json();
+    if (!response.ok) {
+      const firstError = result.errors ? Object.values(result.errors)[0][0] : null;
+      throw new Error(firstError || result.message || 'Request failed');
+    }
+
+    pendingLogos = {};
     settings = result.settings ?? settings;
+    Object.keys(settingsBackup).forEach(k => delete settingsBackup[k]);
     Object.assign(settingsBackup, JSON.parse(JSON.stringify(settings)));
     renderSettings();
-    toast(result.message || 'Settings updated.');
+
+    // Refresh the sidebar logo without a reload.
+    const sidebarImg = document.querySelector('.sidebar-logo-icon img');
+    if (sidebarImg && settings.logo2) sidebarImg.src = assetUrl(settings.logo2) + '?v=' + Date.now();
+
+    showSettingsSuccess();
   } catch (err) {
-    toast('Could not save settings. Please try again.');
+    toast(err.message && err.message !== 'Request failed' ? err.message : 'Could not save settings. Please try again.');
   } finally {
     btn.disabled = false;
     btn.innerHTML = originalHtml;
   }
 });
 document.getElementById('settingsResetBtn').addEventListener('click', () => {
+  pendingLogos = {};
   settings = JSON.parse(JSON.stringify(settingsBackup));
   renderSettings();
   toast('Changes discarded.');

@@ -370,6 +370,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   transition: border-color .2s, color .2s, background .2s;
 }
 .btn-sm:hover { border-color: var(--red); color: var(--red); }
+.btn-sm.range-btn.active { border-color: var(--red); color: var(--red); }
 .btn-sm.primary {
   background: var(--red); border-color: var(--red); color: #fff;
 }
@@ -905,9 +906,9 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="stat-card">
     <div class="stat-top">
       <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-      <div class="stat-trend up">↑ 12%</div>
+      <div class="stat-trend up" id="todaySalesTrend" style="display:none;"></div>
     </div>
-    <div class="stat-value">₱18,450</div>
+    <div class="stat-value" id="todaySalesValue">₱0</div>
     <div class="stat-label">Today's Sales</div>
   </div>
   <div class="stat-card">
@@ -933,8 +934,8 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head">
       <h3>Weekly Sales Overview</h3>
       <div class="card-head-right">
-        <button class="btn-sm">This Week</button>
-        <button class="btn-sm">Month</button>
+        <button class="btn-sm range-btn active" data-range="week">This Week</button>
+        <button class="btn-sm range-btn" data-range="month">Month</button>
       </div>
     </div>
     <div class="chart-wrap">
@@ -982,7 +983,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="chart-legend">
       <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div> Daily Sales</div>
-      <div class="legend-item" style="margin-left:auto;font-weight:700;color:var(--text);">Total: ₱92,300</div>
+      <div class="legend-item" style="margin-left:auto;font-weight:700;color:var(--text);">Total: <span id="weeklyTotal">₱0</span></div>
     </div>
   </div>
 
@@ -1001,7 +1002,7 @@ tbody tr:last-child td { border-bottom: none; }
           <circle id="donutCancelled" cx="85" cy="85" r="64" fill="none" stroke="#CC1F1F" stroke-width="22" stroke-linecap="butt"/>
         </svg>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-          <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1;" id="donutTotal">248</div>
+          <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1;" id="donutTotal">0</div>
           <div style="font-size:10px;color:var(--subtle);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;">Total</div>
         </div>
       </div>
@@ -1013,8 +1014,8 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:12px;color:var(--muted);font-weight:500;">Completed</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;font-weight:700;color:var(--text);">168</span>
-            <span style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">68%</span>
+            <span id="completedCount" style="font-size:12px;font-weight:700;color:var(--text);">0</span>
+            <span id="completedPct" style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">0%</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -1023,8 +1024,8 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:12px;color:var(--muted);font-weight:500;">Pending</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;font-weight:700;color:var(--text);">55</span>
-            <span style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">22%</span>
+            <span id="pendingCount" style="font-size:12px;font-weight:700;color:var(--text);">0</span>
+            <span id="pendingPct" style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">0%</span>
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -1033,8 +1034,8 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:12px;color:var(--muted);font-weight:500;">Cancelled</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:12px;font-weight:700;color:var(--text);">25</span>
-            <span style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">10%</span>
+            <span id="cancelledCount" style="font-size:12px;font-weight:700;color:var(--text);">0</span>
+            <span id="cancelledPct" style="font-size:10px;color:var(--subtle);width:32px;text-align:right;">0%</span>
           </div>
         </div>
       </div>
@@ -1074,20 +1075,15 @@ tbody tr:last-child td { border-bottom: none; }
       <!-- Y-axis labels -->
       <div style="display:flex;justify-content:flex-end;gap:16px;padding:4px 0 0;border-top:1px solid var(--border);">
         <div style="font-size:11px;color:var(--muted);font-weight:500;">Total Revenue</div>
-        <div style="font-size:11px;font-weight:700;color:var(--text);">₱48,620</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);"><span id="revTotal">₱0</span></div>
       </div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-head"><h3>Recent Transactions</h3><a href="{{ route('admin.stocks') }}" class="btn-sm">See All</a></div>
-    <div class="tx-list">
-      <div class="tx-item"><div class="tx-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tx-info"><div class="tx-name">Sale #1042 — Maria Santos</div><div class="tx-time">Today, 9:14 AM · 3 items</div></div><div class="tx-amount plus">+₱245</div></div>
-      <div class="tx-item"><div class="tx-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tx-info"><div class="tx-name">Sale #1041 — Juan dela Cruz</div><div class="tx-time">Today, 8:55 AM · 5 items</div></div><div class="tx-amount plus">+₱620</div></div>
-      <div class="tx-item"><div class="tx-icon out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div><div class="tx-info"><div class="tx-name">Restock — Amoxicillin 500mg</div><div class="tx-time">Yesterday, 4:30 PM · 200 pcs</div></div><div class="tx-amount minus">-₱2,400</div></div>
-      <div class="tx-item"><div class="tx-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tx-info"><div class="tx-name">Sale #1040 — Ana Reyes</div><div class="tx-time">Yesterday, 2:12 PM · 2 items</div></div><div class="tx-amount plus">+₱88</div></div>
-      <div class="tx-item"><div class="tx-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="tx-info"><div class="tx-name">Sale #1039 — Pedro Lim</div><div class="tx-time">Yesterday, 11:05 AM · 7 items</div></div><div class="tx-amount plus">+₱1,150</div></div>
-    </div>
+    <div class="tx-list" id="txList"><div class="tx-item"><div class="tx-info"><div class="tx-time">Loading…</div></div></div></div>
+  </div>
   </div>
 </div>
 
@@ -1151,238 +1147,269 @@ overlay.addEventListener('click', () => {
 })();
 </script>
 <script>
-// ── Line Chart ────────────────────────────────────────────────────────────────
-const salesData = [
-  { day: 'Mon', val: 11200 },
-  { day: 'Tue', val: 14800 },
-  { day: 'Wed', val: 9500  },
-  { day: 'Thu', val: 17200 },
-  { day: 'Fri', val: 13600 },
-  { day: 'Sat', val: 7850, today: true },
-  { day: 'Sun', val: 18100 },
-];
+// ── Dashboard charts: data comes from AdminChartController (JSON) ─────────────
+const CHART_URLS = {
+  sales:        @json(route('admin.charts.sales')),
+  orderStatus:  @json(route('admin.charts.orderStatus')),
+  revenue:      @json(route('admin.charts.revenueByProduct')),
+  transactions: @json(route('admin.charts.recentTransactions')),
+};
+const SVG_NS = 'http://www.w3.org/2000/svg';
+const peso = n => '₱' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 2 });
+const esc  = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-const W = 560, H = 160;
-const PAD_L = 0, PAD_R = 0, PAD_T = 15, PAD_B = 5;
-const chartW = W - PAD_L - PAD_R;
-const chartH = H - PAD_T - PAD_B;
-
-const minVal = 0;
-const maxVal = Math.max(...salesData.map(d => d.val)) * 1.1;
-
-function xPos(i) {
-  return PAD_L + (i / (salesData.length - 1)) * chartW;
+async function getJson(url, params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(qs ? `${url}?${qs}` : url, {
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+    credentials: 'same-origin',
+  });
+  if (!res.ok) throw new Error(`${url} → ${res.status}`);
+  return res.json();
 }
-function yPos(v) {
-  return PAD_T + chartH - ((v - minVal) / (maxVal - minVal)) * chartH;
+function svgEl(name, attrs) {
+  const el = document.createElementNS(SVG_NS, name);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
 }
 
-// Smooth curve via cubic bezier control points
+// ── Weekly Sales Overview (line chart) ────────────────────────────────────────
+const lineSvg    = document.getElementById('lineChart');
+const dotGroup   = document.getElementById('dotGroup');
+const tooltip    = document.getElementById('chartTooltip');
+const labelsEl   = document.getElementById('dayLabels');
+const LW = 560, LH = 160, L_PAD_T = 15, L_PAD_B = 5;
+const L_CH = LH - L_PAD_T - L_PAD_B;
+
 function smoothPath(pts) {
   if (pts.length < 2) return '';
   let d = `M ${pts[0][0]} ${pts[0][1]}`;
   for (let i = 0; i < pts.length - 1; i++) {
-    const x0 = pts[i][0], y0 = pts[i][1];
-    const x1 = pts[i+1][0], y1 = pts[i+1][1];
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
     const cpx = (x0 + x1) / 2;
     d += ` C ${cpx} ${y0}, ${cpx} ${y1}, ${x1} ${y1}`;
   }
   return d;
 }
 
-const pts = salesData.map((d, i) => [xPos(i), yPos(d.val)]);
-
-// Line path
-const linePath = smoothPath(pts);
-document.getElementById('linePath').setAttribute('d', linePath);
-
-// Area path = line + close to bottom
-const first = pts[0], last = pts[pts.length - 1];
-const areaClose = ` L ${last[0]} ${H} L ${first[0]} ${H} Z`;
-document.getElementById('areaPath').setAttribute('d', linePath + areaClose);
-
-// Dots + hover zones
-const dotGroup = document.getElementById('dotGroup');
-const tooltip  = document.getElementById('chartTooltip');
-const svg      = document.getElementById('lineChart');
-
-salesData.forEach((d, i) => {
-  const cx = xPos(i), cy = yPos(d.val);
-
-  // Outer ring (today highlight)
-  if (d.today) {
-    const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy); ring.setAttribute('r', 7);
-    ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#e74c3c');
-    ring.setAttribute('stroke-width', '2'); ring.setAttribute('opacity', '0.3');
-    dotGroup.appendChild(ring);
-  }
-
-  // Main dot
-  const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
-  dot.setAttribute('r', d.today ? 5 : 4);
-  dot.setAttribute('fill', d.today ? '#e74c3c' : '#fff');
-  dot.setAttribute('stroke', '#e74c3c');
-  dot.setAttribute('stroke-width', '2.5');
-  dotGroup.appendChild(dot);
-
-  // Invisible large hit area
-  const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', 18);
-  hit.setAttribute('fill', 'transparent');
-  hit.style.cursor = 'pointer';
-  hit.addEventListener('mouseenter', (e) => {
-    tooltip.style.display = 'block';
-    tooltip.innerHTML = `<span style="color:var(--muted,#888);font-weight:500;">${d.day}</span>&nbsp; ₱${d.val.toLocaleString()}`;
-    positionTooltip(cx, cy);
-  });
-  hit.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-  dotGroup.appendChild(hit);
-});
-
-function positionTooltip(cx, cy) {
+function positionTooltip(tip, svg, W, H, cx, cy) {
   const rect = svg.getBoundingClientRect();
-  const svgW = rect.width, svgH = rect.height;
-  const scaleX = svgW / W, scaleY = svgH / H;
-  const px = cx * scaleX, py = cy * scaleY;
-  const tw = tooltip.offsetWidth || 110, th = tooltip.offsetHeight || 36;
-  let left = px - tw / 2;
-  let top  = py - th - 10;
+  const px = cx * rect.width / W, py = cy * rect.height / H;
+  const tw = tip.offsetWidth || 110, th = tip.offsetHeight || 36;
+  let left = px - tw / 2, top = py - th - 10;
   if (left < 0) left = 4;
-  if (left + tw > svgW) left = svgW - tw - 4;
+  if (left + tw > rect.width) left = rect.width - tw - 4;
   if (top < 0) top = py + 14;
-  tooltip.style.left = left + 'px';
-  tooltip.style.top  = top  + 'px';
+  tip.style.left = left + 'px';
+  tip.style.top  = top + 'px';
 }
 
-// Day labels
-const labelsEl = document.getElementById('dayLabels');
-salesData.forEach(d => {
-  const span = document.createElement('span');
-  span.textContent = d.day;
-  span.style.cssText = `font-size:11px;color:var(--subtle,#aaa);font-weight:${d.today ? '700' : '500'};${d.today ? 'color:#e74c3c;' : ''}`;
-  labelsEl.appendChild(span);
+function renderSales(data) {
+  const days = data.days;
+  const isMonth = data.range === 'month';
+  const maxVal = (Math.max(0, ...days.map(d => d.val ?? 0)) || 1) * 1.1;
+  const xPos = i => days.length > 1 ? (i / (days.length - 1)) * LW : LW / 2;
+  const yPos = v => L_PAD_T + L_CH - (v / maxVal) * L_CH;
+
+  // Only plot days that have happened (val !== null).
+  const plotted = days.map((d, i) => ({ d, i })).filter(p => p.d.val !== null);
+  const pts = plotted.map(p => [xPos(p.i), yPos(p.d.val)]);
+  const linePath = smoothPath(pts);
+  document.getElementById('linePath').setAttribute('d', linePath);
+  document.getElementById('areaPath').setAttribute('d',
+    linePath ? `${linePath} L ${pts[pts.length - 1][0]} ${LH} L ${pts[0][0]} ${LH} Z` : '');
+
+  dotGroup.innerHTML = '';
+  tooltip.style.display = 'none';
+  plotted.forEach(({ d, i }) => {
+    const cx = xPos(i), cy = yPos(d.val);
+    if (d.today) {
+      dotGroup.appendChild(svgEl('circle', { cx, cy, r: 7, fill: 'none', stroke: '#e74c3c', 'stroke-width': 2, opacity: 0.3 }));
+    }
+    dotGroup.appendChild(svgEl('circle', {
+      cx, cy, r: isMonth ? 3 : (d.today ? 5 : 4),
+      fill: d.today ? '#e74c3c' : '#fff', stroke: '#e74c3c', 'stroke-width': 2.5,
+    }));
+    const hit = svgEl('circle', { cx, cy, r: isMonth ? 10 : 18, fill: 'transparent' });
+    hit.style.cursor = 'pointer';
+    hit.addEventListener('mouseenter', () => {
+      const name = isMonth ? new Date(d.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : d.label;
+      tooltip.style.display = 'block';
+      tooltip.innerHTML = `<span style="color:var(--muted,#888);font-weight:500;">${esc(name)}</span>&nbsp; ${peso(d.val)}`;
+      positionTooltip(tooltip, lineSvg, LW, LH, cx, cy);
+    });
+    hit.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    dotGroup.appendChild(hit);
+  });
+
+  // Day labels (month view: thin them out so they don't overlap)
+  labelsEl.innerHTML = '';
+  days.forEach((d, i) => {
+    const span = document.createElement('span');
+    const show = !isMonth || i === 0 || (i + 1) % 5 === 0 || d.today;
+    span.textContent = show ? d.label : '';
+    span.style.cssText = `font-size:11px;color:var(--subtle,#aaa);font-weight:${d.today ? '700' : '500'};${d.today ? 'color:#e74c3c;' : ''}`;
+    labelsEl.appendChild(span);
+  });
+
+  document.getElementById('weeklyTotal').textContent = peso(data.total);
+}
+
+async function loadSales(range = 'week') {
+  try { renderSales(await getJson(CHART_URLS.sales, { range })); }
+  catch (e) { console.error(e); }
+}
+document.querySelectorAll('.range-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b === btn));
+    loadSales(btn.dataset.range);
+  });
 });
 
-// ── Order Status Donut Chart ─────────────────────────────
-(function() {
-  const r = 64;
-  const circ = 2 * Math.PI * r; // ~402.12
-
-  // Data: completed 68%, pending 22%, cancelled 10%
-  const segments = [
-    { id: 'donutCompleted', pct: 0.68, color: '#2D7A2D' },
-    { id: 'donutPending',   pct: 0.22, color: '#e07b00' },
-    { id: 'donutCancelled', pct: 0.10, color: '#CC1F1F' },
-  ];
-
-  // Small gap between segments
-  const GAP_DEG = 2.5;
-  const GAP_FRAC = GAP_DEG / 360;
-  const totalGap = GAP_FRAC * segments.length;
-  let offset = 0; // starts at 0 (top after -90deg rotate)
-
-  segments.forEach(seg => {
-    const el = document.getElementById(seg.id);
-    const arc = (seg.pct - GAP_FRAC) * circ;
-    const gap = GAP_FRAC * circ;
-    el.style.strokeDasharray = `${arc} ${circ - arc}`;
+// ── Order Status (donut) ──────────────────────────────────────────────────────
+function renderOrderStatus(data) {
+  const circ = 2 * Math.PI * 64;
+  const GAP_FRAC = 2.5 / 360;
+  let offset = 0;
+  [
+    ['donutCompleted', 'completed'],
+    ['donutPending',   'pending'],
+    ['donutCancelled', 'cancelled'],
+  ].forEach(([id, key]) => {
+    const seg = data[key];
+    const el = document.getElementById(id);
+    const arc = seg.fraction > 0 ? Math.max(0, seg.fraction - GAP_FRAC) * circ : 0;
+    el.style.strokeDasharray  = `${arc} ${circ - arc}`;
     el.style.strokeDashoffset = -(offset * circ);
-    offset += seg.pct;
+    offset += seg.fraction;
+    document.getElementById(key + 'Count').textContent = seg.count.toLocaleString();
+    document.getElementById(key + 'Pct').textContent   = seg.percent + '%';
   });
-})();
+  document.getElementById('donutTotal').textContent = data.total.toLocaleString();
+}
 
-// ── Revenue by Product Bar Chart ─────────────────────────
-(function() {
-  const products = [
-    { name: 'Paracetamol',  short: 'Paracetamol', revenue: 18700 },
-    { name: 'Amoxicillin',  short: 'Amoxicillin', revenue: 12400 },
-    { name: 'Vitamin C',    short: 'Vitamin C',   revenue: 8320  },
-    { name: 'Omeprazole',   short: 'Omeprazole',  revenue: 5800  },
-    { name: 'Metformin',    short: 'Metformin',   revenue: 3400  },
-  ];
-
-  const SVG_W = 560, SVG_H = 200;
-  const PAD_L = 8, PAD_R = 8, PAD_T = 8, PAD_B = 4;
-  const chartW = SVG_W - PAD_L - PAD_R;
-  const chartH = SVG_H - PAD_T - PAD_B;
-
-  const maxRev = Math.max(...products.map(p => p.revenue)) * 1.08;
-  const n = products.length;
-  const colW = chartW / n;
-  const barW = colW * 0.48;
-  const barRadius = 4;
-  const accentColor = '#CC1F1F';
-
+// ── Revenue by Product (bar chart) ────────────────────────────────────────────
+function renderRevenue(data) {
+  const products = data.products;
+  const SVG_W = 560, SVG_H = 200, PAD_L = 8, PAD_R = 8, PAD_T = 8, PAD_B = 4;
+  const chartW = SVG_W - PAD_L - PAD_R, chartH = SVG_H - PAD_T - PAD_B;
   const group = document.getElementById('revBarGroup');
   const labelsDiv = document.getElementById('revBarLabels');
-  const tooltip = document.getElementById('revBarTooltip');
-  const svgEl = document.getElementById('revenueBarChart');
+  const tip = document.getElementById('revBarTooltip');
+  const svg = document.getElementById('revenueBarChart');
+
+  group.innerHTML = ''; labelsDiv.innerHTML = ''; tip.style.display = 'none';
+  document.getElementById('revTotal').textContent = peso(data.total_revenue);
+
+  if (!products.length) {
+    labelsDiv.innerHTML = '<span style="font-size:12px;color:var(--subtle);flex:1;text-align:center;">No completed sales this month yet.</span>';
+    return;
+  }
+
+  const maxRev = Math.max(...products.map(p => p.revenue)) * 1.08;
+  const colW = chartW / products.length, barW = colW * 0.48;
 
   products.forEach((p, i) => {
-    const barH = ((p.revenue / maxRev) * chartH);
+    const barH = (p.revenue / maxRev) * chartH;
     const x = PAD_L + i * colW + (colW - barW) / 2;
     const y = PAD_T + chartH - barH;
 
-    // Bar with rounded top
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', x);
-    rect.setAttribute('y', y);
-    rect.setAttribute('width', barW);
-    rect.setAttribute('height', barH);
-    rect.setAttribute('rx', barRadius);
-    rect.setAttribute('ry', barRadius);
-    rect.setAttribute('fill', accentColor);
-    rect.setAttribute('opacity', '0.75');
+    const rect = svgEl('rect', { x, y, width: barW, height: barH, rx: 4, ry: 4, fill: '#CC1F1F', opacity: 0.75 });
     rect.style.cursor = 'pointer';
     rect.style.transition = 'opacity .15s';
 
-    // Value label above bar
-    const valLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    valLabel.setAttribute('x', x + barW / 2);
-    valLabel.setAttribute('y', y - 5);
-    valLabel.setAttribute('text-anchor', 'middle');
-    valLabel.setAttribute('font-size', '9');
-    valLabel.setAttribute('font-weight', '700');
-    valLabel.setAttribute('fill', 'currentColor');
-    valLabel.setAttribute('opacity', '0.5');
-    valLabel.textContent = '₱' + (p.revenue >= 1000 ? (p.revenue/1000).toFixed(1)+'k' : p.revenue);
+    const val = svgEl('text', { x: x + barW / 2, y: y - 5, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 700, fill: 'currentColor', opacity: 0.5 });
+    val.textContent = '₱' + (p.revenue >= 1000 ? (p.revenue / 1000).toFixed(1) + 'k' : p.revenue);
 
-    rect.addEventListener('mouseenter', (e) => {
+    rect.addEventListener('mouseenter', () => {
       rect.setAttribute('opacity', '1');
-      tooltip.style.display = 'block';
-      tooltip.innerHTML = `<span style="color:var(--muted);font-weight:500;">${p.name}</span>&nbsp; ₱${p.revenue.toLocaleString()}`;
-      const svgRect = svgEl.getBoundingClientRect();
-      const scaleX = svgRect.width / SVG_W;
-      const scaleY = svgRect.height / SVG_H;
-      const px = (x + barW / 2) * scaleX;
-      const py = y * scaleY;
-      const tw = tooltip.offsetWidth || 130;
-      const th = tooltip.offsetHeight || 34;
-      let left = px - tw / 2;
-      let top = py - th - 8;
-      if (left < 0) left = 4;
-      if (left + tw > svgRect.width) left = svgRect.width - tw - 4;
-      if (top < 0) top = py + 14;
-      tooltip.style.left = left + 'px';
-      tooltip.style.top = top + 'px';
+      tip.style.display = 'block';
+      tip.innerHTML = `<span style="color:var(--muted);font-weight:500;">${esc(p.name)}</span>&nbsp; ${peso(p.revenue)}`;
+      positionTooltip(tip, svg, SVG_W, SVG_H, x + barW / 2, y);
     });
-    rect.addEventListener('mouseleave', () => {
-      rect.setAttribute('opacity', '0.75');
-      tooltip.style.display = 'none';
-    });
+    rect.addEventListener('mouseleave', () => { rect.setAttribute('opacity', '0.75'); tip.style.display = 'none'; });
 
     group.appendChild(rect);
-    group.appendChild(valLabel);
+    group.appendChild(val);
 
-    // X label
     const span = document.createElement('span');
     span.textContent = p.short;
+    span.title = p.name;
     span.style.cssText = 'font-size:10px;color:var(--subtle);font-weight:500;text-align:center;flex:1;';
     labelsDiv.appendChild(span);
   });
-})();
+}
+
+// ── Recent Transactions ───────────────────────────────────────────────────────
+const ICON_IN  = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+const ICON_OUT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>';
+
+function renderTransactions(data) {
+  const list = document.getElementById('txList');
+  if (!data.transactions.length) {
+    list.innerHTML = '<div class="tx-item"><div class="tx-info"><div class="tx-time">No transactions yet.</div></div></div>';
+    return;
+  }
+  list.innerHTML = data.transactions.map(t => {
+    const out = t.type === 'refund';
+    return `<div class="tx-item">
+      <div class="tx-icon${out ? ' out' : ''}">${out ? ICON_OUT : ICON_IN}</div>
+      <div class="tx-info"><div class="tx-name">${esc(t.title)}</div><div class="tx-time">${esc(t.subtitle)}</div></div>
+      <div class="tx-amount ${out ? 'minus' : 'plus'}">${esc(t.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Today's Sales (stat card) ─────────────────────────────────────────────────
+// Reuses the same sales endpoint as the Weekly Sales chart (range=month), so
+// the card can never disagree with the chart's definition of a "sale". The
+// response's `days` array flags the current day with `today: true`; the day
+// before it is used for the trend badge.
+function renderTodaySales(data) {
+  const days = data.days || [];
+  const idx  = days.findIndex(d => d.today);
+  const valueEl = document.getElementById('todaySalesValue');
+  const trendEl = document.getElementById('todaySalesTrend');
+
+  const todayVal = idx >= 0 ? Number(days[idx].val ?? 0) : 0;
+  valueEl.textContent = peso(todayVal);
+
+  // Yesterday may belong to the previous month (on the 1st) — no trend then.
+  const prev = idx > 0 ? days[idx - 1] : null;
+  if (!prev || prev.val === null || prev.val === undefined) {
+    trendEl.style.display = 'none';
+    return;
+  }
+
+  const yesterdayVal = Number(prev.val);
+  let cls, text;
+  if (yesterdayVal === 0) {
+    if (todayVal === 0) { trendEl.style.display = 'none'; return; }
+    cls = 'up'; text = 'New';                       // nothing to compare against
+  } else {
+    const pct = Math.round(((todayVal - yesterdayVal) / yesterdayVal) * 100);
+    cls  = pct >= 0 ? 'up' : 'down';
+    text = (pct >= 0 ? '↑ ' : '↓ ') + Math.abs(pct) + '%';
+  }
+
+  trendEl.className = 'stat-trend ' + cls;
+  trendEl.textContent = text;
+  trendEl.title = 'vs. yesterday (' + peso(yesterdayVal) + ')';
+  trendEl.style.display = '';
+}
+
+async function loadTodaySales() {
+  try { renderTodaySales(await getJson(CHART_URLS.sales, { range: 'month' })); }
+  catch (e) { console.error(e); }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadSales('week');
+loadTodaySales();
+setInterval(loadTodaySales, 60000);   // keep the card fresh as orders complete
+getJson(CHART_URLS.orderStatus).then(renderOrderStatus).catch(console.error);
+getJson(CHART_URLS.revenue).then(renderRevenue).catch(console.error);
+getJson(CHART_URLS.transactions).then(renderTransactions).catch(console.error);
 </script>
 
 </body>
