@@ -12,7 +12,18 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StaffExpiryController;
+use App\Http\Controllers\StaffInventoryController;
+use App\Http\Controllers\StaffOrdersController;
+use App\Http\Controllers\StaffReportsController;
+use App\Http\Controllers\StaffStocksController;
+use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Support\Facades\Route;
+
+// Every route below is served with no-cache headers so a stale CSRF token
+// is never shown after login/logout (prevents "419 Page Expired").
+Route::middleware(PreventBackHistory::class)->group(function () {
 
 // ── Public ────────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -171,4 +182,86 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/profile/password', [AdminController::class, 'updatePassword'])->name('profile.password');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     });
+});
+
+// ── Staff ─────────────────────────────────────────────────────────────────────
+Route::prefix('staff')->name('staff.')->group(function () {
+
+    // Guest-only: login & register screens
+    Route::middleware('guest:staff')->group(function () {
+        Route::get('/login',     [StaffController::class, 'showLogin'])->name('login');
+        Route::post('/login',    [StaffController::class, 'login'])->name('login.submit');
+
+        Route::get('/register',  [StaffController::class, 'showRegister'])->name('register');
+        Route::post('/register', [StaffController::class, 'register'])->name('register.submit');
+    });
+
+    Route::post('/logout', [StaffController::class, 'logout'])
+        ->middleware('auth:staff')
+        ->name('logout');
+
+    // Auth-only
+    Route::middleware('auth:staff')->group(function () {
+        Route::get('/', [StaffController::class, 'dashboard'])->name('dashboard');
+
+        // ── Dashboard charts (JSON) ───────────────────────────────────
+        Route::get('/charts/sales',               [StaffController::class, 'weeklySales'])->name('charts.sales');
+        Route::get('/charts/order-status',        [StaffController::class, 'orderStatus'])->name('charts.orderStatus');
+        Route::get('/charts/revenue-by-product',  [StaffController::class, 'revenueByProduct'])->name('charts.revenueByProduct');
+        Route::get('/charts/recent-transactions', [StaffController::class, 'recentTransactions'])->name('charts.recentTransactions');
+
+        // ── Inventory / Products (StaffInventoryController) ──────────────
+        // Literal segments (search, sort, categories, brands) are registered
+        // before the {product} wildcard so they are never swallowed by it.
+        Route::get('/inventory', [StaffInventoryController::class, 'index'])->name('inventory');
+        Route::get('/inventory/search', [StaffInventoryController::class, 'search'])->name('inventory.search');
+        Route::get('/inventory/sort', [StaffInventoryController::class, 'sort'])->name('inventory.sort');
+        Route::get('/inventory/{product}', [StaffInventoryController::class, 'show'])->name('inventory.show');
+        Route::post('/inventory', [StaffInventoryController::class, 'store'])->name('inventory.store');
+        Route::put('/inventory/{product}', [StaffInventoryController::class, 'update'])->name('inventory.update');
+        Route::put('/inventory/{product}/badge', [StaffInventoryController::class, 'updateBadge'])->name('inventory.badge');
+        Route::delete('/inventory/{product}', [StaffInventoryController::class, 'destroy'])->name('inventory.destroy');
+        // ── Categories (managed from the inventory screen's Category modal) ──
+        Route::post('/inventory/categories', [StaffInventoryController::class, 'storeCategory'])->name('inventory.categories.store');
+        Route::put('/inventory/categories/{category}', [StaffInventoryController::class, 'updateCategory'])->name('inventory.categories.update');
+        Route::delete('/inventory/categories/{category}', [StaffInventoryController::class, 'destroyCategory'])->name('inventory.categories.destroy');
+        // ── Brands (managed from the inventory screen's Brand modal) ──────
+        Route::post('/inventory/brands', [StaffInventoryController::class, 'storeBrand'])->name('inventory.brands.store');
+        Route::put('/inventory/brands/{brand}', [StaffInventoryController::class, 'updateBrand'])->name('inventory.brands.update');
+        Route::delete('/inventory/brands/{brand}', [StaffInventoryController::class, 'destroyBrand'])->name('inventory.brands.destroy');
+
+        // ── Orders / Sales Records (StaffOrdersController) ───────────────
+        // 'data' is registered before the {order} wildcard routes.
+        Route::get('/orders', [StaffOrdersController::class, 'index'])->name('orders');
+        Route::get('/orders/data', [StaffOrdersController::class, 'data'])->name('orders.data');
+        Route::put('/orders/{order}/confirm', [StaffOrdersController::class, 'confirm'])->name('orders.confirm');
+        Route::put('/orders/{order}/ready', [StaffOrdersController::class, 'ready'])->name('orders.ready');
+        Route::put('/orders/{order}/complete', [StaffOrdersController::class, 'complete'])->name('orders.complete');
+        Route::put('/orders/{order}/cancel', [StaffOrdersController::class, 'cancel'])->name('orders.cancel');
+        Route::post('/orders/{order}/refund', [StaffOrdersController::class, 'refund'])->name('orders.refund');
+        Route::delete('/orders/{order}', [StaffOrdersController::class, 'destroy'])->name('orders.destroy');
+
+        // ── Stocks (StaffStocksController) ───────────────────────────────
+        // Same screen + endpoints as the admin stocks page.
+        Route::get('/stocks', [StaffStocksController::class, 'index'])->name('stocks');
+        Route::post('/stocks', [StaffStocksController::class, 'store'])->name('stocks.store');
+        Route::put('/stocks/{stock}', [StaffStocksController::class, 'update'])->name('stocks.update');
+        Route::delete('/stocks/{stock}', [StaffStocksController::class, 'destroy'])->name('stocks.destroy');
+        Route::put('/stocks/{stock}/activate', [StaffStocksController::class, 'activate'])->name('stocks.activate');
+        Route::get('/stocks/products', [StaffStocksController::class, 'products'])->name('stocks.products');
+        Route::get('/stocks/products/{product}/available', [StaffStocksController::class, 'availableStocks'])->name('stocks.products.available');
+
+        // ── Reports (StaffReportsController) ─────────────────────────────
+        // Same screen + endpoints as the admin reports page.
+        Route::get('/reports', [StaffReportsController::class, 'index'])->name('reports');
+        Route::post('/reports', [StaffReportsController::class, 'store'])->name('reports.store');
+        Route::put('/reports/{report}', [StaffReportsController::class, 'update'])->name('reports.update');
+        Route::delete('/reports/{report}', [StaffReportsController::class, 'destroy'])->name('reports.destroy');
+
+        // ── Expiry Tracking (StaffExpiryController) ──────────────────────
+        // Same screen as the admin expiry page.
+        Route::get('/expiry', [StaffExpiryController::class, 'index'])->name('expiry');
+    });
+});
+
 });

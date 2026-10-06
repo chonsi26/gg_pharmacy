@@ -2133,7 +2133,6 @@ public function showLogin(): View
     public function logout(Request $request): RedirectResponse
     {
         Auth::guard('admin')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

@@ -20,6 +20,10 @@ class Authenticate extends Middleware
             return route('admin.login');
         }
 
+        if ($request->is('staff', 'staff/*')) {
+            return route('staff.login');
+        }
+
         return route('home') . '#loginModal';
     }
 }
