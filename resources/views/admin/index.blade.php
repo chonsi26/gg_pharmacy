@@ -283,10 +283,18 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   border-radius: 10px;
   padding: 18px 20px;
   box-shadow: var(--shadow-sm);
-  transition: background .3s, box-shadow .2s;
+  transition: background .3s, box-shadow .2s, transform .2s;
   cursor: default;
 }
 .stat-card:hover { box-shadow: var(--shadow-md); }
+a.stat-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+a.stat-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+a.stat-card-link:focus-visible { outline: 2px solid var(--red, #e53935); outline-offset: 2px; }
 
 .stat-top {
   display: flex;
@@ -895,38 +903,38 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <div class="stats-grid">
-  <div class="stat-card">
+  <a class="stat-card stat-card-link" href="{{ route('admin.inventory') }}">
     <div class="stat-top">
       <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
       <div class="stat-trend up">↑ 4%</div>
     </div>
     <div class="stat-value">{{ number_format($totalMedicines) }}</div>
     <div class="stat-label">Total Products</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a class="stat-card stat-card-link" href="{{ route('admin.orders') }}">
     <div class="stat-top">
       <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
       <div class="stat-trend up" id="todaySalesTrend" style="display:none;"></div>
     </div>
     <div class="stat-value" id="todaySalesValue">₱0</div>
     <div class="stat-label">Today's Sales</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a class="stat-card stat-card-link" href="{{ route('admin.stocks', ['status' => 'low-stock']) }}">
     <div class="stat-top">
       <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
       <div class="stat-trend down">↑ 2</div>
     </div>
     <div class="stat-value">{{ number_format($lowStockItems) }}</div>
     <div class="stat-label">Low Stock Items</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a class="stat-card stat-card-link" href="{{ route('admin.expiry') }}">
     <div class="stat-top">
-      <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-      <div class="stat-trend up">↑ 7%</div>
+      <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <div class="stat-trend down">≤ 10 days</div>
     </div>
-    <div class="stat-value">{{ number_format($totalCustomers) }}</div>
-    <div class="stat-label">Total Customers</div>
-  </div>
+    <div class="stat-value">{{ number_format($expiringStocks) }}</div>
+    <div class="stat-label">Expiring Stocks</div>
+  </a>
 </div>
 
 <div class="content-grid">

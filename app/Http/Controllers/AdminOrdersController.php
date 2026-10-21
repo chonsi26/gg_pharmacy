@@ -80,7 +80,9 @@ class AdminOrdersController extends Controller
     {
         $cutoff = now()->subHours(self::PICKUP_WINDOW_HOURS);
 
+        // App-paid orders have no pickup timer, so only cash orders expire.
         $candidateIds = Order::where('status', 'ready')
+            ->where('payment_method', '!=', 'app')
             ->whereNotNull('ready_at')
             ->where('ready_at', '<=', $cutoff)
             ->pluck('id');
@@ -95,6 +97,7 @@ class AdminOrdersController extends Controller
                 if (
                     ! $order
                     || $order->status !== 'ready'
+                    || ! $order->hasPickupTimer()
                     || $order->ready_at === null
                     || $order->ready_at->gt($cutoff)
                 ) {
@@ -127,7 +130,7 @@ class AdminOrdersController extends Controller
         return $this->ok("Order {$order->order_number} confirmed.", $order);
     }
 
-    /** Confirmed → Ready / For Pick Up ("Reserve" button). Starts the 5-hour clock. */
+    /** Confirmed → Ready / For Pick Up ("Reserve" button). Starts the 5-hour clock (cash orders only). */
     public function ready(Order $order): JsonResponse
     {
         if ($order->status !== 'confirmed') {
@@ -243,7 +246,8 @@ class AdminOrdersController extends Controller
     /** Shapes an Order into the object orders.blade.php's JS expects. */
     private function transform(Order $order): array
     {
-        $dueAt = $order->status === 'ready' && $order->ready_at
+        // No due date for app-paid orders: they have no pickup timer.
+        $dueAt = $order->status === 'ready' && $order->ready_at && $order->hasPickupTimer()
             ? $order->ready_at->copy()->addHours(self::PICKUP_WINDOW_HOURS)
             : null;
 

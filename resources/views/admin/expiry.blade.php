@@ -766,40 +766,19 @@ tbody tr:last-child td { border-bottom: none; }
 .exp-filter-chip.active[data-filter="ok"]       { background: #22c55e; }
 .exp-filter-chip.active .dot { background: #fff; }
 
-/* ── Expiry item cards (mirrors inventory .med-card) ── */
-.expiry-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  padding: 4px 2px;
-}
-.expiry-item {
-  background: var(--card, #fff);
-  border: 1px solid var(--border, #e8eaf0);
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: box-shadow .2s, transform .2s;
-  position: relative;
-}
-.expiry-item:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,.10); }
+/* ── Expiry table ── */
+.expiry-table { min-width: 860px; }
+.expiry-table tbody tr.expiry-item { position: relative; }
 
+.exp-product-cell { display: flex; align-items: center; gap: 12px; min-width: 200px; }
 .exp-top-wrap {
-  width: 100%;
-  aspect-ratio: 1 / 1;
+  width: 52px; height: 52px;
+  border-radius: 10px;
   position: relative; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.exp-product-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  position: relative;
-  z-index: 1;
-}
+.exp-product-img { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
 .expiry-item.danger  .exp-top-wrap { background: linear-gradient(135deg,#fee2e2,#fff5f5); }
 .expiry-item.warning .exp-top-wrap { background: linear-gradient(135deg,#ffedd5,#fff7ed); }
 .expiry-item.ok      .exp-top-wrap { background: linear-gradient(135deg,#dcfce7,#f0fdf4); }
@@ -807,19 +786,26 @@ tbody tr:last-child td { border-bottom: none; }
 [data-theme="dark"] .expiry-item.warning .exp-top-wrap { background: linear-gradient(135deg,#5f3e08,#3d2800); }
 [data-theme="dark"] .expiry-item.ok      .exp-top-wrap { background: linear-gradient(135deg,#064e2a,#033318); }
 
-.exp-bg-icon { position: absolute; right: 10px; bottom: -8px; width: 62px; height: 62px; opacity: .16; }
-.exp-main-icon { width: 40px; height: 40px; position: relative; z-index: 1; }
+.exp-bg-icon { display: none; }
+.exp-main-icon { width: 24px; height: 24px; position: relative; z-index: 1; }
 .expiry-item.danger  .exp-main-icon { color: #ef4444; }
 .expiry-item.warning .exp-main-icon { color: #f97316; }
 .expiry-item.ok      .exp-main-icon { color: #22c55e; }
 
-.pill-float { position: absolute; top: 10px; right: 10px; z-index: 2; display: flex; align-items: center; gap: 6px; }
+.exp-name { font-size: 14px; font-weight: 700; color: var(--text, #111); line-height: 1.3; }
+.exp-batch { font-size: 12.5px; color: var(--muted, #888); white-space: nowrap; }
+.exp-qty { font-weight: 700; color: var(--text, #111); white-space: nowrap; }
 
 /* Pills */
-.pill { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700; }
+.pill { display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap; }
 .pill.danger  { background:#fee2e2;color:#dc2626; }
 .pill.warning { background:#ffedd5;color:#ea580c; }
 .pill.ok      { background:#dcfce7;color:#16a34a; }
+[data-theme="dark"] .pill.danger  { background: rgba(239,68,68,.18);  color: #f87171; }
+[data-theme="dark"] .pill.warning { background: rgba(249,115,22,.18); color: #fb923c; }
+[data-theme="dark"] .pill.ok      { background: rgba(34,197,94,.18);  color: #4ade80; }
+
+.exp-status-cell { display: inline-flex; align-items: center; gap: 8px; }
 
 /* Pulse dot */
 .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; position: relative; flex-shrink: 0; box-shadow: 0 0 0 2px #fff; }
@@ -830,21 +816,8 @@ tbody tr:last-child td { border-bottom: none; }
 }
 @keyframes pulse-ring { 0% { transform: scale(1); opacity: .4; } 100% { transform: scale(2.4); opacity: 0; } }
 
-.exp-body {
-  padding: 14px 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  flex: 1;
-}
-.exp-name { font-size: 14px; font-weight: 700; color: var(--text, #111); line-height: 1.3; }
-.exp-batch-row { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--muted, #888); }
-.exp-batch-row .qty { font-weight: 700; color: var(--text, #111); }
-
-.exp-countdown-section { display: flex; flex-direction: column; gap: 5px; }
-.exp-countdown-meta { display: flex; justify-content: space-between; align-items: center; }
-.exp-countdown-label { font-size: 11px; color: var(--subtle, #aaa); text-transform: uppercase; letter-spacing: .4px; font-weight: 500; }
-.exp-countdown-val { font-size: 12px; font-weight: 700; }
+.exp-countdown-section { display: flex; flex-direction: column; gap: 5px; min-width: 130px; }
+.exp-countdown-val { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .expiry-item.danger  .exp-countdown-val { color: #ef4444; }
 .expiry-item.warning .exp-countdown-val { color: #f97316; }
 .expiry-item.ok      .exp-countdown-val { color: #22c55e; }
@@ -855,21 +828,14 @@ tbody tr:last-child td { border-bottom: none; }
 .expiry-item.warning .exp-fill { background: linear-gradient(90deg,#fed7aa,#f97316); }
 .expiry-item.ok      .exp-fill { background: linear-gradient(90deg,#bbf7d0,#22c55e); }
 
-.exp-date-row {
-  display: flex; justify-content: space-between; align-items: center;
-  font-size: 11.5px; color: var(--muted, #888);
-  border-top: 1px solid var(--border, #e8eaf0);
-  padding-top: 10px; margin-top: 2px;
-}
-.exp-date-row .val { font-weight: 700; }
-.expiry-item.danger  .exp-date-row .val { color: #ef4444; }
-.expiry-item.warning .exp-date-row .val { color: #f97316; }
-.expiry-item.ok      .exp-date-row .val { color: #22c55e; }
+.exp-date { font-weight: 700; white-space: nowrap; }
+.expiry-item.danger  .exp-date { color: #ef4444; }
+.expiry-item.warning .exp-date { color: #f97316; }
+.expiry-item.ok      .exp-date { color: #22c55e; }
 
 .exp-empty {
-  grid-column: 1 / -1;
   text-align: center;
-  padding: 48px 20px;
+  padding: 48px 20px !important;
   color: var(--muted, #888);
   font-size: 13px;
 }
@@ -883,7 +849,6 @@ tbody tr:last-child td { border-bottom: none; }
   .card-head-right { width: 100%; }
   .card-head-right .header-search { flex: 1; min-width: 0; }
   .card-head-right .header-search input { width: 100% !important; }
-  .expiry-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 }
 @media (max-width: 380px) {
   .expiry-summary { grid-template-columns: 1fr; }
@@ -1051,7 +1016,22 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <br>
     <div class="card-body" style="padding: 0 16px 16px;">
-      <div class="expiry-grid" id="expiryGrid"></div>
+      <div class="table-wrap">
+        <table class="expiry-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Batch</th>
+              <th>Qty</th>
+              <th>Stock Status</th>
+              <th>Time Left</th>
+              <th>Expires</th>
+              <th>Expiry Status</th>
+            </tr>
+          </thead>
+          <tbody id="expiryGrid"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1149,7 +1129,7 @@ function render() {
   });
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="exp-empty">No batches match your filters.</div>`;
+    grid.innerHTML = `<tr><td colspan="7" class="exp-empty">No batches match your filters.</td></tr>`;
     return;
   }
 
@@ -1170,40 +1150,33 @@ function render() {
       ? `<img class="exp-product-img" src="${escapeAttr(item.image)}" alt="${escapeAttr(item.name)}" loading="lazy" onerror="handleImgError(this)">`
       : `${iconBg}${iconMain}`;
 
-    const el = document.createElement('div');
+    const el = document.createElement('tr');
     el.className = `expiry-item ${item.level}`;
     el.innerHTML = `
-      <div class="exp-top-wrap">
-        ${media}
-        <div class="pill-float">
-          ${pulseDot}
-          <span class="pill ${item.level}">${item.pill}</span>
+      <td>
+        <div class="exp-product-cell">
+          <div class="exp-top-wrap">${media}</div>
+          <div class="exp-name">${item.name}</div>
         </div>
-      </div>
-      <div class="exp-body">
-        <div class="exp-name">${item.name}</div>
-        <div class="exp-batch-row">
-          <span>${item.batch}</span>
-          <span class="qty">${item.qty} units</span>
-        </div>
-        <div class="exp-batch-row">
-          <span>Stock Status</span>
-          <span class="pill ${statusClass}">${statusLabel}</span>
-        </div>
+      </td>
+      <td><span class="exp-batch">${item.batch}</span></td>
+      <td><span class="exp-qty">${item.qty} units</span></td>
+      <td><span class="pill ${statusClass}">${statusLabel}</span></td>
+      <td>
         <div class="exp-countdown-section">
-          <div class="exp-countdown-meta">
-            <span class="exp-countdown-label">Time Left</span>
-            <span class="exp-countdown-val">${num} ${unit}</span>
-          </div>
+          <span class="exp-countdown-val">${num} ${unit}</span>
           <div class="exp-track">
             <div class="exp-fill" data-fill="${fillPct}" style="width:0%"></div>
           </div>
         </div>
-        <div class="exp-date-row">
-          <span>Expires</span>
-          <span class="val">${item.expiry}</span>
-        </div>
-      </div>
+      </td>
+      <td><span class="exp-date">${item.expiry}</span></td>
+      <td>
+        <span class="exp-status-cell">
+          ${pulseDot}
+          <span class="pill ${item.level}">${item.pill}</span>
+        </span>
+      </td>
     `;
     grid.appendChild(el);
   });

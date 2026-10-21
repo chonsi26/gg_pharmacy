@@ -630,6 +630,30 @@
     .rcpt-foot, .rcpt-close { display: none !important; }
   }
 
+  /* ── ORDER STATUS FILTER TABS ─────────────────────────────────────────── */
+  .status-tabs { display: flex; background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; margin-bottom: 20px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .status-tabs::-webkit-scrollbar { height: 4px; }
+  .status-tabs::-webkit-scrollbar-thumb { background: var(--red); border-radius: 4px; }
+  .status-tab { flex: 1 1 0; min-width: 110px; background: none; border: none; border-bottom: 3px solid transparent; padding: 14px 16px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: #4b5563; cursor: pointer; white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; transition: color .15s, border-color .15s, background .15s; }
+  .status-tab:hover { color: var(--red); background: #fafafa; }
+  .status-tab.active { color: var(--red); border-bottom-color: var(--red); }
+  .status-tab .tab-count { font-size: 11px; font-weight: 700; background: #f3f4f6; color: #4b5563; border-radius: 10px; padding: 1px 8px; }
+  .status-tab.active .tab-count { background: var(--red); color: #fff; }
+  /* ── ORDER SEARCH ─────────────────────────────────────────────────────── */
+  .order-search { position: relative; margin-bottom: 12px; width: 100%; max-width: 280px; }
+  .order-search > i.fa-search { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 12px; pointer-events: none; }
+  .order-search input { width: 100%; height: 32px; padding: 0 30px 0 30px; border: 1px solid #d5d8dc; border-radius: 4px; font-size: 12px; font-family: 'Open Sans', sans-serif; color: var(--text); background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
+  .order-search input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(192,26,26,0.08); }
+  .order-search input::placeholder { color: #9ca3af; }
+  .order-search-clear { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border: none; background: none; color: #9ca3af; font-size: 12px; cursor: pointer; border-radius: 50%; display: none; align-items: center; justify-content: center; }
+  .order-search-clear:hover { color: var(--red); background: #f3f4f6; }
+  .order-search.has-value .order-search-clear { display: flex; }
+  @media (max-width: 560px) { .order-search { max-width: 100%; } }
+  .order-card.is-hidden { display: none; }
+  .filter-empty { display: none; text-align: center; padding: 50px 20px; color: var(--gray); background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; }
+  .filter-empty.show { display: block; }
+  .filter-empty i { font-size: 34px; color: var(--border); margin-bottom: 12px; display: block; }
+
   .empty-orders { text-align: center; padding: 60px 20px; color: var(--gray); }
   .empty-orders i { font-size: 40px; color: var(--border); margin-bottom: 14px; }
   .empty-orders a { color: var(--red); font-weight: 700; }
@@ -955,8 +979,44 @@
 
     <div class="orders-heading">Order History</div>
 
+    {{-- Search — filters the orders below by the products that were ordered --}}
+    <div class="order-search" id="orderSearch">
+      <i class="fas fa-search"></i>
+      <input type="text" id="orderSearchInput" placeholder="Search products" autocomplete="off" aria-label="Search orders by product name">
+      <button type="button" class="order-search-clear" id="orderSearchClear" aria-label="Clear search"><i class="fas fa-times"></i></button>
+    </div>
+
+    {{-- Status filter — sits above the order tables --}}
+    @php
+      $statusTabs = [
+        'all'       => 'All',
+        'pending'   => 'Pending',
+        'confirmed' => 'Confirmed',
+        'ready'     => 'Ready',
+        'picked_up' => 'Picked Up',
+        'cancelled' => 'Cancelled',
+      ];
+    @endphp
+    <div class="status-tabs" id="statusTabs" role="tablist" aria-label="Filter orders by status">
+      @foreach($statusTabs as $key => $label)
+        <button type="button" role="tab"
+                class="status-tab {{ $key === 'all' ? 'active' : '' }}"
+                data-status="{{ $key }}"
+                aria-selected="{{ $key === 'all' ? 'true' : 'false' }}">
+          {{ $label }}
+          <span class="tab-count">{{ $key === 'all' ? $orders->count() : $orders->where('status', $key)->count() }}</span>
+        </button>
+      @endforeach
+    </div>
+
+    <div class="filter-empty" id="filterEmpty">
+      <i class="fas fa-receipt"></i>
+      <p id="filterEmptyText">No orders with this status.</p>
+    </div>
+
     @foreach($orders as $order)
-      <div class="order-card">
+      <div class="order-card" data-status="{{ $order->status }}"
+           data-products="{{ mb_strtolower($order->items->map(fn ($i) => $i->product->name ?? '')->filter()->implode(' | ')) }}">
         <div class="order-card-head">
           <div>
             <div class="order-number">{{ $order->order_number }}</div>
@@ -1906,6 +1966,89 @@
     });
 
     refreshBadge();
+  })();
+
+  // ── Order status filter tabs + product search ─────────────────────────────
+  (function () {
+    const tabs = document.querySelectorAll('#statusTabs .status-tab');
+    if (!tabs.length) return;
+    const cards     = document.querySelectorAll('.order-card[data-status]');
+    const empty     = document.getElementById('filterEmpty');
+    const emptyText = document.getElementById('filterEmptyText');
+    const input     = document.getElementById('orderSearchInput');
+    const clearBtn  = document.getElementById('orderSearchClear');
+    const searchBox = document.getElementById('orderSearch');
+
+    let currentStatus = 'all';
+    let currentQuery  = '';
+
+    const matchesQuery = card => {
+      if (!currentQuery) return true;
+      const haystack = (card.dataset.products || '');
+      // every word typed must appear somewhere in the order's product names
+      return currentQuery.split(/\s+/).every(word => haystack.includes(word));
+    };
+
+    function render() {
+      const counts = {};
+      let visible = 0;
+
+      cards.forEach(card => {
+        const status  = card.dataset.status;
+        const inQuery = matchesQuery(card);
+        if (inQuery) {
+          counts.all = (counts.all || 0) + 1;
+          counts[status] = (counts[status] || 0) + 1;
+        }
+        const show = inQuery && (currentStatus === 'all' || status === currentStatus);
+        card.classList.toggle('is-hidden', !show);
+        if (show) visible++;
+      });
+
+      tabs.forEach(t => {
+        const on = t.dataset.status === currentStatus;
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        const badge = t.querySelector('.tab-count');
+        if (badge) badge.textContent = counts[t.dataset.status] || 0;
+      });
+
+      if (emptyText) {
+        emptyText.textContent = currentQuery
+          ? 'No orders found matching "' + input.value.trim() + '"' + (currentStatus === 'all' ? '.' : ' in this status.')
+          : 'No orders with this status.';
+      }
+      if (empty) empty.classList.toggle('show', visible === 0);
+      if (searchBox) searchBox.classList.toggle('has-value', input && input.value.length > 0);
+    }
+
+    function applyFilter(status) { currentStatus = status; render(); }
+
+    tabs.forEach(t => t.addEventListener('click', () => {
+      applyFilter(t.dataset.status);
+      history.replaceState(null, '', t.dataset.status === 'all' ? location.pathname + location.search : '#' + t.dataset.status);
+    }));
+
+    if (input) {
+      input.addEventListener('input', () => {
+        currentQuery = input.value.trim().toLowerCase();
+        render();
+      });
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
+    }
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        currentQuery = '';
+        render();
+        input.focus();
+      });
+    }
+
+    // Deep-link support, e.g. /my-orders#ready
+    const initial = location.hash.replace('#', '');
+    if (initial && document.querySelector('#statusTabs [data-status="' + initial + '"]')) currentStatus = initial;
+    render();
   })();
 
   // ── Payment method: show the "proof comes later" note when App is chosen ───

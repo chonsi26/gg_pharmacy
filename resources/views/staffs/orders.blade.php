@@ -1218,19 +1218,19 @@ tbody tr:last-child td { border-bottom: none; }
 
   <a href = "#" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-    <form method="POST" action="{{ route('staff.logout') }}" style="width:100%;">
+    <form method="POST" action="" style="width:100%;">
       @csrf
       <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
         <div class="user-avatar">
-          @if($staff->profile_picture)
-            <img src="{{ asset($staff->profile_picture) }}" alt="{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}" />
+          @if(auth('staff')->user()->profile_picture)
+            <img src="{{ asset(auth('staff')->user()->profile_picture) }}" alt="{{ auth('staff')->user()->first_name ?? 'Staff' }} {{ auth('staff')->user()->last_name ?? 'User' }}" />
           @else
-            {{ strtoupper(substr($staff->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr($staff->last_name ?? 'T', 0, 1)) }}
+            {{ strtoupper(substr(auth('staff')->user()->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr(auth('staff')->user()->last_name ?? 'T', 0, 1)) }}
           @endif
         </div>
         <div class="user-info">
-          <div class="user-name">{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}</div>
-          <div class="user-role">Pharmacy Staff &middot; Logout</div>
+          <div class="user-name">{{ auth('staff')->user()->first_name ?? 'Staff' }} {{ auth('staff')->user()->last_name ?? 'User' }}</div>
+          <div class="user-role">Pharmacy Staff</div>
         </div>
       </button>
     </form>

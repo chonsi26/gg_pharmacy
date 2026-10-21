@@ -1066,8 +1066,8 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="form-group">
       <label>Status</label>
       <select id="modalStatus">
-        <option value="1">Active</option>
-        <option value="0">Inactive</option>
+        <option value="1">Available</option>
+        <option value="0">Unavailable</option>
       </select>
     </div>
     <div class="modal-sub" id="modalStatusHint" style="display:none;color:#e07b00;margin:-6px 0 0;"></div>
@@ -1148,19 +1148,19 @@ tbody tr:last-child td { border-bottom: none; }
 
   <a href = "#" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-    <form method="POST" action="{{ route('staff.logout') }}" style="width:100%;">
+    <form method="POST" action="" style="width:100%;">
       @csrf
       <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
         <div class="user-avatar">
-          @if($staff->profile_picture)
-            <img src="{{ asset($staff->profile_picture) }}" alt="{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}" />
+          @if(auth('staff')->user()->profile_picture)
+            <img src="{{ asset(auth('staff')->user()->profile_picture) }}" alt="{{ auth('staff')->user()->first_name ?? 'Staff' }} {{ auth('staff')->user()->last_name ?? 'User' }}" />
           @else
-            {{ strtoupper(substr($staff->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr($staff->last_name ?? 'T', 0, 1)) }}
+            {{ strtoupper(substr(auth('staff')->user()->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr(auth('staff')->user()->last_name ?? 'T', 0, 1)) }}
           @endif
         </div>
         <div class="user-info">
-          <div class="user-name">{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}</div>
-          <div class="user-role">Pharmacy Staff &middot; Logout</div>
+          <div class="user-name">{{ auth('staff')->user()->first_name ?? 'Staff' }} {{ auth('staff')->user()->last_name ?? 'User' }}</div>
+          <div class="user-role">Pharmacy Staff</div>
         </div>
       </button>
     </form>
@@ -1233,8 +1233,8 @@ tbody tr:last-child td { border-bottom: none; }
         </button>
         <input type="text" id="searchBatch" placeholder="Search medicine or stock no…">
         <select id="filterStatus">
-          <option value="Active" selected>Active</option>
-          <option value="Inactive">Inactive</option>
+          <option value="Active" selected>Available</option>
+          <option value="Inactive">Unavailable</option>
           <option value="Out of Stock">Out of Stock</option>
           <option value="Expired">Expired</option>
           <option value="">All Stocks</option>

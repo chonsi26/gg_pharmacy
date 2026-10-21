@@ -38,12 +38,20 @@ class AdminController extends Controller
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
     $totalMedicines = Product::count();
-    $totalCustomers = User::count();
     $lowStockItems = Stock::where('is_active', 1)
+        ->where('quantity', '>', 0)
         ->where('quantity', '<=', 10)
         ->count();
- 
-    return view('admin.index', compact('map_link', 'logo2', 'siteName', 'totalMedicines', 'totalCustomers', 'lowStockItems'));
+
+    // Active batches with stock left that expire within the next 10 days
+    // (today through today + 10). Already-expired batches are excluded.
+    $expiringStocks = Stock::where('is_active', 1)
+        ->where('quantity', '>', 0)
+        ->whereNotNull('expiry_date')
+        ->whereBetween('expiry_date', [now()->startOfDay(), now()->addDays(10)->endOfDay()])
+        ->count();
+
+    return view('admin.index', compact('map_link', 'logo2', 'siteName', 'totalMedicines', 'expiringStocks', 'lowStockItems'));
 }
 
     // ── Inventory ────────────────────────────────────────────────────────────

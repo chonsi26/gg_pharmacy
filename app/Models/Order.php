@@ -77,6 +77,17 @@ class Order extends Model
     }
 
     /**
+     * Whether the 5-hour pickup window applies once this order is "ready".
+     * Orders paid through an app are already paid for, so they are held for
+     * the customer with no timer and never auto-expire. Only cash orders
+     * (payment still due at the counter) expire.
+     */
+    public function hasPickupTimer(): bool
+    {
+        return ! $this->isOnlinePayment();
+    }
+
+    /**
      * Proof of payment may only be uploaded for app payments, and only while
      * the order is confirmed (not while pending, and not once ready/closed).
      */

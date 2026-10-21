@@ -395,7 +395,8 @@ class OrderController extends Controller
         // OrderService::autoExpireReadyOrders() enforces), so show the cut-off.
         $pickupDeadline = null;
 
-        if ($order->status === 'ready') {
+        // App-paid orders have no pickup timer, so no deadline is shown.
+        if ($order->status === 'ready' && $order->hasPickupTimer()) {
             $pickupDeadline = ($order->ready_at ?? $order->updated_at)->copy()->addHours(5);
         }
 

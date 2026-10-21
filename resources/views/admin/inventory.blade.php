@@ -1527,11 +1527,11 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <button class="btn-chip" onclick="openCategoriesModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
-          Categories
+          Add Categories
         </button>
         <button class="btn-chip" onclick="openBrandsModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
-          Brand
+          Add brand
         </button>
         <div class="header-search" style="height:32px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;color:var(--subtle);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1623,6 +1623,18 @@ tbody tr:last-child td { border-bottom: none; }
   </div><!-- /card -->
 </main>
 
+<!-- Suggestions for the typable Brand / Category fields (kept in sync by refreshComboOptions()) -->
+<datalist id="brandOptions">
+  @foreach($brands as $brand)
+    <option value="{{ $brand->name }}"></option>
+  @endforeach
+</datalist>
+<datalist id="categoryOptions">
+  @foreach($categories as $cat)
+    <option value="{{ $cat->name }}"></option>
+  @endforeach
+</datalist>
+
 <!-- ════════════════════════════════════════════════════
      ADD PRODUCT MODAL
      ════════════════════════════════════════════════════ -->
@@ -1685,23 +1697,17 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Brand</label>
-              <select id="mBrand">
-                <option value="">— Select —</option>
-                @foreach($brands as $brand)
-                  <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="mBrandText" list="brandOptions" placeholder="Type or pick a brand" autocomplete="off"
+                     oninput="syncCombo('m','brand')" onchange="handleComboCommit('m','brand')">
+              <input type="hidden" id="mBrand">
             </div>
           </div>
           <div class="row-2">
             <div class="field">
               <label>Category <span style="font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);">(FK)</span></label>
-              <select id="mCat">
-                <option value="">— Select —</option>
-                @foreach($categories as $cat)
-                  <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="mCatText" list="categoryOptions" placeholder="Type or pick a category" autocomplete="off"
+                     oninput="syncCombo('m','category')" onchange="handleComboCommit('m','category')">
+              <input type="hidden" id="mCat">
             </div>
             <div class="field">
               <label>Form</label>
@@ -1832,23 +1838,17 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Brand</label>
-              <select id="eBrand">
-                <option value="">— Select —</option>
-                @foreach($brands as $brand)
-                  <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="eBrandText" list="brandOptions" placeholder="Type or pick a brand" autocomplete="off"
+                     oninput="syncCombo('e','brand')" onchange="handleComboCommit('e','brand')">
+              <input type="hidden" id="eBrand">
             </div>
           </div>
           <div class="row-2">
             <div class="field">
               <label>Category <span style="font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);">(FK)</span></label>
-              <select id="eCat">
-                <option value="">— Select —</option>
-                @foreach($categories as $cat)
-                  <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="eCatText" list="categoryOptions" placeholder="Type or pick a category" autocomplete="off"
+                     oninput="syncCombo('e','category')" onchange="handleComboCommit('e','category')">
+              <input type="hidden" id="eCat">
             </div>
             <div class="field">
               <label>Form</label>
@@ -2602,6 +2602,7 @@ async function saveMedicine() {
   if (priceEl.value === '')  { flagField(priceEl); return; }
   nameEl.style.borderColor = '';
   priceEl.style.borderColor = '';
+  if (!guardCombos('m')) return;
 
   const btn = document.querySelector('#modalBg .btn.primary');
   btn.disabled = true;
@@ -2639,7 +2640,9 @@ function resetAddForm() {
     el.style.borderColor = '';
   });
   document.getElementById('mRequiresPrescription').checked = false;
-  ['mCat','mForm','mSection','mBrand'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  ['mForm','mSection'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  clearCombo('m', 'brand');
+  clearCombo('m', 'category');
 
   // No section selected yet, so there's no "next free slot" to suggest.
   document.getElementById('mSortOrder').value = '';
@@ -2754,7 +2757,7 @@ function openEditModal(btn) {
 
   document.getElementById('eName').value   = name;
   document.getElementById('eGenericName').value = generic;
-  document.getElementById('eBrand').value = brandId;
+  setCombo('e', 'brand', brandId);
   document.getElementById('eOrigin').value = origin;
   document.getElementById('ePrice').value  = price;
   document.getElementById('eDesc').value   = desc;
@@ -2765,8 +2768,7 @@ function openEditModal(btn) {
   document.getElementById('eDepth').value        = depth;
   document.getElementById('eRequiresPrescription').checked = requiresRx;
 
-  const catSel = document.getElementById('eCat');
-  catSel.value = cat;
+  setCombo('e', 'category', cat);
 
   document.getElementById('eSection').value = card.dataset.sectionId || '';
 
@@ -2809,6 +2811,7 @@ async function saveEdit() {
   priceEl.style.borderColor = '';
 
   if (!_editTarget) { closeEditModal(); return; }
+  if (!guardCombos('e')) return;
 
   const card = _editTarget;
   const btn  = document.querySelector('#editModalBg .btn.primary');
@@ -3168,9 +3171,11 @@ document.getElementById('confirmAddStock').addEventListener('click', function ()
 @endphp
 let categories = {!! $categoriesJson !!};
 let _catEditId  = null;
+let _catComboTarget = null; // 'm' | 'e' when the form was opened from the typable Category field
 const CATEGORIES_URL = "{{ route('admin.inventory.categories.store') }}";
 
 function renderCategories() {
+  refreshComboOptions();
   const list = document.getElementById('categoriesList');
   if (!categories.length) { list.innerHTML = '<div class="manage-empty">No categories yet.</div>'; return; }
   list.innerHTML = categories.map(c => `
@@ -3199,8 +3204,9 @@ function openCategoriesModal() { renderCategories(); document.getElementById('ca
 function closeCategoriesModal() { document.getElementById('categoriesModalBg').classList.remove('on'); }
 document.getElementById('categoriesModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCategoriesModal(); });
 
-function openCategoryForm(id) {
+function openCategoryForm(id, opts) {
   _catEditId = id || null;
+  _catComboTarget = (opts && opts.target) ? opts.target : null;
   const titleEl = document.getElementById('categoryFormTitle');
   if (id) {
     const c = categories.find(x => x.id === id);
@@ -3218,11 +3224,22 @@ function openCategoryForm(id) {
     document.getElementById('catBgColor').value = '#eff6ff';
     document.getElementById('catStatus').value = 'Active';
   }
+  if (opts && opts.name) document.getElementById('catName').value = opts.name;
   document.getElementById('catName').style.borderColor = '';
   updateCatPreview();
   document.getElementById('categoryFormModalBg').classList.add('on');
+  if (opts && opts.name) setTimeout(() => document.getElementById('catName').focus(), 50);
 }
-function closeCategoryForm() { document.getElementById('categoryFormModalBg').classList.remove('on'); }
+function closeCategoryForm() {
+  document.getElementById('categoryFormModalBg').classList.remove('on');
+  // Cancelled while creating from the typable Category field: drop the unmatched text.
+  if (_catComboTarget) {
+    const prefix = _catComboTarget;
+    _catComboTarget = null;
+    clearCombo(prefix, 'category');
+    document.getElementById(prefix + 'CatText')?.focus();
+  }
+}
 document.getElementById('categoryFormModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCategoryForm(); });
 
 function updateCatPreview() {
@@ -3260,8 +3277,11 @@ async function saveCategory() {
       categories.push(result.category);
     }
 
+    const comboPrefix = _catComboTarget;
+    _catComboTarget = null;          // saved, so closing must not clear the field
     closeCategoryForm();
     renderCategories();
+    if (comboPrefix) setCombo(comboPrefix, 'category', result.category.id);
     showToast(result.message);
   } catch (err) {
     showToast(err.message);
@@ -3302,9 +3322,11 @@ async function deleteCategory(id) {
 @endphp
 let brands = {!! $brandsJson !!};
 let _brandEditId = null;
+let _brandComboTarget = null; // 'm' | 'e' when the form was opened from the typable Brand field
 const BRANDS_URL = "{{ route('admin.inventory.brands.store') }}";
 
 function renderBrands() {
+  refreshComboOptions();
   const list = document.getElementById('brandsList');
   if (!brands.length) { list.innerHTML = '<div class="manage-empty">No brands yet.</div>'; return; }
   list.innerHTML = brands.map(b => `
@@ -3357,8 +3379,9 @@ function showBrandPreview(previewId, src) {
   zone.querySelector('.upload-hint').style.display = 'none';
 }
 
-function openBrandForm(id) {
+function openBrandForm(id, opts) {
   _brandEditId = id || null;
+  _brandComboTarget = (opts && opts.target) ? opts.target : null;
   const titleEl = document.getElementById('brandFormTitle');
   resetBrandImageZone('brandTickerImage', 'brandTickerPreview');
   resetBrandImageZone('brandFeaturedImage', 'brandFeaturedPreview');
@@ -3381,10 +3404,21 @@ function openBrandForm(id) {
     document.getElementById('brandShowFeatured').checked = false;
     document.getElementById('brandStatus').value = 'Active';
   }
+  if (opts && opts.name) document.getElementById('brandName').value = opts.name;
   document.getElementById('brandName').style.borderColor = '';
   document.getElementById('brandFormModalBg').classList.add('on');
+  if (opts && opts.name) setTimeout(() => document.getElementById('brandName').focus(), 50);
 }
-function closeBrandForm() { document.getElementById('brandFormModalBg').classList.remove('on'); }
+function closeBrandForm() {
+  document.getElementById('brandFormModalBg').classList.remove('on');
+  // Cancelled while creating from the typable Brand field: drop the unmatched text.
+  if (_brandComboTarget) {
+    const prefix = _brandComboTarget;
+    _brandComboTarget = null;
+    clearCombo(prefix, 'brand');
+    document.getElementById(prefix + 'BrandText')?.focus();
+  }
+}
 document.getElementById('brandFormModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeBrandForm(); });
 
 async function saveBrand() {
@@ -3421,8 +3455,11 @@ async function saveBrand() {
       brands.push(result.brand);
     }
 
+    const comboPrefix = _brandComboTarget;
+    _brandComboTarget = null;        // saved, so closing must not clear the field
     closeBrandForm();
     renderBrands();
+    if (comboPrefix) setCombo(comboPrefix, 'brand', result.brand.id);
     showToast(result.message);
   } catch (err) {
     showToast(err.message);
@@ -3443,6 +3480,101 @@ async function deleteBrand(id) {
     showToast(result.message);
   } catch (err) {
     showToast(err.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TYPABLE BRAND / CATEGORY FIELDS (Add + Edit modals)
+   Type a name or pick from the suggestions. If the committed text
+   (blur / Enter) isn't an existing record, the matching Add Brand /
+   Add Category modal opens with the typed name already filled in.
+   `prefix` is 'm' (Add modal) or 'e' (Edit modal).
+   ══════════════════════════════════════════════════════ */
+const COMBOS = {
+  brand: {
+    items:  () => brands,
+    textId: p => p + 'BrandText',
+    idId:   p => p + 'Brand',
+    listId: 'brandOptions',
+    open:   (p, name) => openBrandForm(null, { name, target: p }),
+  },
+  category: {
+    items:  () => categories,
+    textId: p => p + 'CatText',
+    idId:   p => p + 'Cat',
+    listId: 'categoryOptions',
+    open:   (p, name) => openCategoryForm(null, { name, target: p }),
+  },
+};
+
+function findComboItem(kind, text) {
+  const t = (text || '').trim().toLowerCase();
+  if (!t) return null;
+  return COMBOS[kind].items().find(x => x.name.trim().toLowerCase() === t) || null;
+}
+
+/** Keep the hidden id field (what actually gets submitted) in step with the typed text. */
+function syncCombo(prefix, kind) {
+  const c = COMBOS[kind];
+  const text = document.getElementById(c.textId(prefix));
+  const item = findComboItem(kind, text.value);
+  document.getElementById(c.idId(prefix)).value = item ? item.id : '';
+  text.style.borderColor = '';
+}
+
+/** Select an existing record (by id) in the field; empty/unknown id clears it. */
+function setCombo(prefix, kind, id) {
+  const c = COMBOS[kind];
+  const item = id ? c.items().find(x => String(x.id) === String(id)) : null;
+  document.getElementById(c.textId(prefix)).value = item ? item.name : '';
+  document.getElementById(c.idId(prefix)).value   = item ? item.id : '';
+  document.getElementById(c.textId(prefix)).style.borderColor = '';
+}
+
+function clearCombo(prefix, kind) { setCombo(prefix, kind, null); }
+
+/** Fired on change (blur / Enter / datalist pick). Unknown name → open the Add modal. */
+function handleComboCommit(prefix, kind) {
+  const c = COMBOS[kind];
+  const text = document.getElementById(c.textId(prefix));
+  const name = text.value.trim();
+
+  syncCombo(prefix, kind);
+  if (!name) return;
+
+  const existing = findComboItem(kind, name);
+  if (existing) { text.value = existing.name; return; }   // normalise casing
+
+  c.open(prefix, name);
+}
+
+/** Before saving a product: an unmatched typed name must not be silently dropped. */
+function guardCombos(prefix) {
+  for (const kind of ['brand', 'category']) {
+    const c = COMBOS[kind];
+    const text = document.getElementById(c.textId(prefix));
+    const name = text.value.trim();
+    if (name && !findComboItem(kind, name)) {
+      text.style.borderColor = 'var(--red)';
+      c.open(prefix, name);
+      return false;
+    }
+    syncCombo(prefix, kind);
+  }
+  return true;
+}
+
+/** Rebuild the suggestion lists after a brand/category is added, edited or deleted. */
+function refreshComboOptions() {
+  for (const kind of Object.keys(COMBOS)) {
+    const dl = document.getElementById(COMBOS[kind].listId);
+    if (!dl) continue;
+    dl.innerHTML = '';
+    COMBOS[kind].items().forEach(x => {
+      const o = document.createElement('option');
+      o.value = x.name;
+      dl.appendChild(o);
+    });
   }
 }
 </script>

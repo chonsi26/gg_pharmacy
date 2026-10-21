@@ -931,7 +931,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <a href = "#" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-    <form method="POST" action="{{ route('staff.logout') }}" style="width:100%;">
+    <form method="POST" action="" style="width:100%;">
       @csrf
       <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
         <div class="user-avatar">
@@ -943,7 +943,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="user-info">
           <div class="user-name">{{ auth('staff')->user()->first_name ?? 'Staff' }} {{ auth('staff')->user()->last_name ?? 'User' }}</div>
-          <div class="user-role">Pharmacy Staff &middot; Logout</div>
+          <div class="user-role">Pharmacy Staff</div>
         </div>
       </button>
     </form>

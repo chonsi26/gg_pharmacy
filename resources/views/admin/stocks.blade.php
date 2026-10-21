@@ -1060,8 +1060,8 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="form-group">
       <label>Status</label>
       <select id="modalStatus">
-        <option value="1">Active</option>
-        <option value="0">Inactive</option>
+        <option value="1">Available</option>
+        <option value="0">Unavailable</option>
       </select>
     </div>
     <div class="modal-sub" id="modalStatusHint" style="display:none;color:#e07b00;margin:-6px 0 0;"></div>
@@ -1240,8 +1240,9 @@ tbody tr:last-child td { border-bottom: none; }
         </button>
         <input type="text" id="searchBatch" placeholder="Search medicine or stock no…">
         <select id="filterStatus">
-          <option value="Active" selected>Active</option>
-          <option value="Inactive">Inactive</option>
+          <option value="Active" selected>Available</option>
+          <option value="Inactive">Unavailable</option>
+          <option value="Low Stock">Low Stock</option>
           <option value="Out of Stock">Out of Stock</option>
           <option value="Expired">Expired</option>
           <option value="">All Stocks</option>
@@ -1322,6 +1323,9 @@ const ROUTES = {
 // `status`: Active, Inactive, Out of Stock, or Expired.
 let batches = @json($stocks);
 
+// Batches with this many units or fewer count as "Low Stock" in the status filter.
+const LOW_STOCK_THRESHOLD = 10;
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function statusPill(s) {
   const cls = { "Active": "ok", "Inactive": "blue", "Out of Stock": "warning", "Expired": "danger" };
@@ -1368,7 +1372,12 @@ function renderTable() {
 
   const rows = batches.filter(b => {
     const matchS = b.medicine.toLowerCase().includes(search) || b.stock_no.toLowerCase().includes(search);
-    const matchF = !filter || b.status === filter;
+    // "Low Stock" is a quantity-based filter (1–10 units left, not expired);
+    // every other option matches on the computed `status`.
+    const matchF = !filter
+      || (filter === "Low Stock"
+            ? b.quantity > 0 && b.quantity <= LOW_STOCK_THRESHOLD && b.status !== "Expired"
+            : b.status === filter);
     return matchS && matchF;
   });
 
@@ -1622,6 +1631,20 @@ document.getElementById("backToProducts").addEventListener("click", () => {
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────
+// Deep link from the dashboard: /admin/stocks?status=low-stock
+(function applyStatusFromUrl() {
+  const param = new URLSearchParams(window.location.search).get("status");
+  if (!param) return;
+  const map = {
+    "low-stock": "Low Stock",
+    "out-of-stock": "Out of Stock",
+    "expired": "Expired",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": ""
+  };
+  if (param in map) document.getElementById("filterStatus").value = map[param];
+})();
 renderTable();
 </script>
 </body>
