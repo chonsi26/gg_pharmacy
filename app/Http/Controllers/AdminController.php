@@ -284,83 +284,7 @@ class AdminController extends Controller
     $reports = Report::orderByDesc('report_date')
         ->orderByDesc('id')
         ->get()
-        ->map(fn (Report $report) => $this->formatReport($report))
-        ->values();
-
-    return view('admin.reports', compact('logo2', 'siteName', 'reports'));
-}
-
-    public function storeReport(Request $request)
-    {
-        $data = $this->validatedReportData($request);
-
-        $report = Report::create($data);
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => "Report \"{$report->report_title}\" added successfully.",
-                'report'  => $this->formatReport($report),
-            ], 201);
-        }
-
-        return redirect()->route('admin.reports')
-            ->with('status', "Report \"{$report->report_title}\" added successfully.");
-    }
-
-    public function updateReport(Request $request, Report $report)
-    {
-        $data = $this->validatedReportData($request);
-
-        $report->update($data);
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => "Report \"{$report->report_title}\" updated successfully.",
-                'report'  => $this->formatReport($report),
-            ]);
-        }
-
-        return redirect()->route('admin.reports')
-            ->with('status', "Report \"{$report->report_title}\" updated successfully.");
-    }
-
-    public function destroyReport(Request $request, Report $report)
-    {
-        $title = $report->report_title;
-
-        $report->delete();
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => "Report \"{$title}\" deleted successfully.",
-            ]);
-        }
-
-        return redirect()->route('admin.reports')
-            ->with('status', "Report \"{$title}\" deleted successfully.");
-    }
-
-    /**
-     * Validate incoming report form data against the reports table columns.
-     */
-    private function validatedReportData(Request $request): array
-    {
-        return $request->validate([
-            'report_title' => ['required', 'string', 'max:255'],
-            'report_type'  => ['required', 'string', 'max:100'],
-            'report_date'  => ['required', 'date'],
-            'status'       => ['required', 'string', 'in:' . implode(',', Report::STATUSES)],
-            'description'  => ['nullable', 'string'],
-            'remarks'      => ['nullable', 'string', 'max:255'],
-        ]);
-    }
-
-    /**
-     * Shape a Report model into the flat array the reports.blade.php table expects.
-     */
-    private function formatReport(Report $report): array
-    {
-        return [
+        ->map(fn (Report $report) => [
             'id'          => $report->id,
             'title'       => $report->report_title,
             'type'        => $report->report_type,
@@ -368,8 +292,11 @@ class AdminController extends Controller
             'description' => $report->description,
             'status'      => $report->status,
             'remarks'     => $report->remarks,
-        ];
-    }
+        ])
+        ->values();
+
+    return view('admin.reports', compact('logo2', 'siteName', 'reports'));
+}
 
        // ── Expiry Tracking ─────────────────────────────────────────────────────────────
 

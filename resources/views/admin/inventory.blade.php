@@ -1559,6 +1559,7 @@ tbody tr:last-child td { border-bottom: none; }
         <div class="med-card" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
              data-id="{{ $product->id }}"
              data-generic-name="{{ $product->generic_name }}"
+             data-form="{{ $product->form }}"
              data-brand-name="{{ $brand->name ?? '' }}"
              data-brand-id="{{ $product->brand_id }}"
              data-medicine="{{ $product->name }}"
@@ -1711,16 +1712,45 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Form</label>
-              <select id="mForm">
+              <select id="mForm" onchange="applyFormProfile('m')">
                 <option value="">— Select —</option>
-                <option>Tablet</option>
-                <option>Capsule</option>
-                <option>Syrup</option>
-                <option>Suspension</option>
-                <option>Injection</option>
-                <option>Drops</option>
-                <option>Cream / Ointment</option>
-                <option>Patch</option>
+                <optgroup label="Product Types">
+                  <option>Medicine</option>
+                  <option>Vitamins</option>
+                  <option>Alcohol</option>
+                  <option>Shampoo</option>
+                  <option>Conditioner</option>
+                  <option>Soap</option>
+                  <option>Body Wash</option>
+                  <option>Lotion</option>
+                  <option>Skincare</option>
+                  <option>Sunscreen</option>
+                  <option>Makeup</option>
+                  <option>Perfume</option>
+                  <option>Deodorant</option>
+                  <option>Toothpaste</option>
+                  <option>Toothbrush</option>
+                  <option>Mouthwash</option>
+                  <option>Hair Color</option>
+                  <option>Hair Treatment</option>
+                  <option>Feminine Care</option>
+                  <option>Baby Care</option>
+                  <option>Diapers</option>
+                  <option>Supplements</option>
+                  <option>Medical Supplies</option>
+                  <option>Household Cleaning</option>
+                  <option>Food and Beverages</option>
+                </optgroup>
+                <optgroup label="Medicine Dosage Forms">
+                  <option>Tablet</option>
+                  <option>Capsule</option>
+                  <option>Syrup</option>
+                  <option>Suspension</option>
+                  <option>Injection</option>
+                  <option>Drops</option>
+                  <option>Cream / Ointment</option>
+                  <option>Patch</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -1760,7 +1790,7 @@ tbody tr:last-child td { border-bottom: none; }
               <input type="number" placeholder="0.00" step="0.01" min="0" id="mDepth">
             </div>
           </div>
-          <label class="field-check" style="margin-bottom:6px;">
+          <label class="field-check" id="mRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="mRequiresPrescription"> Requires Prescription
           </label>
         </div>
@@ -1852,16 +1882,45 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Form</label>
-              <select id="eForm">
+              <select id="eForm" onchange="applyFormProfile('e')">
                 <option value="">— Select —</option>
-                <option>Tablet</option>
-                <option>Capsule</option>
-                <option>Syrup</option>
-                <option>Suspension</option>
-                <option>Injection</option>
-                <option>Drops</option>
-                <option>Cream / Ointment</option>
-                <option>Patch</option>
+                <optgroup label="Product Types">
+                  <option>Medicine</option>
+                  <option>Vitamins</option>
+                  <option>Alcohol</option>
+                  <option>Shampoo</option>
+                  <option>Conditioner</option>
+                  <option>Soap</option>
+                  <option>Body Wash</option>
+                  <option>Lotion</option>
+                  <option>Skincare</option>
+                  <option>Sunscreen</option>
+                  <option>Makeup</option>
+                  <option>Perfume</option>
+                  <option>Deodorant</option>
+                  <option>Toothpaste</option>
+                  <option>Toothbrush</option>
+                  <option>Mouthwash</option>
+                  <option>Hair Color</option>
+                  <option>Hair Treatment</option>
+                  <option>Feminine Care</option>
+                  <option>Baby Care</option>
+                  <option>Diapers</option>
+                  <option>Supplements</option>
+                  <option>Medical Supplies</option>
+                  <option>Household Cleaning</option>
+                  <option>Food and Beverages</option>
+                </optgroup>
+                <optgroup label="Medicine Dosage Forms">
+                  <option>Tablet</option>
+                  <option>Capsule</option>
+                  <option>Syrup</option>
+                  <option>Suspension</option>
+                  <option>Injection</option>
+                  <option>Drops</option>
+                  <option>Cream / Ointment</option>
+                  <option>Patch</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -1901,7 +1960,7 @@ tbody tr:last-child td { border-bottom: none; }
               <input type="number" placeholder="0.00" step="0.01" min="0" id="eDepth">
             </div>
           </div>
-          <label class="field-check" style="margin-bottom:6px;">
+          <label class="field-check" id="eRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="eRequiresPrescription"> Requires Prescription
           </label>
         </div>
@@ -2265,7 +2324,7 @@ overlay.addEventListener('click', () => {
 </script>
 <script>
 /* ── Add modal ─────────────────────────────────────── */
-function openModal()  { document.getElementById('modalBg').classList.add('on'); }
+function openModal()  { applyFormProfile('m'); document.getElementById('modalBg').classList.add('on'); }
 function closeModal() { document.getElementById('modalBg').classList.remove('on'); }
 document.getElementById('modalBg').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
@@ -2500,6 +2559,7 @@ function collectProductForm(p) {
 
   fd.append('name',          val(p + 'Name'));
   fd.append('generic_name',  val(p + 'GenericName'));
+  fd.append('form',          val(p + 'Form'));
   fd.append('brand_id',      val(p + 'Brand'));
   fd.append('category_id',   val(p + 'Cat'));
   fd.append('section_id',    val(p + 'Section'));
@@ -2632,6 +2692,197 @@ async function saveMedicine() {
   }
 }
 
+/* ── Form-specific field labels ───────────────────────────
+   Picking a Form re-labels (and re-hints) the shared inputs so
+   each product type asks for what actually matters to it. The
+   input IDs never change, so saving works exactly as before.
+   Each profile: [label, placeholder] per field; `rx` toggles the
+   "Requires Prescription" checkbox. Missing keys use BASE.     */
+const FORM_BASE = {
+  name:    ['Product Name',          'e.g. Product name and size'],
+  generic: ['Generic Name',          'e.g. Generic / variant name'],
+  origin:  ['Origin / Manufacturer', 'e.g. Unilab, Philippines'],
+  desc:    ['Description',           'Product details or any relevant notes…'],
+  ingr:    ['Ingredients',           'List the ingredients…'],
+  warn:    ['Warnings',              'Precautions or safety warnings…'],
+  rx:      false
+};
+
+const FORM_PROFILES = {
+  'Medicine': {
+    name:['Medicine Name','e.g. Paracetamol 500mg'], generic:['Generic Name','e.g. Paracetamol'],
+    desc:['Indications / Description','Indications, dosage, or any relevant notes…'],
+    ingr:['Active & Inactive Ingredients','Active and inactive ingredients…'],
+    warn:['Warnings & Contraindications','Precautions, contraindications, or safety warnings…'], rx:true },
+  'Vitamins': {
+    name:['Vitamin Name','e.g. Vitamin C 500mg'], generic:['Active Nutrient','e.g. Ascorbic Acid'],
+    origin:['Manufacturer','e.g. Pharex, Philippines'],
+    desc:['Health Benefits','e.g. Supports immune health…'],
+    ingr:['Nutrient Content','Nutrients per serving and other ingredients…'],
+    warn:['Dosage Warnings & Allergens','Max daily intake, allergens, interactions…'] },
+  'Alcohol': {
+    name:['Alcohol Product Name','e.g. Isopropyl Alcohol 70% 500ml'], generic:['Alcohol Type','e.g. Ethyl / Isopropyl'],
+    desc:['Intended Use','e.g. Disinfectant, antiseptic, cleaning…'],
+    ingr:['Alcohol Content','e.g. 70% ethyl alcohol, denatured, water…'],
+    warn:['Flammability & Safety Warnings','Flammable, keep away from fire, external use only…'] },
+  'Shampoo': {
+    name:['Shampoo Name','e.g. Anti-Dandruff Shampoo 340ml'], generic:['Hair Type / Variant','e.g. Dry, Oily, Anti-Dandruff'],
+    desc:['Benefits & Directions','How to use and what it does…'],
+    ingr:['Key Ingredients','e.g. Zinc pyrithione, keratin…'],
+    warn:['Precautions','Avoid contact with eyes…'] },
+  'Conditioner': {
+    name:['Conditioner Name','e.g. Smooth & Silky Conditioner 340ml'], generic:['Hair Concern','e.g. Frizz, Damage, Color-treated'],
+    desc:['Benefits & Directions','How to use and what it does…'],
+    ingr:['Key Ingredients','e.g. Argan oil, silicone…'],
+    warn:['Precautions','Avoid contact with eyes…'] },
+  'Soap': {
+    name:['Soap Name','e.g. Antibacterial Bar Soap 90g'], generic:['Soap Type / Variant','e.g. Antibacterial, Moisturizing, Whitening'],
+    desc:['Benefits & Usage','Skin benefits and how to use…'],
+    ingr:['Ingredients','e.g. Sodium tallowate, glycerin…'],
+    warn:['Skin Precautions','Discontinue if irritation occurs…'] },
+  'Body Wash': {
+    name:['Body Wash Name','e.g. Moisturizing Body Wash 400ml'], generic:['Skin Type / Variant','e.g. Sensitive, Dry, Refreshing'],
+    desc:['Benefits & Usage','Skin benefits and how to use…'],
+    ingr:['Ingredients','e.g. Glycerin, aloe vera…'],
+    warn:['Skin Precautions','Avoid contact with eyes…'] },
+  'Lotion': {
+    name:['Lotion Name','e.g. Daily Moisture Lotion 200ml'], generic:['Skin Type','e.g. Dry, Sensitive, Normal'],
+    desc:['Benefits & Usage','Hydration benefits and how to apply…'],
+    ingr:['Ingredients','e.g. Shea butter, vitamin E…'],
+    warn:['Skin Precautions','For external use only…'] },
+  'Skincare': {
+    name:['Skincare Product Name','e.g. Niacinamide 10% Serum 30ml'], generic:['Product Type','e.g. Serum, Toner, Moisturizer, Cleanser'],
+    desc:['Skin Concern & Usage','e.g. Brightening, acne-prone skin, AM/PM use…'],
+    ingr:['Active Ingredients','e.g. Niacinamide, hyaluronic acid…'],
+    warn:['Patch Test & Precautions','Patch test first, avoid eye area…'] },
+  'Sunscreen': {
+    name:['Sunscreen Name','e.g. UV Shield Sunscreen 50ml'], generic:['SPF / PA Rating','e.g. SPF 50 PA++++'],
+    desc:['Protection & Usage','e.g. Water-resistant, reapply every 2 hours…'],
+    ingr:['UV Filters & Ingredients','e.g. Zinc oxide, avobenzone…'],
+    warn:['Sun Safety Precautions','For external use only, avoid eyes…'] },
+  'Makeup': {
+    name:['Makeup Product Name','e.g. Matte Lipstick'], generic:['Shade / Finish','e.g. Ruby Red, Matte'],
+    desc:['Product Details','Coverage, finish, wear time…'],
+    ingr:['Ingredients','Full ingredient list…'],
+    warn:['Allergen & Safety Warnings','Discontinue use if irritation occurs…'] },
+  'Perfume': {
+    name:['Fragrance Name','e.g. Ocean Breeze Eau de Toilette 50ml'], generic:['Fragrance Family','e.g. Floral, Woody, Citrus'],
+    desc:['Scent Description','Overall scent profile and occasion…'],
+    ingr:['Fragrance Notes','Top / Middle / Base notes…'],
+    warn:['Safety Warnings','Flammable, avoid contact with eyes…'] },
+  'Deodorant': {
+    name:['Deodorant Name','e.g. Fresh Roll-On 50ml'], generic:['Type / Scent','e.g. Roll-on, Spray, Stick — Cool Fresh'],
+    desc:['Protection & Usage','e.g. 48-hour protection, apply to dry underarms…'],
+    ingr:['Ingredients','e.g. Aluminum chlorohydrate…'],
+    warn:['Skin Precautions','Do not apply on broken skin…'] },
+  'Toothpaste': {
+    name:['Toothpaste Name','e.g. Whitening Toothpaste 150g'], generic:['Variant / Purpose','e.g. Whitening, Sensitive, Cavity Protection'],
+    desc:['Benefits & Usage','Dental benefits and brushing directions…'],
+    ingr:['Active Ingredients','e.g. Sodium fluoride 1450 ppm…'],
+    warn:['Warnings','Do not swallow, keep out of reach of children…'] },
+  'Toothbrush': {
+    name:['Toothbrush Name','e.g. Soft Bristle Toothbrush'], generic:['Bristle Type','e.g. Soft, Medium, Ultra-soft'],
+    origin:['Manufacturer / Brand Origin','e.g. Colgate, Philippines'],
+    desc:['Features','e.g. Tongue cleaner, slim head, pack of 2…'],
+    ingr:['Materials','e.g. Nylon bristles, polypropylene handle…'],
+    warn:['Care & Replacement','Replace every 3 months…'] },
+  'Mouthwash': {
+    name:['Mouthwash Name','e.g. Antiseptic Mouthwash 500ml'], generic:['Mouthwash Type','e.g. Antiseptic, Fluoride, Alcohol-free'],
+    desc:['Benefits & Usage','Oral benefits and rinsing directions…'],
+    ingr:['Active Ingredients','e.g. Cetylpyridinium chloride…'],
+    warn:['Warnings','Do not swallow, not for children under 6…'] },
+  'Hair Color': {
+    name:['Hair Color Name','e.g. Permanent Hair Color 4N'], generic:['Shade / Color Code','e.g. 4N Natural Brown'],
+    desc:['Application Instructions','Mixing ratio, processing time…'],
+    ingr:['Dye & Developer Ingredients','Color cream and developer contents…'],
+    warn:['Patch Test & Allergy Warnings','Perform a patch test 48 hours before use…'] },
+  'Hair Treatment': {
+    name:['Hair Treatment Name','e.g. Keratin Repair Hair Mask 250ml'], generic:['Treatment Type','e.g. Mask, Serum, Hair Oil, Ampoule'],
+    desc:['Benefits & Usage','Hair concern addressed and how to apply…'],
+    ingr:['Key Ingredients','e.g. Keratin, argan oil…'],
+    warn:['Precautions','Avoid contact with eyes and scalp irritation…'] },
+  'Feminine Care': {
+    name:['Feminine Care Product Name','e.g. Ultra-Thin Napkins 8s'], generic:['Product Type','e.g. Napkin, Panty Liner, Intimate Wash'],
+    desc:['Absorbency & Usage','e.g. Heavy flow, with wings, overnight…'],
+    ingr:['Materials / Ingredients','e.g. Cotton-soft top sheet, pH-balanced formula…'],
+    warn:['Hygiene Warnings','Change regularly, discontinue if irritation occurs…'] },
+  'Baby Care': {
+    name:['Baby Product Name','e.g. Gentle Baby Wash 200ml'], generic:['Product Type / Age Range','e.g. Baby wash, 0–12 months'],
+    desc:['Benefits & Usage','Gentleness, suitability, directions…'],
+    ingr:['Ingredients','e.g. Hypoallergenic, tear-free formula…'],
+    warn:['Safety Warnings','Keep out of reach of children, avoid eyes…'] },
+  'Diapers': {
+    name:['Diaper Name','e.g. Dry Comfort Diapers Medium 40s'], generic:['Size / Weight Range','e.g. Medium (6–11 kg)'],
+    desc:['Features & Pack Count','e.g. 40 pcs, wetness indicator, 12-hr protection…'],
+    ingr:['Materials','e.g. Fluff pulp, SAP, breathable backsheet…'],
+    warn:['Safety Warnings','Dispose properly, keep away from children…'] },
+  'Supplements': {
+    name:['Supplement Name','e.g. Omega-3 Fish Oil 1000mg'], generic:['Active Compound','e.g. EPA / DHA'],
+    origin:['Manufacturer','e.g. Nature\u2019s Bounty, USA'],
+    desc:['Benefits & Recommended Dosage','Intended benefit and suggested serving…'],
+    ingr:['Supplement Facts','Serving size, amount per serving, other ingredients…'],
+    warn:['Side Effects & Interactions','Consult a doctor if pregnant or on medication…'] },
+  'Medical Supplies': {
+    name:['Item Name','e.g. Disposable Syringe 3ml (Box of 100)'], generic:['Item Type','e.g. Syringe, Bandage, BP Monitor'],
+    desc:['Specifications & Intended Use','Size, quantity per pack, intended use…'],
+    ingr:['Materials','e.g. Latex-free, medical-grade plastic…'],
+    warn:['Sterility & Disposal','Single-use only, dispose as medical waste…'] },
+  'Household Cleaning': {
+    name:['Cleaning Product Name','e.g. Multi-Surface Disinfectant 1L'], generic:['Cleaner Type','e.g. Disinfectant, Bleach, Dishwashing'],
+    desc:['Usage Directions','Dilution, surfaces, and how to apply…'],
+    ingr:['Active Ingredients','e.g. Sodium hypochlorite 5%…'],
+    warn:['Hazard & Safety Warnings','Irritant, do not mix with other cleaners…'] },
+  'Food and Beverages': {
+    name:['Food / Beverage Name','e.g. Oat Biscuits 200g'], generic:['Food Type / Variant','e.g. Biscuit, Juice Drink, Chocolate'],
+    origin:['Manufacturer / Country of Origin','e.g. Monde Nissin, Philippines'],
+    desc:['Description & Serving Info','Flavor, serving size, shelf life…'],
+    ingr:['Ingredients & Nutrition','Ingredient list and nutrition highlights…'],
+    warn:['Allergen Warnings','Contains milk, soy, gluten…'] }
+};
+
+// Legacy dosage forms (kept so existing data still selects) use the Medicine profile.
+['Tablet','Capsule','Syrup','Suspension','Injection','Drops','Cream / Ointment','Patch']
+  .forEach(f => { FORM_PROFILES[f] = FORM_PROFILES['Medicine']; });
+
+/** Re-label the shared inputs for the selected Form. `p` is 'm' (add) or 'e' (edit). */
+function applyFormProfile(p) {
+  const sel     = document.getElementById(p + 'Form');
+  const profile = Object.assign({}, FORM_BASE, FORM_PROFILES[sel ? sel.value : ''] || {});
+
+  const fields = {
+    name:    { id: p + 'Name',        optional: false },
+    generic: { id: p + 'GenericName', optional: false },
+    origin:  { id: p + 'Origin',      optional: false },
+    desc:    { id: p + 'Desc',        optional: true  },
+    ingr:    { id: p + 'Ingredients', optional: true  },
+    warn:    { id: p + 'Warnings',    optional: true  }
+  };
+
+  Object.keys(fields).forEach(key => {
+    const input = document.getElementById(fields[key].id);
+    if (!input) return;
+    const label = input.closest('.field')?.querySelector('label');
+    const [text, placeholder] = profile[key];
+    if (label) {
+      label.textContent = text;
+      if (fields[key].optional) {
+        const opt = document.createElement('span');
+        opt.style.cssText = 'font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);';
+        opt.textContent = ' (optional)';
+        label.appendChild(opt);
+      }
+    }
+    input.placeholder = placeholder;
+  });
+
+  // "Requires Prescription" only applies to Medicine (and its dosage forms).
+  const rxWrap = document.getElementById(p + 'RxWrap');
+  if (rxWrap) {
+    rxWrap.style.display = profile.rx ? '' : 'none';
+    if (!profile.rx) document.getElementById(p + 'RequiresPrescription').checked = false;
+  }
+}
+
 /* ── Reset the add-medicine form ─────────────────────── */
 function resetAddForm() {
   ['mName','mGenericName','mOrigin','mDesc','mIngredients','mWarnings','mWidth','mHeight','mDepth','mPrice'].forEach(id => {
@@ -2641,6 +2892,7 @@ function resetAddForm() {
   });
   document.getElementById('mRequiresPrescription').checked = false;
   ['mForm','mSection'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  applyFormProfile('m');
   clearCombo('m', 'brand');
   clearCombo('m', 'category');
 
@@ -2777,9 +3029,11 @@ function openEditModal(btn) {
 
   const formSel = document.getElementById('eForm');
   const formOpts = formSel.options;
+  formSel.selectedIndex = 0;
   for (let i = 0; i < formOpts.length; i++) {
     if (formOpts[i].text === form) { formSel.selectedIndex = i; break; }
   }
+  applyFormProfile('e');
 
   const ePreview = document.getElementById('editImgPreview');
   ePreview.style.display = 'none';
@@ -2853,6 +3107,7 @@ function applyProductToCard(card, p) {
   card.dataset.id          = p.id;
   card.dataset.medicine    = p.name;
   card.dataset.genericName = p.generic_name || '';
+  card.dataset.form        = p.form || '';
   card.dataset.brandId     = p.brand_id || '';
   card.dataset.brandName   = p.brand_name || '';
   card.dataset.cat         = p.category_id || '';

@@ -4,7 +4,9 @@ use App\Http\Controllers\AdminChartController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminFinancialsController;
 use App\Http\Controllers\AdminInventoryController;
+use App\Http\Controllers\AdminNotificationsController;
 use App\Http\Controllers\AdminOrdersController;
+use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminStocksController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -92,6 +94,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Auth-only: dashboard & inventory
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+        // ── Notifications bell (AdminNotificationsController, JSON) ───────
+        // 'read-all' is a literal segment, registered before the {notification} wildcard.
+        Route::get('/notifications', [AdminNotificationsController::class, 'index'])->name('notifications');
+        Route::get('/notifications/view', [AdminNotificationsController::class, 'viewAll'])->name('notifications.view');
+        Route::get('/notifications/all', [AdminNotificationsController::class, 'all'])->name('notifications.all');
+        Route::put('/notifications/read-all', [AdminNotificationsController::class, 'markAllRead'])->name('notifications.readAll');
+        Route::put('/notifications/{notification}/read', [AdminNotificationsController::class, 'markRead'])->name('notifications.read');
         // ── Dashboard charts (AdminChartController, JSON) ─────────────────
         Route::get('/charts/sales', [AdminChartController::class, 'weeklySales'])->name('charts.sales');
         Route::get('/charts/order-status', [AdminChartController::class, 'orderStatus'])->name('charts.orderStatus');
@@ -135,10 +144,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('/stocks/{stock}/activate', [AdminStocksController::class, 'activate'])->name('stocks.activate');
         Route::get('/stocks/products', [AdminStocksController::class, 'products'])->name('stocks.products');
         Route::get('/stocks/products/{product}/available', [AdminStocksController::class, 'availableStocks'])->name('stocks.products.available');
-        Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
-        Route::post('/reports', [AdminController::class, 'storeReport'])->name('reports.store');
-        Route::put('/reports/{report}', [AdminController::class, 'updateReport'])->name('reports.update');
-        Route::delete('/reports/{report}', [AdminController::class, 'destroyReport'])->name('reports.destroy');
+        Route::get('/reports', [AdminReportsController::class, 'index'])->name('reports');
+        Route::get('/reports/data', [AdminReportsController::class, 'data'])->name('reports.data');
         Route::get('/expiry', [AdminController::class, 'expiry'])->name('expiry');
         Route::get('/pharmacy', [AdminController::class, 'pharmacy'])->name('pharmacy');
         Route::put('/pharmacy/settings', [AdminController::class, 'updateSettings'])->name('pharmacy.settings.update');

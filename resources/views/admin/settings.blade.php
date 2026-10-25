@@ -765,7 +765,7 @@ tbody tr:last-child td { border-bottom: none; }
   .modal-body {
     padding: 12px 0;
   }
-  .lang-option {
+  .theme-option {
     padding: 12px 20px;
     display: flex;
     justify-content: space-between;
@@ -774,10 +774,10 @@ tbody tr:last-child td { border-bottom: none; }
     color: var(--text);
     transition: background 0.15s;
   }
-  .lang-option:hover {
+  .theme-option:hover {
     background: rgba(128,128,128,0.05);
   }
-  .lang-option.selected {
+  .theme-option.selected {
     font-weight: 600;
     color: #cd0000;
   }
@@ -785,7 +785,7 @@ tbody tr:last-child td { border-bottom: none; }
     display: none;
     color: #cd0000;
   }
-  .lang-option.selected .check-icon {
+  .theme-option.selected .check-icon {
     display: block;
   }
 
@@ -990,9 +990,9 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head"><h3>Account & Preferences</h3></div>
     <div style="display:flex;flex-direction:column;">
       
-      <div id="languageTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-        <span style="font-weight:500;color:var(--text);">Language</span>
-        <span style="color:var(--muted);font-size:14px;"><span id="currentLanguageLabel">English</span> ›</span>
+      <div id="themeTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+        <span style="font-weight:500;color:var(--text);">Appearance</span>
+        <span style="color:var(--muted);font-size:14px;"><span id="currentThemeLabel">Light Mode</span> ›</span>
       </div>
       
       <div id="activityLogTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
@@ -1005,20 +1005,12 @@ tbody tr:last-child td { border-bottom: none; }
         <span style="color:var(--muted);font-size:14px;">›</span>
       </div>
       
-      <div id="securityTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-        <span style="font-weight:500;color:var(--text);">Security</span>
-        <span style="color:var(--muted);font-size:14px;">›</span>
-      </div>
 
       <div id="helpTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
         <span style="font-weight:500;color:var(--text);">Help</span>
         <span style="color:var(--muted);font-size:14px;">›</span>
       </div>
       
-      <div id="feedbackTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
-        <span style="font-weight:500;color:var(--text);">Send Feedback</span>
-        <span style="color:var(--muted);font-size:14px;">›</span>
-      </div>
 
       <div id="tosTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
         <span style="font-weight:500;color:var(--text);">Terms of Service</span>
@@ -1029,6 +1021,10 @@ tbody tr:last-child td { border-bottom: none; }
         <span style="font-weight:500;color:#cd0000;">Logout</span>
         <span style="color:var(--muted);font-size:14px;">›</span>
       </div>
+
+      <form id="logoutForm" method="POST" action="{{ route('admin.logout') }}" style="display:none;">
+        @csrf
+      </form>
     </div>
   </div>
 
@@ -1036,29 +1032,21 @@ tbody tr:last-child td { border-bottom: none; }
 
 </main>
 
-<div class="modal-backdrop" id="languageModal">
+<div class="modal-backdrop" id="themeModal">
   <div class="modal-window">
     <div class="modal-header">
-      <h3 class="modal-title">Select Language</h3>
-      <button class="modal-close" id="closeLanguageModal">
+      <h3 class="modal-title">Appearance</h3>
+      <button class="modal-close" id="closeThemeModal">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <div class="lang-option selected" data-value="English">
-        <span>English</span>
+      <div class="theme-option" data-value="light">
+        <span style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Light Mode</span>
         <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <div class="lang-option" data-value="Spanish">
-        <span>Español</span>
-        <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="lang-option" data-value="French">
-        <span>Français</span>
-        <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <div class="lang-option" data-value="Tagalog">
-        <span>Tagalog</span>
+      <div class="theme-option" data-value="dark">
+        <span style="display:flex;align-items:center;gap:10px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg> Dark Mode</span>
         <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
     </div>
@@ -1092,61 +1080,30 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div class="log-entry">
         <div class="log-time">Apr 21, 11:05 AM</div>
-        <div class="log-action"><strong>Admin User</strong> changed system language to English.</div>
+        <div class="log-action"><strong>Admin User</strong> switched appearance to Light Mode.</div>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-backdrop" id="notificationsModal">
-  <div class="modal-window">
+  <div class="modal-window" style="max-width: 600px;">
     <div class="modal-header">
       <h3 class="modal-title">Notifications</h3>
       <button class="modal-close" id="closeNotificationsModal">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="modal-body" style="padding: 0;">
-      <div class="list-option">
-        <div class="list-text">
-          <strong>Low Stock Alerts</strong>
-          <span>Receive alerts when item quantities drop below threshold</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </label>
+    <div class="nf-bar">
+      <div class="nf-tabs">
+        <button type="button" class="nf-tab active" data-filter="all">All</button>
+        <button type="button" class="nf-tab" data-filter="unread">Unread <span id="nfUnreadCount"></span></button>
+        <button type="button" class="nf-tab" data-filter="important">Important</button>
       </div>
-      <div class="list-option">
-        <div class="list-text">
-          <strong>Expiry Warnings</strong>
-          <span>Weekly digest for batches expiring within 30 days</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="list-option">
-        <div class="list-text">
-          <strong>Daily Sales Summary</strong>
-          <span>Receive an end-of-day email reporting total transactions</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox">
-          <span class="slider"></span>
-        </label>
-      </div>
-      <div class="list-option">
-        <div class="list-text">
-          <strong>System Updates</strong>
-          <span>Notices regarding scheduled maintenance or feature rollouts</span>
-        </div>
-        <label class="toggle-switch">
-          <input type="checkbox" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
+      <button type="button" class="nf-link" id="nfReadAll" disabled>Mark all read</button>
+    </div>
+    <div class="modal-body nf-list" id="nfList" style="padding: 0;">
+      <div class="nf-empty">Loading…</div>
     </div>
   </div>
 </div>
@@ -1188,35 +1145,80 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <div class="modal-backdrop" id="helpModal">
-  <div class="modal-window">
+  <div class="modal-window modal-doc">
     <div class="modal-header">
-      <h3 class="modal-title">Help & Support</h3>
-      <button class="modal-close" id="closeHelpModal">
+      <h3 class="modal-title">Help &amp; Support</h3>
+      <button class="modal-close" id="closeHelpModal" aria-label="Close">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="modal-body" style="padding: 0;">
-      <div class="list-option clickable" style="cursor: pointer;">
-        <div class="list-text">
-          <strong>Documentation & Tutorials</strong>
-          <span>Read guides on how to use {{ $siteName }}</span>
-        </div>
-        <span style="color:var(--muted);font-size:16px;">›</span>
-      </div>
-      <div class="list-option clickable" style="cursor: pointer;">
-        <div class="list-text">
-          <strong>System Status</strong>
-          <span>Check if all servers are operational</span>
-        </div>
-        <span style="color:var(--muted);font-size:16px;">›</span>
-      </div>
-      <div class="list-option clickable" style="cursor: pointer;">
-        <div class="list-text">
-          <strong>Contact Support</strong>
-          <span>Reach out to technical helpdesk</span>
-        </div>
-        <span style="color:var(--muted);font-size:16px;">›</span>
-      </div>
+    <div class="modal-body doc-body" style="padding: 0;">
+      <p class="doc-intro">Quick guides for each section of the {{ $siteName }} Admin Portal. Tap a topic to expand it.</p>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+          <span class="doc-text"><strong>Dashboard</strong><span>Overview of sales, stock and activity</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Use the dashboard for a quick snapshot of the pharmacy’s performance.</li><li>Sidebar badges beside <b>Inventory</b> and <b>Expiry Tracking</b> flag items that need attention.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
+          <span class="doc-text"><strong>Inventory</strong><span>Medicines, brands, categories and badges</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Click <b>+ Add Product</b> to create a medicine, then <b>Save Medicine</b>.</li><li>Use <b>Edit</b> to change details, or <b>Yes, Delete</b> to remove a product after confirming.</li><li>Create <b>Brands</b>, <b>Categories</b> and <b>Badges</b> here so they can be assigned to medicines.</li><li>Mark a product as prescription-required so customers must upload a prescription when ordering.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg></span>
+          <span class="doc-text"><strong>Sales Records</strong><span>Incoming orders and receipts</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Orders are grouped by tab: <b>Pending</b>, <b>For Pick Up</b>, <b>Confirmed</b>, <b>Completed</b> and <b>Cancelled</b>.</li><li>Open an order’s <b>Details</b> to review items and any uploaded <b>Prescription</b> files before approving.</li><li>Choose <b>Approve</b> to confirm an order and generate a receipt, or <b>Reject</b> / <b>Cancel Order</b> if it can’t be fulfilled.</li><li>Use <b>Process Refund</b> for returns, and <b>Print Receipt</b> for a customer copy.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg></span>
+          <span class="doc-text"><strong>Staffs</strong><span>Manage your team</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Click <b>+ Add Staff</b> and fill in the details, then <b>Save Staff</b>.</li><li>Set each staff member’s status to <b>Active</b>, <b>Inactive</b> or <b>On Leave</b>.</li><li>Use <b>Edit</b> to update a record or delete one after confirming.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+          <span class="doc-text"><strong>Stocks &amp; Expiry</strong><span>Batches, quantities and expiring medicines</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>In <b>Stocks</b>, use <b>+ Add Stock</b> to record a new batch with quantity and expiry date.</li><li>Check <b>Batch Inventory</b> to see the available batches for each product.</li><li>Open <b>Expiry Tracking</b> regularly to review <b>Expiring Soon</b> and expired batches so they can be removed from sale.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+          <span class="doc-text"><strong>Reports &amp; Financials</strong><span>Records and exports</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Use <b>Add Report</b> in <b>Reports</b> to log a report entry.</li><li>In <b>Financials</b>, add entries with <b>Add Financial Record</b> and review them under <b>All Records</b>.</li><li>Click <b>Export CSV</b> to download the records for your accountant or spreadsheet.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+          <span class="doc-text"><strong>Pharmacy Storefront</strong><span>Customer-facing site settings</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>In <b>General Settings</b>, update site details, then save. Use <b>Discard changes</b> to revert.</li><li>Manage the storefront’s <b>Sliders</b>, <b>Promo Banner</b>, <b>Full-Width Banners</b>, <b>Sections</b>, <b>Brands</b> and <b>Categories</b> from their own pages.</li><li>Add the <b>Payment Accounts</b> customers should use when paying for orders.</li></ul>
+      </details>
+      <details class="doc-item">
+        <summary>
+          <span class="doc-ico"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+          <span class="doc-text"><strong>Settings &amp; Account</strong><span>Appearance, security and profile</span></span>
+          <svg class="doc-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <ul class="doc-steps"><li>Switch between Light and Dark mode under <b>Appearance</b> (or with the sun/moon button in the header).</li><li>Use <b>Security Settings</b> to manage two-factor authentication and sign out of other devices.</li><li>Update your photo, details and password from your <b>Profile</b> page.</li></ul>
+      </details>
+
     </div>
   </div>
 </div>
@@ -1238,29 +1240,98 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <div class="modal-backdrop" id="tosModal">
-  <div class="modal-window" style="max-width: 500px;">
+  <div class="modal-window modal-doc">
     <div class="modal-header">
       <h3 class="modal-title">Terms of Service</h3>
-      <button class="modal-close" id="closeTosModal">
+      <button class="modal-close" id="closeTosModal" aria-label="Close">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="modal-body" style="padding: 20px; max-height: 350px; overflow-y: auto; font-size: 14px; color: var(--text); line-height: 1.6;">
-      <h4 style="margin-top: 0; margin-bottom: 8px;">1. Acceptance of Terms</h4>
-      <p style="margin-top: 0; margin-bottom: 16px; color: var(--muted);">By accessing and using the {{ $siteName }} Admin Portal, you accept and agree to be bound by the terms and provision of this agreement.</p>
-      
-      <h4 style="margin-top: 0; margin-bottom: 8px;">2. Use License</h4>
-      <p style="margin-top: 0; margin-bottom: 16px; color: var(--muted);">Permission is granted to temporarily use this software for administrative and management purposes only. This is the grant of a license, not a transfer of title.</p>
-      
-      <h4 style="margin-top: 0; margin-bottom: 8px;">3. Data Privacy</h4>
-      <p style="margin-top: 0; margin-bottom: 16px; color: var(--muted);">User data, patient information, and prescription records must be handled in compliance with applicable medical and data protection regulations.</p>
-
-      <h4 style="margin-top: 0; margin-bottom: 8px;">4. Disclaimer</h4>
-      <p style="margin-top: 0; margin-bottom: 0; color: var(--muted);">The materials on this portal are provided on an 'as is' basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including, without limitation, implied warranties or conditions of merchantability.</p>
+    <div class="modal-body doc-body doc-terms">
+      <div class="doc-updated">{{ $siteName }} Admin Portal</div>
+      <h4 class="doc-h">1. Acceptance of Terms</h4>
+      <p class="doc-p">By signing in to the {{ $siteName }} Admin Portal, you agree to these terms. Access is limited to authorized administrators and staff of {{ $siteName }}. If you do not agree, do not use the portal.</p>
+      <h4 class="doc-h">2. Authorized Use</h4>
+      <p class="doc-p">The portal is provided for managing the pharmacy’s inventory, stocks, orders, staff records, reports, financial records and storefront content. You may not use it for any unlawful purpose or to access data you have not been authorized to view.</p>
+      <h4 class="doc-h">3. Account &amp; Security</h4>
+      <p class="doc-p">You are responsible for all activity under your account. Keep your credentials confidential, do not share your login, enable two-factor authentication where available, and sign out on shared devices. Report any suspected unauthorized access immediately.</p>
+      <h4 class="doc-h">4. Medicines, Prescriptions &amp; Orders</h4>
+      <p class="doc-p">You must keep product details, prices, prescription requirements, stock quantities and expiry dates accurate. Prescription-required medicines may only be approved after the uploaded prescription has been reviewed. Expired or expiring batches must be removed from sale, and orders must be approved, refunded or cancelled in line with applicable pharmacy regulations.</p>
+      <h4 class="doc-h">5. Data Privacy</h4>
+      <p class="doc-p">Customer details, prescription files, order history and financial records are confidential. Handle them only as needed for your duties, in compliance with applicable medical and data protection laws, and do not copy, export or disclose them without authorization.</p>
+      <h4 class="doc-h">6. Staff &amp; Financial Records</h4>
+      <p class="doc-p">Staff information and financial entries must be accurate and entered in good faith. Exports such as CSV files must be stored securely and shared only with authorized persons.</p>
+      <h4 class="doc-h">7. Activity Monitoring</h4>
+      <p class="doc-p">Actions taken in the portal may be recorded in the activity log for security, auditing and accountability.</p>
+      <h4 class="doc-h">8. Suspension or Termination</h4>
+      <p class="doc-p">Access may be suspended or removed at any time for violations of these terms or when your role ends.</p>
     </div>
   </div>
 </div>
 
+<style>
+  /* Help & Terms modals (shared document-style layout) */
+  .modal-window.modal-doc { max-width: 560px; display: flex; flex-direction: column; max-height: 85vh; }
+  .modal-window.modal-doc .modal-header { flex: none; }
+  .doc-body { overflow-y: auto; flex: 1; }
+  .doc-intro { padding: 14px 20px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--border); line-height: 1.5; }
+  .doc-item { border-bottom: 1px solid var(--border); }
+  .doc-item summary {
+    list-style: none; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px; transition: background .15s;
+  }
+  .doc-item summary::-webkit-details-marker { display: none; }
+  .doc-item summary:hover { background: rgba(128,128,128,0.05); }
+  .doc-ico {
+    width: 32px; height: 32px; flex: none; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red-light, rgba(205,0,0,.1)); color: #cd0000;
+  }
+  html[data-theme="dark"] .doc-ico { background: rgba(205,0,0,.18); }
+  .doc-text { flex: 1; min-width: 0; }
+  .doc-text strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+  .doc-text span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .doc-chev { flex: none; color: var(--muted); transition: transform .2s; }
+  .doc-item[open] .doc-chev { transform: rotate(180deg); }
+  .doc-item[open] summary { background: rgba(128,128,128,0.05); }
+  .doc-steps { margin: 0; padding: 4px 20px 16px 64px; font-size: 13px; line-height: 1.6; color: var(--muted); }
+  .doc-steps li { margin-bottom: 6px; }
+  .doc-steps b { color: var(--text); font-weight: 600; }
+  .doc-note { padding: 16px 20px; background: rgba(128,128,128,0.05); }
+  .doc-note strong { display: block; font-size: 14px; color: var(--text); font-weight: 600; }
+  .doc-note span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .doc-note b { color: var(--text); }
+  .doc-terms { padding: 20px; font-size: 14px; line-height: 1.6; }
+  .doc-updated { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 14px; }
+  .doc-h { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: var(--text); }
+  .doc-p { margin: 0 0 16px; color: var(--muted); }
+  .doc-p:last-child { margin-bottom: 0; }
+
+  /* All-notifications list (Settings → Notifications) */
+  .nf-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .nf-tabs { display: flex; gap: 6px; }
+  .nf-tab { background: none; border: 1px solid var(--border); color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; cursor: pointer; }
+  .nf-tab:hover { color: var(--text); }
+  .nf-tab.active { background: #cd0000; border-color: #cd0000; color: #fff; }
+  .nf-link { background: none; border: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: #cd0000; padding: 0; }
+  .nf-link:disabled { opacity: .4; cursor: default; }
+  .nf-list { max-height: 60vh; overflow-y: auto; }
+  .nf-section { padding: 7px 20px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .nf-section.important { color: #CC1F1F; }
+  .nf-item { display: flex; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); cursor: pointer; border-left: 3px solid transparent; }
+  .nf-item:hover { background: var(--hover); }
+  .nf-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+  .nf-item.read:not(.important) { opacity: .6; }
+  .nf-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+  .nf-body { flex: 1; min-width: 0; }
+  .nf-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; }
+  .nf-dot { width: 7px; height: 7px; border-radius: 50%; background: #CC1F1F; flex-shrink: 0; }
+  .nf-msg { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+  .nf-time { font-size: 11px; color: var(--muted); opacity: .8; margin-top: 4px; }
+  .nf-empty { padding: 32px 20px; text-align: center; font-size: 13px; color: var(--muted); }
+  .nf-more { padding: 12px 20px; text-align: center; }
+</style>
 <script>
 // ── Theme ──────────────────────────────────────────────
 const html = document.documentElement;
@@ -1296,11 +1367,11 @@ overlay.addEventListener('click', () => {
   // Modal interaction logic
   document.addEventListener('DOMContentLoaded', () => {
     // --- Elements ---
-    const langTrigger = document.getElementById('languageTrigger');
-    const langModal = document.getElementById('languageModal');
-    const closeLangBtn = document.getElementById('closeLanguageModal');
-    const langOptions = document.querySelectorAll('.lang-option');
-    const currentLangLabel = document.getElementById('currentLanguageLabel');
+    const themeTrigger = document.getElementById('themeTrigger');
+    const themeModal = document.getElementById('themeModal');
+    const closeThemeBtn = document.getElementById('closeThemeModal');
+    const themeOptions = document.querySelectorAll('.theme-option');
+    const currentThemeLabel = document.getElementById('currentThemeLabel');
     
     const activityTrigger = document.getElementById('activityLogTrigger');
     const activityModal = document.getElementById('activityLogModal');
@@ -1332,26 +1403,32 @@ overlay.addEventListener('click', () => {
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
 
-    // --- Language Modal Logic ---
-    langTrigger.addEventListener('click', () => langModal.classList.add('active'));
-    closeLangBtn.addEventListener('click', () => langModal.classList.remove('active'));
-    langModal.addEventListener('click', (e) => {
-      if (e.target === langModal) langModal.classList.remove('active');
+    // --- Appearance (Light / Dark) Modal Logic ---
+    const syncThemeUI = () => {
+      const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      currentThemeLabel.textContent = mode === 'dark' ? 'Dark Mode' : 'Light Mode';
+      themeOptions.forEach(opt => opt.classList.toggle('selected', opt.dataset.value === mode));
+    };
+    syncThemeUI();
+    // Keep in sync when the header sun/moon button is used too
+    new MutationObserver(syncThemeUI).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+    themeTrigger.addEventListener('click', () => themeModal.classList.add('active'));
+    closeThemeBtn.addEventListener('click', () => themeModal.classList.remove('active'));
+    themeModal.addEventListener('click', (e) => {
+      if (e.target === themeModal) themeModal.classList.remove('active');
     });
 
-    langOptions.forEach(option => {
+    themeOptions.forEach(option => {
       option.addEventListener('click', function() {
-        langOptions.forEach(opt => opt.classList.remove('selected'));
-        this.classList.add('selected');
-        
-        const newLang = this.getAttribute('data-value');
-        currentLangLabel.textContent = newLang;
-        langModal.classList.remove('active');
+        const dark = this.dataset.value === 'dark';
+        setTheme(dark); // defined in the Theme script above; also saves to localStorage
+        themeModal.classList.remove('active');
 
         if (toast && toastMsg) {
-          toastMsg.textContent = `Language changed to ${newLang}`;
-          toast.classList.add('show');
-          setTimeout(() => toast.classList.remove('show'), 3000); 
+          toastMsg.textContent = `Switched to ${dark ? 'Dark' : 'Light'} Mode`;
+          toast.classList.add('on');
+          setTimeout(() => toast.classList.remove('on'), 3000);
         }
       });
     });
@@ -1363,32 +1440,149 @@ overlay.addEventListener('click', () => {
       if (e.target === activityModal) activityModal.classList.remove('active');
     });
 
-    // --- Notifications Modal Logic ---
-    notifTrigger.addEventListener('click', () => notifModal.classList.add('active'));
+    // --- Notifications: full list (data comes from AdminNotificationsController@all) ---
+    const nfList     = document.getElementById('nfList');
+    const nfReadAll  = document.getElementById('nfReadAll');
+    const nfUnreadEl = document.getElementById('nfUnreadCount');
+    const nfTabs     = document.querySelectorAll('.nf-tab');
+
+    const NF_URLS = {
+      all:     @json(route('admin.notifications.all')),
+      readAll: @json(route('admin.notifications.readAll')),
+      read:    @json(route('admin.notifications.read', ['notification' => '__ID__'])),
+    };
+    const NF_CSRF = @json(csrf_token());
+    const NF_TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+    const nfSvg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+    const NF_ICONS = {
+      box:   nfSvg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+      alert: nfSvg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+      clock: nfSvg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+      order: nfSvg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+      check: nfSvg('<polyline points="20 6 9 17 4 12"/>'),
+      x:     nfSvg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+      money: nfSvg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+      file:  nfSvg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+      user:  nfSvg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+      bell:  nfSvg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+    };
+    const NF_TYPE_ICON = {
+      out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+      order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+      refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+      order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+    };
+    const nfEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    let nfFilter = 'all';
+    let nfItems = [];
+    let nfNextPage = null;
+    let nfLoading = false;
+
+    async function nfApi(url, method = 'GET') {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': NF_CSRF },
+        credentials: 'same-origin',
+      });
+      if (!res.ok) throw new Error(`${url} → ${res.status}`);
+      return res.json();
+    }
+
+    function nfItemHtml(n) {
+      const tone = NF_TONES[n.tone] || NF_TONES.neutral;
+      return `
+        <div class="nf-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+          <div class="nf-ico">${NF_ICONS[NF_TYPE_ICON[n.type]] || NF_ICONS.bell}</div>
+          <div class="nf-body">
+            <div class="nf-title">${nfEsc(n.title)}${n.is_read ? '' : '<span class="nf-dot"></span>'}</div>
+            <div class="nf-msg">${nfEsc(n.message)}</div>
+            <div class="nf-time">${nfEsc(n.time)}</div>
+          </div>
+        </div>`;
+    }
+
+    function nfRender(more) {
+      if (!nfItems.length) {
+        nfList.innerHTML = `<div class="nf-empty">${nfFilter === 'all' ? 'You\'re all caught up 🎉' : 'Nothing to show here.'}</div>`;
+        return;
+      }
+      const pinned = nfItems.filter(n => n.important);
+      const rest   = nfItems.filter(n => !n.important);
+      let html = '';
+      if (pinned.length) html += `<div class="nf-section important">Needs attention · ${pinned.length}</div>` + pinned.map(nfItemHtml).join('');
+      if (rest.length) {
+        if (pinned.length) html += '<div class="nf-section">Recent activity</div>';
+        html += rest.map(nfItemHtml).join('');
+      }
+      if (nfNextPage) html += '<div class="nf-more"><button type="button" class="nf-link" id="nfLoadMore">Load more</button></div>';
+      nfList.innerHTML = html;
+    }
+
+    async function nfLoad(page = 1) {
+      if (nfLoading) return;
+      nfLoading = true;
+      try {
+        const data = await nfApi(`${NF_URLS.all}?filter=${nfFilter}&page=${page}`);
+        nfItems = page === 1 ? data.items : nfItems.concat(data.items);
+        nfNextPage = data.next_page;
+        nfReadAll.disabled = !(data.unread > 0);
+        nfUnreadEl.textContent = data.unread > 0 ? `(${data.unread})` : '';
+        nfRender();
+      } catch (err) {
+        console.error(err);
+        if (page === 1) nfList.innerHTML = '<div class="nf-empty">Couldn\'t load notifications.</div>';
+      } finally {
+        nfLoading = false;
+      }
+    }
+
+    function openNotifications() {
+      notifModal.classList.add('active');
+      nfLoad(1);
+    }
+
+    notifTrigger.addEventListener('click', openNotifications);
     closeNotifBtn.addEventListener('click', () => notifModal.classList.remove('active'));
     notifModal.addEventListener('click', (e) => {
       if (e.target === notifModal) notifModal.classList.remove('active');
     });
 
-    const toggles = document.querySelectorAll('#notificationsModal input[type="checkbox"]');
-    toggles.forEach(toggle => {
-      toggle.addEventListener('change', (e) => {
-        const title = e.target.closest('.list-option').querySelector('strong').textContent;
-        const status = e.target.checked ? 'enabled' : 'disabled';
-        if (toast && toastMsg) {
-          toastMsg.textContent = `${title} ${status}.`;
-          toast.classList.add('show');
-          setTimeout(() => toast.classList.remove('show'), 3000); 
-        }
-      });
+    nfTabs.forEach(tab => tab.addEventListener('click', () => {
+      nfFilter = tab.dataset.filter;
+      nfTabs.forEach(t => t.classList.toggle('active', t === tab));
+      nfLoad(1);
+    }));
+
+    nfReadAll.addEventListener('click', async () => {
+      try { await nfApi(NF_URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+      nfLoad(1);
     });
 
-    // --- Security Modal Logic ---
-    securityTrigger.addEventListener('click', () => securityModal.classList.add('active'));
-    closeSecurityBtn.addEventListener('click', () => securityModal.classList.remove('active'));
-    securityModal.addEventListener('click', (e) => {
-      if (e.target === securityModal) securityModal.classList.remove('active');
+    nfList.addEventListener('click', async (e) => {
+      if (e.target.closest('#nfLoadMore')) { nfLoad(nfNextPage); return; }
+      const row = e.target.closest('.nf-item');
+      if (!row) return;
+      const n = nfItems.find(x => String(x.id) === row.dataset.id);
+      if (!n) return;
+      try { if (!n.is_read) await nfApi(NF_URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+      if (n.link) window.location.href = n.link; else nfLoad(1);
     });
+
+    // Arrived from the bell's "View all notifications" → open the list right away.
+    if (new URLSearchParams(window.location.search).get('open') === 'notifications') {
+      openNotifications();
+      history.replaceState(null, '', window.location.pathname);
+    }
+
+    // --- Security Modal Logic ---
+    if (securityTrigger && securityModal && closeSecurityBtn) {
+      securityTrigger.addEventListener('click', () => securityModal.classList.add('active'));
+      closeSecurityBtn.addEventListener('click', () => securityModal.classList.remove('active'));
+      securityModal.addEventListener('click', (e) => {
+        if (e.target === securityModal) securityModal.classList.remove('active');
+      });
+    }
 
     const tfaToggle = document.getElementById('tfaToggle');
     if (tfaToggle) {
@@ -1454,9 +1648,11 @@ overlay.addEventListener('click', () => {
     }
 
     // --- Logout Logic ---
-    if (logoutTrigger) {
+    const logoutForm = document.getElementById('logoutForm');
+    if (logoutTrigger && logoutForm) {
       logoutTrigger.addEventListener('click', () => {
-        window.location.href = 'admin_login.html';
+        // POSTs to admin.logout (AdminController@logout) with the CSRF token
+        logoutForm.submit();
       });
     }
   });

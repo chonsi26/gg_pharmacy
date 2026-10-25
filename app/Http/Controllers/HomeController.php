@@ -86,6 +86,7 @@ class HomeController extends Controller
             $featuredBrands   = collect();
             $fbanner_1      = null;
             $fbanner_2    = null;
+            $fbanner_3    = null;
             $section1  = null;
             $section2      = null;
             $section3 = null;
@@ -108,6 +109,7 @@ class HomeController extends Controller
             
             $fbanner_1   = FullWidthBanner::forSection('fbanner_1');
             $fbanner_2 = FullWidthBanner::forSection('fbanner_2');
+            $fbanner_3   = FullWidthBanner::forSection('fbanner_3');
 
             $productWith = ['products' => fn ($q) => $q->with(['category', 'brand'])];
 
@@ -144,7 +146,7 @@ class HomeController extends Controller
             'sliders',
             'tickerBrands', 'featuredBrands',
             'promoBanners',
-            'fbanner_1', 'fbanner_2',
+            'fbanner_1', 'fbanner_2', 'fbanner_3',
             'section1', 'section2', 'section3',
             'section4',
             'section5', 'section5_top', 'section5_bottom',

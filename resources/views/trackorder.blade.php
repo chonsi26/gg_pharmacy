@@ -534,7 +534,7 @@
 <div class="top-bar">
   <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
-  <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
+  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
   <span class="sep">|</span>
   @guest
     <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
@@ -557,7 +557,9 @@
 <!-- HEADER -->
 <div class="header">
   <div class="logo">
+    <a href="{{ route('home') }}">
     <img src="{{ asset($settings['logo'] ?? 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png') }}" alt="{{ $settings['site_name'] ?? 'No Pharmacy Name' }}">
+</a>
   </div>
   
   <form action="{{ route('home') }}" method="GET" class="search-bar">
@@ -939,7 +941,7 @@
       <a href="#">Returns &amp; Refunds</a>
       <a href="#">How To Buy</a>
       <a href="#">Question?</a>
-      <a href="#">Track Your Order</a>
+      <a href="{{ route('order.myorders') }}">My Orders</a>
     </div>
     <div class="footer-section newsletter">
       <h4>SUBSCRIBE NEWSLETTER</h4>

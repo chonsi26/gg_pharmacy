@@ -455,7 +455,7 @@
 <div class="top-bar">
   <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
-  <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
+  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
   @guest
     <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
@@ -935,7 +935,7 @@
       <a href="#">Returns &amp; Refunds</a>
       <a href="#">How To Buy</a>
       <a href="#">Question?</a>
-      <a href="#">Track Your Order</a>
+      <a href="{{ route('order.myorders') }}">My Orders</a>
     </div>
     <div class="footer-section newsletter">
       <h4>SUBSCRIBE NEWSLETTER</h4>

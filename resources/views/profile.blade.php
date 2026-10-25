@@ -195,7 +195,7 @@
 <div class="top-bar">
   <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
-  <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
+  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
   @auth
     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
@@ -356,6 +356,9 @@
       <button class="profile-tab-btn {{ $currentPane === 'password' ? 'active' : '' }}" onclick="switchProfilePane('password', this)">
         <i class="fas fa-lock"></i> Change Password
       </button>
+      <a href="{{ route('order.myorders') }}" class="profile-tab-btn">
+        <i class="fas fa-box"></i> Orders
+      </a>
     </div>
   </div>
 
@@ -531,7 +534,7 @@
       <a href="#">Returns &amp; Refunds</a>
       <a href="#">How To Buy</a>
       <a href="#">Question?</a>
-      <a href="#">Track Your Order</a>
+      <a href="{{ route('order.myorders') }}">My Orders</a>
     </div>
     <div class="footer-section newsletter">
       <h4>SUBSCRIBE NEWSLETTER</h4>

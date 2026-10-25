@@ -407,7 +407,7 @@
 <div class="top-bar">
   <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
-  <a href="#" class="track-order"><i class="fas fa-truck"></i> TRACK YOUR ORDER</a>
+  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
   @guest
     <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
@@ -430,7 +430,9 @@
 <!-- HEADER -->
 <div class="header">
   <div class="logo">
+    <a href="{{ route('home') }}">
     <img src="{{ asset($settings['logo'] ?? 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png') }}" alt="{{ $settings['site_name'] ?? 'No Pharmacy Name' }}">
+</a>
   </div>
   
   <form action="{{ route('home') }}" method="GET" class="search-bar">
@@ -836,17 +838,19 @@ showSlide(currentIndex); autoplay();
 </div>
 
 <!-- ALAXAN BANNER -->
+@if($fbanner_3)
 <div class="fw-banner">
   <div style="border-radius:12px;padding:0;min-height:200px;overflow:hidden;">
-    @php $bannerAlaxan = \App\Models\FullWidthBanner::forSection('alaxan'); @endphp
-    @if($bannerAlaxan)
-      <img src="{{ $fbanner_3->image }}" alt="{{ $fbanner_3->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
-      @else
-      <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
-</div>
-    @endif
+    <img src="{{ $fbanner_3->image }}" alt="{{ $fbanner_3->alt }}" style="width:100%;height:100%;object-fit:cover;display:block;">
   </div>
 </div>
+@else
+<div class="fw-banner">
+  <div style="border-radius:12px;padding:0;min-height:200px;overflow:hidden;">
+    <img src="https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png" alt="No image available" style="width:100%;height:100%;object-fit:cover;display:block;">
+  </div>
+</div>
+@endif
 
 <!-- BEST SELLERS -->
 <div class="section-row">
@@ -1135,7 +1139,7 @@ showSlide(currentIndex); autoplay();
       <a href="#">Returns &amp; Refunds</a>
       <a href="#">How To Buy</a>
       <a href="#">Question?</a>
-      <a href="#">Track Your Order</a>
+      <a href="{{ route('order.myorders') }}">My Orders</a>
     </div>
     <div class="footer-section newsletter">
       <h4>SUBSCRIBE NEWSLETTER</h4>
