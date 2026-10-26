@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminInventoryController;
 use App\Http\Controllers\AdminNotificationsController;
 use App\Http\Controllers\AdminOrdersController;
 use App\Http\Controllers\AdminReportsController;
+use App\Http\Controllers\AdminSearchController;
 use App\Http\Controllers\AdminStocksController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
@@ -94,6 +95,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Auth-only: dashboard & inventory
     Route::middleware('auth:admin')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+        // ── Header search (AdminSearchController) ────────────────────────
+        // 'suggest' feeds the live dropdown (JSON); the bare route is the results page.
+        Route::get('/search', [AdminSearchController::class, 'index'])->name('search');
+        Route::get('/search/suggest', [AdminSearchController::class, 'suggest'])->name('search.suggest');
         // ── Notifications bell (AdminNotificationsController, JSON) ───────
         // 'read-all' is a literal segment, registered before the {notification} wildcard.
         Route::get('/notifications', [AdminNotificationsController::class, 'index'])->name('notifications');

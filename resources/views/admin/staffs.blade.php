@@ -1020,6 +1020,65 @@ tbody tr:last-child td { border-bottom: none; }
     .request-actions { width: 100%; justify-content: flex-end; margin-top: 4px; }
   }
 
+
+  /* ── Clickable cards + View Staff Modal ── */
+  .staff-card { cursor: pointer; }
+  #staffViewModalBg { z-index: 1000; }
+  #staffViewModalBg .modal {
+    max-width: 780px; width: 94vw; overflow: hidden;
+    border-radius: 18px; position: relative;
+    display: flex; flex-direction: row; align-items: stretch;
+  }
+  .view-hero {
+    width: 290px; flex-shrink: 0; min-height: 340px;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .view-right { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .view-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .view-hero .bg-icon-p {
+    position: absolute; width: 150px; height: 150px;
+    opacity: .16; right: -24px; bottom: -26px; color: #fff;
+  }
+  .view-hero .staff-initials { font-size: 52px; }
+  .view-close {
+    position: absolute; top: 10px; left: 10px; z-index: 3;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(0,0,0,.45); color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .view-close:hover { background: rgba(0,0,0,.65); }
+  .view-hero .pill { position: absolute; top: 10px; right: 10px; z-index: 3; }
+  .view-body { padding: 24px 26px 8px; }
+  .view-name-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .view-name { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.25; }
+  .view-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 20px; }
+  .view-row.full { grid-column: 1 / -1; }
+  .view-row {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 0; border-top: 1px solid var(--border);
+  }
+  .view-row-ico {
+    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+    background: var(--bg); color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .view-row-ico svg { width: 15px; height: 15px; }
+  .view-row-text { min-width: 0; flex: 1; }
+  .view-row-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--subtle); margin-bottom: 2px;
+  }
+  .view-row-value { font-size: 13.5px; font-weight: 500; color: var(--text); word-break: break-word; }
+  .view-foot { padding: 12px 26px 22px; display: flex; gap: 10px; justify-content: flex-end; margin-top: auto; }
+
+  @media (max-width: 640px) {
+    #staffViewModalBg .modal { flex-direction: column; max-height: 92vh; overflow-y: auto; }
+    .view-hero { width: 100%; min-height: 0; height: 170px; }
+    .view-list { grid-template-columns: 1fr; }
+  }
+
   /* ── Card remove animation ── */
   .staff-card.removing { animation: cardRemove .35s ease forwards; }
   @keyframes cardRemove {
@@ -1394,6 +1453,51 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     VIEW STAFF DETAILS MODAL
+     ════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="staffViewModalBg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewStaffName">
+    <div class="view-hero" id="viewStaffHero">
+      <button class="view-close" onclick="closeViewStaffModal()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <span class="pill" id="viewStaffStatus"></span>
+      <div id="viewStaffHeroInner" style="display:contents;"></div>
+    </div>
+    <div class="view-right">
+    <div class="view-body">
+      <div class="view-name-row">
+        <div class="view-name" id="viewStaffName">—</div>
+        <span class="staff-id-chip" id="viewStaffCode">—</span>
+      </div>
+      <div class="view-list">
+        <div class="view-row">
+          <div class="view-row-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M15 9h3M15 13h3M6 17c.6-1.7 1.8-2.5 3-2.5s2.4.8 3 2.5"/></svg></div>
+          <div class="view-row-text"><div class="view-row-label">Staff ID</div><div class="view-row-value" id="viewStaffId">—</div></div>
+        </div>
+        <div class="view-row">
+          <div class="view-row-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <div class="view-row-text"><div class="view-row-label">Email</div><div class="view-row-value" id="viewStaffEmail">—</div></div>
+        </div>
+        <div class="view-row">
+          <div class="view-row-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="view-row-text"><div class="view-row-label">Contact Number</div><div class="view-row-value" id="viewStaffContact">—</div></div>
+        </div>
+        <div class="view-row full">
+          <div class="view-row-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="view-row-text"><div class="view-row-label">Address</div><div class="view-row-value" id="viewStaffAddress">—</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="view-foot">
+      <button class="btn" onclick="closeViewStaffModal()">Close</button>
+      <button class="btn primary" id="viewStaffEditBtn" onclick="editFromViewModal()">Edit</button>
+    </div>
+    </div><!-- /view-right -->
   </div>
 </div>
 
@@ -2111,6 +2215,95 @@ function renderStaffSearchResults(staffList) {
     grid.appendChild(card);
   });
 }
+
+/* ══════════════════════════════════════════════════════
+   VIEW STAFF DETAILS MODAL
+   ══════════════════════════════════════════════════════ */
+let _viewStaffTarget = null;
+
+function openViewStaffModal(card) {
+  _viewStaffTarget = card;
+  const d = card.dataset;
+  const fullName = `${d.firstName || ''} ${d.lastName || ''}`.trim() || '—';
+  const status = d.status || 'Active';
+
+  document.getElementById('viewStaffName').textContent    = fullName;
+  document.getElementById('viewStaffCode').textContent   = d.id || '—';
+  document.getElementById('viewStaffId').textContent      = d.id || '—';
+  document.getElementById('viewStaffEmail').textContent   = d.email || '—';
+  document.getElementById('viewStaffContact').textContent = d.contact || '—';
+  document.getElementById('viewStaffAddress').textContent = d.address || '—';
+
+  const pill = document.getElementById('viewStaffStatus');
+  pill.textContent = status;
+  pill.className = 'pill ' + pillClassForStatus(status);
+
+  // Hero: photo if available, otherwise gradient + initials
+  const hero = document.getElementById('viewStaffHero');
+  const inner = document.getElementById('viewStaffHeroInner');
+  AVATAR_CLASSES.forEach(c => hero.classList.remove(c));
+  inner.innerHTML = '';
+  if (d.image) {
+    const img = document.createElement('img');
+    img.src = d.image;
+    img.alt = fullName;
+    inner.appendChild(img);
+  } else {
+    hero.classList.add(d.avatarClass || AVATAR_CLASSES[0]);
+    inner.innerHTML = `<svg class="bg-icon-p" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="8" r="4"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg><div class="staff-initials"></div>`;
+    inner.querySelector('.staff-initials').textContent = initialsOf(d.firstName || '', d.lastName || '');
+  }
+
+  document.getElementById('staffViewModalBg').classList.add('on');
+}
+
+function closeViewStaffModal() {
+  document.getElementById('staffViewModalBg').classList.remove('on');
+  _viewStaffTarget = null;
+}
+
+function editFromViewModal() {
+  const card = _viewStaffTarget;
+  closeViewStaffModal();
+  if (card) openEditStaffModal(card.querySelector('.btn-edit-full'));
+}
+
+document.getElementById('staffViewModalBg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeViewStaffModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('staffViewModalBg').classList.contains('on')) {
+    closeViewStaffModal();
+  }
+});
+
+// Delegated click: works for server-rendered AND dynamically built cards.
+document.getElementById('staffGrid').addEventListener('click', e => {
+  if (e.target.closest('button, a, input, select, textarea')) return; // Edit / Delete buttons keep their own behavior
+  const card = e.target.closest('.staff-card');
+  if (card) openViewStaffModal(card);
+});
+</script>
+<script>
+/* ── Deep link from the header search: /admin/staffs?open={id} opens that staff member's information modal ── */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('open');
+  if (!id) return;
+
+  // Drop the param so a refresh or Back doesn't re-open the modal.
+  params.delete('open');
+  const qs = params.toString();
+  history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+
+  const card = Array.from(document.querySelectorAll('#staffGrid .staff-card')).find(c => c.dataset.dbId === id);
+  if (!card) {
+    if (typeof showToast === 'function') showToast('That staff member could not be found.');
+    return;
+  }
+  card.scrollIntoView({ block: 'center' });
+  openViewStaffModal(card);
+})();
 </script>
 </body>
 </html>

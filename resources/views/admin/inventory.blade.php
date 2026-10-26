@@ -1551,7 +1551,7 @@ tbody tr:last-child td { border-bottom: none; }
           $catColor   = $category->icon_color ?? '#6b7280';
           $catBg      = $category->bg_color ?? '#f3f4f6';
           $catName    = $category->name ?? 'Uncategorized';
-          $searchKey  = strtolower($product->name.' '.$catName.' '.($brand->name ?? ''));
+          $searchKey  = strtolower($product->name.' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
           $barColor   = $qty <= 10 ? 'var(--red)' : ($qty <= 50 ? 'var(--orange)' : 'var(--green)');
           $barWidth   = min($qty, 100);
           $badgeClass = $product->badge_type === 'sale-badge' ? 'warning' : 'ok';
@@ -2460,6 +2460,7 @@ function renderViewModal(p) {
     : null;
 
   const topFacts = [
+    field('Form', p.form),
     field('Origin / Manufacturer', p.origin),
     field('Dimensions (W × H × D)', dims),
   ].filter(Boolean).join('');
@@ -2491,6 +2492,7 @@ function renderViewModal(p) {
           ${p.generic_name ? `<div class="view-aside-generic">${esc(p.generic_name)}</div>` : ''}
           <div class="view-badges" style="margin-top:8px;">
             <span class="pill" style="background:${p.category_bg};color:${p.category_color};">${esc(p.category_name)}</span>
+            ${p.form ? `<span class="pill" style="background:var(--bg-soft,#f3f4f6);color:var(--text,#374151);">${esc(p.form)}</span>` : ''}
             ${p.brand_name ? `<span class="pill ok">${esc(p.brand_name)}</span>` : ''}
             ${p.section_label ? `<span class="pill blue">${esc(p.section_label)}</span>` : ''}
             ${p.requires_prescription ? `<span class="pill warning">Rx Only</span>` : ''}
@@ -3128,7 +3130,7 @@ function applyProductToCard(card, p) {
   card.dataset.height      = p.height || '';
   card.dataset.depth       = p.depth || '';
   card.dataset.requiresRx  = p.requires_prescription ? 'true' : 'false';
-  card.dataset.name        = `${p.name} ${p.category_name} ${p.brand_name}`.toLowerCase();
+  card.dataset.name        = `${p.name} ${p.form || ''} ${p.category_name} ${p.brand_name}`.toLowerCase();
 
   const titleEl = card.querySelector('.med-title');
   if (titleEl) titleEl.textContent = p.name;
@@ -3832,6 +3834,27 @@ function refreshComboOptions() {
     });
   }
 }
+</script>
+<script>
+/* ── Deep link from the header search: /admin/inventory?open={id} opens that product's details modal ── */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('open');
+  if (!id) return;
+
+  // Drop the param so a refresh or Back doesn't re-open the modal.
+  params.delete('open');
+  const qs = params.toString();
+  history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+
+  const card = Array.from(document.querySelectorAll('.med-card')).find(c => c.dataset.id === id);
+  if (!card) {
+    if (typeof showToast === 'function') showToast('That product could not be found.');
+    return;
+  }
+  card.scrollIntoView({ block: 'center' });
+  openViewModal(card);
+})();
 </script>
 </body>
 </html>

@@ -621,6 +621,59 @@
      PRODUCT PAGE CONTENT
      ═══════════════════════════════════════════════════════════════════════════ --}}
 
+@php
+  /* ── Form-specific labels ─────────────────────────────────────────────
+     Mirrors FORM_PROFILES in the admin inventory add/edit modal, so each
+     label here matches what the admin saw when entering this product.
+     Missing keys fall back to $formBase. 'rx' = shows Rx / OTC info. */
+  $formBase = [
+    'name'    => 'Product Name',
+    'generic' => 'Generic Name',
+    'origin'  => 'Origin / Manufacturer',
+    'desc'    => 'Description',
+    'ingr'    => 'Ingredients',
+    'warn'    => 'Warnings',
+    'rx'      => false,
+  ];
+  $formProfiles = [
+    'Medicine' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Vitamins' => ['name' => 'Vitamin Name', 'generic' => 'Active Nutrient', 'origin' => 'Manufacturer', 'desc' => 'Health Benefits', 'ingr' => 'Nutrient Content', 'warn' => 'Dosage Warnings & Allergens'],
+    'Alcohol' => ['name' => 'Alcohol Product Name', 'generic' => 'Alcohol Type', 'desc' => 'Intended Use', 'ingr' => 'Alcohol Content', 'warn' => 'Flammability & Safety Warnings'],
+    'Shampoo' => ['name' => 'Shampoo Name', 'generic' => 'Hair Type / Variant', 'desc' => 'Benefits & Directions', 'ingr' => 'Key Ingredients', 'warn' => 'Precautions'],
+    'Conditioner' => ['name' => 'Conditioner Name', 'generic' => 'Hair Concern', 'desc' => 'Benefits & Directions', 'ingr' => 'Key Ingredients', 'warn' => 'Precautions'],
+    'Soap' => ['name' => 'Soap Name', 'generic' => 'Soap Type / Variant', 'desc' => 'Benefits & Usage', 'ingr' => 'Ingredients', 'warn' => 'Skin Precautions'],
+    'Body Wash' => ['name' => 'Body Wash Name', 'generic' => 'Skin Type / Variant', 'desc' => 'Benefits & Usage', 'ingr' => 'Ingredients', 'warn' => 'Skin Precautions'],
+    'Lotion' => ['name' => 'Lotion Name', 'generic' => 'Skin Type', 'desc' => 'Benefits & Usage', 'ingr' => 'Ingredients', 'warn' => 'Skin Precautions'],
+    'Skincare' => ['name' => 'Skincare Product Name', 'generic' => 'Product Type', 'desc' => 'Skin Concern & Usage', 'ingr' => 'Active Ingredients', 'warn' => 'Patch Test & Precautions'],
+    'Sunscreen' => ['name' => 'Sunscreen Name', 'generic' => 'SPF / PA Rating', 'desc' => 'Protection & Usage', 'ingr' => 'UV Filters & Ingredients', 'warn' => 'Sun Safety Precautions'],
+    'Makeup' => ['name' => 'Makeup Product Name', 'generic' => 'Shade / Finish', 'desc' => 'Product Details', 'ingr' => 'Ingredients', 'warn' => 'Allergen & Safety Warnings'],
+    'Perfume' => ['name' => 'Fragrance Name', 'generic' => 'Fragrance Family', 'desc' => 'Scent Description', 'ingr' => 'Fragrance Notes', 'warn' => 'Safety Warnings'],
+    'Deodorant' => ['name' => 'Deodorant Name', 'generic' => 'Type / Scent', 'desc' => 'Protection & Usage', 'ingr' => 'Ingredients', 'warn' => 'Skin Precautions'],
+    'Toothpaste' => ['name' => 'Toothpaste Name', 'generic' => 'Variant / Purpose', 'desc' => 'Benefits & Usage', 'ingr' => 'Active Ingredients', 'warn' => 'Warnings'],
+    'Toothbrush' => ['name' => 'Toothbrush Name', 'generic' => 'Bristle Type', 'origin' => 'Manufacturer / Brand Origin', 'desc' => 'Features', 'ingr' => 'Materials', 'warn' => 'Care & Replacement'],
+    'Mouthwash' => ['name' => 'Mouthwash Name', 'generic' => 'Mouthwash Type', 'desc' => 'Benefits & Usage', 'ingr' => 'Active Ingredients', 'warn' => 'Warnings'],
+    'Hair Color' => ['name' => 'Hair Color Name', 'generic' => 'Shade / Color Code', 'desc' => 'Application Instructions', 'ingr' => 'Dye & Developer Ingredients', 'warn' => 'Patch Test & Allergy Warnings'],
+    'Hair Treatment' => ['name' => 'Hair Treatment Name', 'generic' => 'Treatment Type', 'desc' => 'Benefits & Usage', 'ingr' => 'Key Ingredients', 'warn' => 'Precautions'],
+    'Feminine Care' => ['name' => 'Feminine Care Product Name', 'generic' => 'Product Type', 'desc' => 'Absorbency & Usage', 'ingr' => 'Materials / Ingredients', 'warn' => 'Hygiene Warnings'],
+    'Baby Care' => ['name' => 'Baby Product Name', 'generic' => 'Product Type / Age Range', 'desc' => 'Benefits & Usage', 'ingr' => 'Ingredients', 'warn' => 'Safety Warnings'],
+    'Diapers' => ['name' => 'Diaper Name', 'generic' => 'Size / Weight Range', 'desc' => 'Features & Pack Count', 'ingr' => 'Materials', 'warn' => 'Safety Warnings'],
+    'Supplements' => ['name' => 'Supplement Name', 'generic' => 'Active Compound', 'origin' => 'Manufacturer', 'desc' => 'Benefits & Recommended Dosage', 'ingr' => 'Supplement Facts', 'warn' => 'Side Effects & Interactions'],
+    'Medical Supplies' => ['name' => 'Item Name', 'generic' => 'Item Type', 'desc' => 'Specifications & Intended Use', 'ingr' => 'Materials', 'warn' => 'Sterility & Disposal'],
+    'Household Cleaning' => ['name' => 'Cleaning Product Name', 'generic' => 'Cleaner Type', 'desc' => 'Usage Directions', 'ingr' => 'Active Ingredients', 'warn' => 'Hazard & Safety Warnings'],
+    'Food and Beverages' => ['name' => 'Food / Beverage Name', 'generic' => 'Food Type / Variant', 'origin' => 'Manufacturer / Country of Origin', 'desc' => 'Description & Serving Info', 'ingr' => 'Ingredients & Nutrition', 'warn' => 'Allergen Warnings'],
+    'Tablet' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Capsule' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Syrup' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Suspension' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Injection' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Drops' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Cream / Ointment' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+    'Patch' => ['name' => 'Medicine Name', 'generic' => 'Generic Name', 'desc' => 'Indications / Description', 'ingr' => 'Active & Inactive Ingredients', 'warn' => 'Warnings & Contraindications', 'rx' => true],
+  ];
+  $formLabels  = array_merge($formBase, $formProfiles[$product->form ?? ''] ?? []);
+  $showRxInfo  = $formLabels['rx'] || $product->requires_prescription;
+@endphp
+
 <!-- BREADCRUMB -->
 <div class="breadcrumb">
   <a href="{{ route('home') }}"><i class="fas fa-home" style="font-size:11px;"></i> Home</a>
@@ -670,7 +723,7 @@
       @endif
       <h1 class="med-name">{{ $product->name }}</h1>
       @if($product->generic_name)
-        <p class="med-generic">Generic Name: <span>{{ $product->generic_name }}</span></p>
+        <p class="med-generic">{{ $formLabels['generic'] }}: <span>{{ $product->generic_name }}</span></p>
       @endif
 
 
@@ -680,7 +733,7 @@
         <span class="avail-badge instock"><i class="fas fa-check-circle"></i> In Stock</span>
         @if($product->requires_prescription)
           <span class="avail-badge rx"><i class="fas fa-prescription"></i> Prescription Required</span>
-        @else
+        @elseif($showRxInfo)
           <span class="avail-badge otc"><i class="fas fa-leaf"></i> OTC — No Rx Needed</span>
         @endif
       </div>
@@ -756,15 +809,15 @@
   <!-- ═══════ TABS ═══════ -->
   <div class="tabs-section">
     <div class="tabs-nav" role="tablist">
-      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="description">Description</button>
+      <button class="tab-btn active" role="tab" aria-selected="true" data-tab="description">{{ $formLabels['desc'] }}</button>
       @if($product->ingredients)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="ingredients">Ingredients</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="ingredients">{{ $formLabels['ingr'] }}</button>
       @endif
       @if($product->product_usage)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="usage">Uses &amp; Dosage</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="usage">{{ $formLabels['rx'] ? 'Uses & Dosage' : 'Directions / Usage' }}</button>
       @endif
       @if($product->warnings)
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="warnings">Warnings</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="warnings">{{ $formLabels['warn'] }}</button>
       @endif
       @if($product->hasDimensions() || $product->origin)
         <button class="tab-btn" role="tab" aria-selected="false" data-tab="specs">Specifications</button>
@@ -775,7 +828,7 @@
     <div class="tab-pane active" id="tab-description" role="tabpanel">
       <div class="desc-grid">
         <div class="desc-text">
-          <h3>About This Medicine</h3>
+          <h3>{{ $formLabels['desc'] }}</h3>
           @if($product->description)
             <p>{!! nl2br(e($product->description)) !!}</p>
           @else
@@ -788,12 +841,13 @@
         <div>
           <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:12px;">Product Details</h3>
           <table class="info-table">
-            <tr><td>Name</td><td>{{ $product->name }}</td></tr>
-            @if($product->generic_name)<tr><td>Generic Name</td><td>{{ $product->generic_name }}</td></tr>@endif
+            <tr><td>{{ $formLabels['name'] }}</td><td>{{ $product->name }}</td></tr>
+            @if($product->form)<tr><td>Form</td><td>{{ $product->form }}</td></tr>@endif
+            @if($product->generic_name)<tr><td>{{ $formLabels['generic'] }}</td><td>{{ $product->generic_name }}</td></tr>@endif
             @if($product->brand)<tr><td>Brand</td><td>{{ $product->brand->name }}</td></tr>@endif
             @if($product->category)<tr><td>Category</td><td>{{ $product->category->name }}</td></tr>@endif
-            @if($product->origin)<tr><td>Country of Origin</td><td>{{ $product->origin }}</td></tr>@endif
-            <tr><td>Prescription</td><td>{{ $product->requires_prescription ? 'Required (Rx)' : 'Not required (OTC)' }}</td></tr>
+            @if($product->origin)<tr><td>{{ $formLabels['origin'] }}</td><td>{{ $product->origin }}</td></tr>@endif
+            @if($showRxInfo)<tr><td>Prescription</td><td>{{ $product->requires_prescription ? 'Required (Rx)' : 'Not required (OTC)' }}</td></tr>@endif
           </table>
         </div>
       </div>
@@ -817,7 +871,12 @@
     @if($product->warnings)
     <div class="tab-pane" id="tab-warnings" role="tabpanel">
       <div class="warning-box">
-        <strong>⚠️ Please Read Carefully:</strong> Keep out of reach of children. Consult a healthcare professional if symptoms persist.
+        <strong>⚠️ Please Read Carefully:</strong>
+        @if($formLabels['rx'])
+          Keep out of reach of children. Consult a healthcare professional if symptoms persist.
+        @else
+          Keep out of reach of children and follow the precautions below.
+        @endif
       </div>
       <div class="tab-body-text">{!! nl2br(e($product->warnings)) !!}</div>
     </div>
@@ -828,7 +887,7 @@
     <div class="tab-pane" id="tab-specs" role="tabpanel">
       <table class="spec-table">
         @if($product->origin)
-          <tr><td><i class="fas fa-globe-asia" style="margin-right:8px;color:var(--gray);"></i> Country of Origin</td><td>{{ $product->origin }}</td></tr>
+          <tr><td><i class="fas fa-globe-asia" style="margin-right:8px;color:var(--gray);"></i> {{ $formLabels['origin'] }}</td><td>{{ $product->origin }}</td></tr>
         @endif
         @if($product->width)
           <tr><td><i class="fas fa-arrows-alt-h" style="margin-right:8px;color:var(--gray);"></i> Width</td><td>{{ $product->width }} cm</td></tr>

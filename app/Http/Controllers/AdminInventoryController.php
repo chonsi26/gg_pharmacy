@@ -69,6 +69,7 @@ class AdminInventoryController extends Controller
                 $builder->where(function ($sub) use ($query) {
                     $sub->where('name', 'like', "%{$query}%")
                         ->orWhere('generic_name', 'like', "%{$query}%")
+                        ->orWhere('form', 'like', "%{$query}%")
                         ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$query}%"))
                         ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', "%{$query}%"));
                 });
@@ -204,6 +205,10 @@ class AdminInventoryController extends Controller
             $this->deleteImage($product->image);
             $data['image'] = $request->file('image')->store('products', 'public');
         }
+
+        // The blade drops empty fields before sending, so a missing 'form'
+        // means the admin cleared it back to "— Select —".
+        $data['form'] = $request->filled('form') ? $request->input('form') : null;
 
         $data['requires_prescription'] = $request->boolean('requires_prescription');
         $data['is_active']             = $request->boolean('is_active', (bool) $product->is_active);
@@ -597,6 +602,7 @@ class AdminInventoryController extends Controller
         $validated = $request->validate([
             'name'                  => ['required', 'string', 'max:255'],
             'generic_name'          => ['nullable', 'string', 'max:255'],
+            'form'                  => ['nullable', 'string', 'max:100'],
             'price'                 => ['required', 'numeric', 'min:0'],
             'old_price'             => ['nullable', 'numeric', 'min:0'],
             'category_id'           => ['nullable', 'integer', 'exists:categories,id'],
@@ -722,6 +728,7 @@ class AdminInventoryController extends Controller
             'id'                    => $product->id,
             'name'                  => $product->name,
             'generic_name'          => $product->generic_name,
+            'form'                  => $product->form,
             'brand_id'              => $product->brand_id,
             'brand_name'            => $product->brand->name ?? '',
             'category_id'           => $product->category_id,
