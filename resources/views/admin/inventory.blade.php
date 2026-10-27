@@ -238,6 +238,48 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .header-search input::placeholder { color: var(--subtle); }
 
+/* ── HEADER SEARCH SUGGESTIONS ── */
+.header-search { position: relative; }
+.search-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 380px; max-width: 90vw; max-height: 70vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 60;
+}
+.search-panel[hidden] { display: none; }
+.sp-label { padding: 10px 14px 4px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+.sp-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; color: var(--text); text-decoration: none; cursor: pointer;
+}
+.sp-item:hover, .sp-item.active { background: var(--red-light); }
+.sp-thumb, .sp-avatar {
+  width: 34px; height: 34px; flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-thumb { border-radius: 8px; background: #fff; border: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted); }
+.sp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.sp-avatar { border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; }
+.sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-tone-1 { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.sp-tone-2 { background: linear-gradient(135deg,#10b981,#047857); }
+.sp-tone-3 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.sp-tone-4 { background: linear-gradient(135deg,#ec4899,#be185d); }
+.sp-tone-5 { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.sp-tone-6 { background: linear-gradient(135deg,#06b6d4,#0e7490); }
+.sp-text { min-width: 0; flex: 1; }
+.sp-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-panel mark { background: transparent; color: var(--red); font-weight: 700; }
+.sp-foot {
+  display: block; padding: 11px 14px; margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: none;
+}
+.sp-foot:hover { background: var(--red-light); }
+.sp-state { padding: 18px 14px; font-size: 13px; color: var(--muted); text-align: center; }
+
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
 .icon-btn {
@@ -260,6 +302,35 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   border-radius: 50%;
   border: 1.5px solid var(--surface);
 }
+
+/* ── NOTIFICATIONS ── */
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-width: 88vw;
+  background: var(--card, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 50; overflow: hidden;
+}
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
+.notif-pill { font-size: 11px; font-weight: 600; color: #CC1F1F; background: rgba(204,31,31,.1); padding: 2px 8px; border-radius: 20px; }
+.notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
+.notif-link-btn:hover { color: #CC1F1F; }
+.notif-list { max-height: 400px; overflow-y: auto; }
+.notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-section.important { color: #CC1F1F; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border, #e5e7eb); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+.notif-item:hover { background: var(--hover, rgba(0,0,0,.03)); }
+.notif-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.notif-item.read:not(.important) { opacity: .6; }
+.notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: #CC1F1F; flex-shrink: 0; }
+.notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
+.notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
 
 /* ── MAIN CONTENT ── */
 .main {
@@ -1410,86 +1481,33 @@ tbody tr:last-child td { border-bottom: none; }
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="header-title">Inventory</div>
-  <div class="header-search">
+  <form class="header-search" id="adminSearch" action="{{ route('admin.search') }}" method="GET" role="search" autocomplete="off">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Search products, staffs…">
-  </div>
+    <input type="text" name="q" id="adminSearchInput" placeholder="Search products, staffs…" value="{{ $q ?? '' }}" maxlength="100" aria-label="Search products and staffs" aria-controls="adminSearchPanel" aria-expanded="false">
+    <div class="search-panel" id="adminSearchPanel" role="listbox" hidden></div>
+  </form>
   <div class="header-actions">
     <div style="position:relative;">
       <button class="icon-btn" id="notifBtn" title="Notifications">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <div class="dot"></div>
+        <div class="dot" id="notifDot" style="display:none;"></div>
       </button>
 
-      <div id="notifDropdown" style="
-        display:none;
-        position:absolute;
-        top:calc(100% + 10px);
-        right:0;
-        width:340px;
-        max-width:88vw;
-        background:var(--card,#fff);
-        border:1px solid var(--border,#e5e7eb);
-        border-radius:12px;
-        box-shadow:0 12px 32px rgba(0,0,0,.14);
-        z-index:50;
-        overflow:hidden;
-      ">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border,#e5e7eb);background:var(--card,#fff);">
-          <span style="font-size:13px;font-weight:700;color:var(--text,#111);">Notifications</span>
-          <span style="font-size:11px;font-weight:600;color:#CC1F1F;background:rgba(204,31,31,.1);padding:2px 8px;border-radius:20px;">4 New</span>
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="notif-link-btn" id="notifReadAll" style="display:none;">Mark all read</button>
+            <span class="notif-pill" id="notifCount" style="display:none;"></span>
+          </span>
         </div>
 
-        <div style="max-height:360px;overflow-y:auto;background:var(--card,#fff);">
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(45,122,45,.12);display:flex;align-items:center;justify-content:center;color:#2D7A2D;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">New order received</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Order #1043 from Juan dela Cruz · 5 items</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">2 minutes ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(224,123,0,.12);display:flex;align-items:center;justify-content:center;color:#e07b00;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Stock expiry alert</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Amoxicillin 500mg expires in 5 days</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">1 hour ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(37,99,235,.12);display:flex;align-items:center;justify-content:center;color:#2563eb;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Payment received</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Maria Santos paid ₱620 for Sale #1041</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">3 hours ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(204,31,31,.12);display:flex;align-items:center;justify-content:center;color:#CC1F1F;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Stock running out</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Paracetamol has only 8 units left</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">5 hours ago</div>
-            </div>
-          </div>
-
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
         </div>
 
-        <div style="padding:10px 16px;text-align:center;border-top:1px solid var(--border,#e5e7eb);background:var(--card,#fff);">
-          <a href="#" style="font-size:12px;font-weight:600;color:#CC1F1F;text-decoration:none;">View all notifications</a>
+        <div class="notif-foot">
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:#CC1F1F;font-size:12px;">View all notifications</button>
         </div>
       </div>
     </div>
@@ -2300,26 +2318,151 @@ overlay.addEventListener('click', () => {
 });
 </script>
 <script>
-// ── Notifications Dropdown ──────────────────────────────────────────────
-(function() {
-  const notifBtn = document.getElementById('notifBtn');
-  const notifDropdown = document.getElementById('notifDropdown');
-  if (!notifBtn || !notifDropdown) return;
+// ── Notifications (data comes from AdminNotificationsController) ─────────────
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notifDropdown');
+  if (!btn || !dropdown) return;
 
-  notifBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notifDropdown.style.display = notifDropdown.style.display === 'block' ? 'none' : 'block';
+  const listEl    = document.getElementById('notifList');
+  const dotEl     = document.getElementById('notifDot');
+  const countEl   = document.getElementById('notifCount');
+  const readAllEl = document.getElementById('notifReadAll');
+  const moreEl    = document.getElementById('notifMore');
+
+  const URLS = {
+    list:    @json(route('admin.notifications')),
+    readAll: @json(route('admin.notifications.readAll')),
+    read:    @json(route('admin.notifications.read', ['notification' => '__ID__'])),
+  };
+  const CSRF = @json(csrf_token());
+  const POLL_MS = 60000;
+  const LIMIT = 15;
+
+  let items = [];
+
+  const TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+  const svg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const ICONS = {
+    box:    svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+    alert:  svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    clock:  svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    order:  svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    check:  svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:      svg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    money:  svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+    file:   svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+    user:   svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    bell:   svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  };
+  const TYPE_ICON = {
+    out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+    order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+    refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+  };
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(url, method = 'GET') {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': CSRF },
+      credentials: 'same-origin',
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
+    return res.json();
+  }
+
+  function itemHtml(n) {
+    const tone = TONES[n.tone] || TONES.neutral;
+    return `
+      <div class="notif-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+        <div class="notif-ico">${ICONS[TYPE_ICON[n.type]] || ICONS.bell}</div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}${n.is_read ? '' : '<span class="notif-unread"></span>'}</div>
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">${esc(n.time)}</div>
+        </div>
+      </div>`;
+  }
+
+  function render(data) {
+    items = data.items || [];
+
+    // Badge / dot / header
+    const unread = data.unread || 0, important = data.important || 0;
+    dotEl.style.display = (unread > 0 || important > 0) ? '' : 'none';
+    countEl.style.display = unread > 0 ? '' : 'none';
+    countEl.textContent = `${unread} New`;
+    readAllEl.style.display = unread > 0 ? '' : 'none';
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="notif-empty">You\'re all caught up 🎉</div>';
+      return;
+    }
+
+    // Important (unhandled) ones are pinned in their own section at the top.
+    const pinned = items.filter(n => n.important);
+    const rest   = items.filter(n => !n.important);
+    let html = '';
+    if (pinned.length) {
+      html += `<div class="notif-section important">Needs attention · ${pinned.length}</div>` + pinned.map(itemHtml).join('');
+    }
+    if (rest.length) {
+      if (pinned.length) html += '<div class="notif-section">Recent activity</div>';
+      html += rest.map(itemHtml).join('');
+    }
+    listEl.innerHTML = html;
+  }
+
+  async function load() {
+    try {
+      render(await api(`${URLS.list}?limit=${LIMIT}`));
+    } catch (err) {
+      console.error(err);
+      if (dropdown.style.display === 'block') listEl.innerHTML = '<div class="notif-empty">Couldn\'t load notifications.</div>';
+    }
+  }
+
+  // Click a notification → mark it read, then go to the related page.
+  listEl.addEventListener('click', async (e) => {
+    const row = e.target.closest('.notif-item');
+    if (!row) return;
+    const n = items.find(x => String(x.id) === row.dataset.id);
+    if (!n) return;
+    try { if (!n.is_read) await api(URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+    if (n.link) window.location.href = n.link; else load();
   });
 
+  readAllEl.addEventListener('click', async () => {
+    try { await api(URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+    load();
+  });
+
+  // "View all notifications" → full list page.
+  moreEl.addEventListener('click', () => {
+    window.location.href = @json(route('admin.notifications.view'));
+  });
+
+  // Open / close
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = dropdown.style.display === 'block';
+    dropdown.style.display = open ? 'none' : 'block';
+    if (!open) load();
+  });
   document.addEventListener('click', (e) => {
-    if (notifDropdown.style.display === 'block' && !notifDropdown.contains(e.target) && e.target !== notifBtn) {
-      notifDropdown.style.display = 'none';
+    if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.style.display = 'none';
     }
   });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') notifDropdown.style.display = 'none';
-  });
+  // Initial load + keep the badge fresh.
+  load();
+  setInterval(() => { if (!document.hidden) load(); }, POLL_MS);
 })();
 </script>
 <script>
@@ -3854,6 +3997,162 @@ function refreshComboOptions() {
   }
   card.scrollIntoView({ block: 'center' });
   openViewModal(card);
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════
+   HEADER SEARCH — products & staffs
+   • Typing shows live suggestions (AdminSearchController@suggest).
+   • Clicking a suggestion opens that product's / staff member's
+     information modal on its own page (?open={id}).
+   • Pressing Enter, or "See all results", goes to the results page.
+   ══════════════════════════════════════════════════════ */
+(function () {
+  const form  = document.getElementById('adminSearch');
+  if (!form) return;
+  const input = document.getElementById('adminSearchInput');
+  const panel = document.getElementById('adminSearchPanel');
+  const SUGGEST_URL = "{{ route('admin.search.suggest') }}";
+
+  let timer = null, controller = null, links = [], active = -1;
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Split the raw text on the match and escape every piece, so user text can never
+  // inject markup and a search like "amp" can't cut through an &amp; entity.
+  const hl = (text, q) => {
+    text = String(text ?? '');
+    if (!q) return esc(text);
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.split(re).map((part, i) => i % 2 ? '<mark>' + esc(part) + '</mark>' : esc(part)).join('');
+  };
+
+  const open  = () => { panel.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+  const close = () => { panel.hidden = true;  input.setAttribute('aria-expanded', 'false'); setActive(-1); };
+
+  function setActive(i) {
+    links.forEach(a => a.classList.remove('active'));
+    active = i;
+    if (i >= 0 && links[i]) {
+      links[i].classList.add('active');
+      links[i].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  const productRow = (p, q) => `
+    <a class="sp-item" role="option" href="${esc(p.url)}">
+      <span class="sp-thumb">${p.image
+        ? `<img src="${esc(p.image)}" alt="">`
+        : esc(p.name.slice(0, 2).toUpperCase())}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(p.name, q)}</div>
+        <div class="sp-meta">${hl(p.meta, q)}</div>
+      </div>
+    </a>`;
+
+  const staffRow = (s, q) => `
+    <a class="sp-item" role="option" href="${esc(s.url)}">
+      <span class="sp-avatar sp-tone-${esc(s.tone)}">${s.image
+        ? `<img src="${esc(s.image)}" alt="">`
+        : esc(s.initials)}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(s.name, q)}</div>
+        <div class="sp-meta">${hl(s.meta, q)}</div>
+      </div>
+    </a>`;
+
+  function render(data) {
+    const q = data.query;
+    if (!data.products.length && !data.staffs.length) {
+      panel.innerHTML = `<div class="sp-state">No products or staffs match “${esc(q)}”.</div>`;
+    } else {
+      panel.innerHTML =
+        (data.products.length ? `<div class="sp-label">Products</div>${data.products.map(p => productRow(p, q)).join('')}` : '') +
+        (data.staffs.length   ? `<div class="sp-label">Staffs</div>${data.staffs.map(s => staffRow(s, q)).join('')}` : '') +
+        `<a class="sp-foot" href="${esc(data.results_url)}">See all results for “${esc(q)}”</a>`;
+    }
+    links = Array.from(panel.querySelectorAll('.sp-item'));
+    setActive(-1);
+    open();
+  }
+
+  async function fetchSuggestions() {
+    const q = input.value.trim();
+    if (!q) { close(); return; }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    try {
+      const res = await fetch(`${SUGGEST_URL}?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) throw new Error('Suggestions unavailable');
+      const data = await res.json();
+      if (input.value.trim() !== q) return;   // a newer keystroke already superseded this
+      render(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') close();  // Enter still works without suggestions
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(fetchSuggestions, 180);
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim() && panel.innerHTML) open();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); return; }
+    if (panel.hidden || !links.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive(active + 1 >= links.length ? 0 : active + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive(active <= 0 ? links.length - 1 : active - 1);
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();                       // a highlighted suggestion wins over the results page
+      links[active].click();
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    if (!input.value.trim()) e.preventDefault();
+  });
+
+  document.addEventListener('click', e => {
+    if (!form.contains(e.target)) close();
+  });
+})();
+</script>
+<script>
+/* On the Inventory page a product suggestion opens its details modal right here,
+   without reloading. Staff suggestions still navigate to the Staffs page. */
+(function () {
+  const panel = document.getElementById('adminSearchPanel');
+  if (!panel) return;
+  const PRODUCT_PREFIX = "{{ route('admin.inventory') }}?open=";
+
+  panel.addEventListener('click', e => {
+    const link = e.target.closest('a.sp-item');
+    if (!link || !link.href.startsWith(PRODUCT_PREFIX)) return;
+
+    const id   = new URL(link.href).searchParams.get('open');
+    const card = Array.from(document.querySelectorAll('.med-card')).find(c => c.dataset.id === id);
+    if (!card) return;                       // not on the page → fall back to normal navigation
+
+    e.preventDefault();
+    panel.hidden = true;
+    card.scrollIntoView({ block: 'center' });
+    openViewModal(card);
+  });
 })();
 </script>
 </body>

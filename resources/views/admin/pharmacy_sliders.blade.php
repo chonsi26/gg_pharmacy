@@ -232,6 +232,48 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .header-search input::placeholder { color: var(--subtle); }
 
+/* ── HEADER SEARCH SUGGESTIONS ── */
+.header-search { position: relative; }
+.search-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 380px; max-width: 90vw; max-height: 70vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 60;
+}
+.search-panel[hidden] { display: none; }
+.sp-label { padding: 10px 14px 4px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+.sp-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; color: var(--text); text-decoration: none; cursor: pointer;
+}
+.sp-item:hover, .sp-item.active { background: var(--red-light); }
+.sp-thumb, .sp-avatar {
+  width: 34px; height: 34px; flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-thumb { border-radius: 8px; background: #fff; border: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted); }
+.sp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.sp-avatar { border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; }
+.sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-tone-1 { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.sp-tone-2 { background: linear-gradient(135deg,#10b981,#047857); }
+.sp-tone-3 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.sp-tone-4 { background: linear-gradient(135deg,#ec4899,#be185d); }
+.sp-tone-5 { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.sp-tone-6 { background: linear-gradient(135deg,#06b6d4,#0e7490); }
+.sp-text { min-width: 0; flex: 1; }
+.sp-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-panel mark { background: transparent; color: var(--red); font-weight: 700; }
+.sp-foot {
+  display: block; padding: 11px 14px; margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: none;
+}
+.sp-foot:hover { background: var(--red-light); }
+.sp-state { padding: 18px 14px; font-size: 13px; color: var(--muted); text-align: center; }
+
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
 .icon-btn {
@@ -1103,10 +1145,11 @@ tbody tr:last-child td { border-bottom: none; }
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="header-title">Pharmacy</div>
-  <div class="header-search">
+  <form class="header-search" id="adminSearch" action="{{ route('admin.search') }}" method="GET" role="search" autocomplete="off">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Search products, staffs…">
-  </div>
+    <input type="text" name="q" id="adminSearchInput" placeholder="Search products, staffs…" value="{{ $q ?? '' }}" maxlength="100" aria-label="Search products and staffs" aria-controls="adminSearchPanel" aria-expanded="false">
+    <div class="search-panel" id="adminSearchPanel" role="listbox" hidden></div>
+  </form>
   <div class="header-actions">
     <button class="icon-btn" title="Notifications">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1548,5 +1591,139 @@ document.getElementById('wcModalOverlay').addEventListener('click', (e) => { if(
 document.getElementById('wcConfirmOverlay').addEventListener('click', (e) => { if(e.target === e.currentTarget) closeConfirm(); });
 document.addEventListener('keydown', (e) => { if(e.key === 'Escape'){ closeModal(); closeConfirm(); } });
 </script>
+<script>
+/* ══════════════════════════════════════════════════════
+   HEADER SEARCH — products & staffs
+   • Typing shows live suggestions (AdminSearchController@suggest).
+   • Clicking a suggestion opens that product's / staff member's
+     information modal on its own page (?open={id}).
+   • Pressing Enter, or "See all results", goes to the results page.
+   ══════════════════════════════════════════════════════ */
+(function () {
+  const form  = document.getElementById('adminSearch');
+  if (!form) return;
+  const input = document.getElementById('adminSearchInput');
+  const panel = document.getElementById('adminSearchPanel');
+  const SUGGEST_URL = "{{ route('admin.search.suggest') }}";
+
+  let timer = null, controller = null, links = [], active = -1;
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Split the raw text on the match and escape every piece, so user text can never
+  // inject markup and a search like "amp" can't cut through an &amp; entity.
+  const hl = (text, q) => {
+    text = String(text ?? '');
+    if (!q) return esc(text);
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.split(re).map((part, i) => i % 2 ? '<mark>' + esc(part) + '</mark>' : esc(part)).join('');
+  };
+
+  const open  = () => { panel.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+  const close = () => { panel.hidden = true;  input.setAttribute('aria-expanded', 'false'); setActive(-1); };
+
+  function setActive(i) {
+    links.forEach(a => a.classList.remove('active'));
+    active = i;
+    if (i >= 0 && links[i]) {
+      links[i].classList.add('active');
+      links[i].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  const productRow = (p, q) => `
+    <a class="sp-item" role="option" href="${esc(p.url)}">
+      <span class="sp-thumb">${p.image
+        ? `<img src="${esc(p.image)}" alt="">`
+        : esc(p.name.slice(0, 2).toUpperCase())}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(p.name, q)}</div>
+        <div class="sp-meta">${hl(p.meta, q)}</div>
+      </div>
+    </a>`;
+
+  const staffRow = (s, q) => `
+    <a class="sp-item" role="option" href="${esc(s.url)}">
+      <span class="sp-avatar sp-tone-${esc(s.tone)}">${s.image
+        ? `<img src="${esc(s.image)}" alt="">`
+        : esc(s.initials)}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(s.name, q)}</div>
+        <div class="sp-meta">${hl(s.meta, q)}</div>
+      </div>
+    </a>`;
+
+  function render(data) {
+    const q = data.query;
+    if (!data.products.length && !data.staffs.length) {
+      panel.innerHTML = `<div class="sp-state">No products or staffs match “${esc(q)}”.</div>`;
+    } else {
+      panel.innerHTML =
+        (data.products.length ? `<div class="sp-label">Products</div>${data.products.map(p => productRow(p, q)).join('')}` : '') +
+        (data.staffs.length   ? `<div class="sp-label">Staffs</div>${data.staffs.map(s => staffRow(s, q)).join('')}` : '') +
+        `<a class="sp-foot" href="${esc(data.results_url)}">See all results for “${esc(q)}”</a>`;
+    }
+    links = Array.from(panel.querySelectorAll('.sp-item'));
+    setActive(-1);
+    open();
+  }
+
+  async function fetchSuggestions() {
+    const q = input.value.trim();
+    if (!q) { close(); return; }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    try {
+      const res = await fetch(`${SUGGEST_URL}?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) throw new Error('Suggestions unavailable');
+      const data = await res.json();
+      if (input.value.trim() !== q) return;   // a newer keystroke already superseded this
+      render(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') close();  // Enter still works without suggestions
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(fetchSuggestions, 180);
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim() && panel.innerHTML) open();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); return; }
+    if (panel.hidden || !links.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive(active + 1 >= links.length ? 0 : active + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive(active <= 0 ? links.length - 1 : active - 1);
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();                       // a highlighted suggestion wins over the results page
+      window.location.href = links[active].href;
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    if (!input.value.trim()) e.preventDefault();
+  });
+
+  document.addEventListener('click', e => {
+    if (!form.contains(e.target)) close();
+  });
+})();
+</script>
+
 </body>
 </html>
