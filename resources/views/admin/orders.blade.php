@@ -1484,14 +1484,6 @@ tbody tr:last-child td { border-bottom: none; }
 
       <!-- Summary -->
       <div class="detail-summary">
-        <div class="detail-summary-row">
-          <span>Subtotal</span>
-          <span id="dSubtotal">—</span>
-        </div>
-        <div class="detail-summary-row">
-          <span>VAT (12%)</span>
-          <span id="dVat">—</span>
-        </div>
         <div class="detail-summary-row total">
           <span>Total Due</span>
           <span id="dTotal">—</span>
@@ -2153,12 +2145,7 @@ function openDetail(id) {
   });
 
   // summary
-  const subtotal = orderTotal(order);
-  const vat      = subtotal * 0.12;
-  const total    = subtotal + vat;
-  document.getElementById('dSubtotal').textContent = fmt(subtotal);
-  document.getElementById('dVat').textContent      = fmt(vat);
-  document.getElementById('dTotal').textContent    = fmt(total);
+  document.getElementById('dTotal').textContent = fmt(orderTotal(order));
 
   // proof of payment (online app orders only — image if uploaded, notice if not)
   const proofSection = document.getElementById('dProofSection');

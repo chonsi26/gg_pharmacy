@@ -1087,6 +1087,27 @@ tbody tr:last-child td { border-bottom: none; }
     padding:3px 9px; border-radius:999px; white-space:nowrap;
   }
   .wc-modal-save-btn[disabled]{ opacity:.6; cursor:not-allowed; }
+
+  /* Media (photos & videos) — reuses the slide-card styles, with a squarer frame */
+  .wc-media-grid .wc-slide-card-media{ aspect-ratio:4/3; }
+  .wc-media-grid .wc-slide-card-media video{ width:100%; height:100%; object-fit:cover; display:block; background:#000; }
+  .wc-media-type{
+    position:absolute; top:8px; right:8px; display:inline-flex; align-items:center; gap:5px;
+    font-size:10.5px; font-weight:700; color:#fff; background:rgba(0,0,0,.55);
+    padding:2px 8px; border-radius:999px; letter-spacing:.2px;
+  }
+  .wc-media-play{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;
+  }
+  .wc-media-play i{
+    width:42px; height:42px; border-radius:50%; background:rgba(0,0,0,.55); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:15px; padding-left:3px;
+  }
+  .wc-media-hidden{
+    display:inline-block; align-self:flex-start; margin-top:4px; font-size:10.5px; font-weight:700;
+    padding:2px 8px; border-radius:999px; background:var(--wc-bg); color:var(--wc-subtle); border:1px solid var(--wc-border);
+  }
+  .wc-upload-box video{ width:100%; height:100%; object-fit:cover; }
 </style>
 </head>
 <body>
@@ -1214,7 +1235,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div style="margin-bottom:4px;">
   <div style="font-size:20px;font-weight:800;color:var(--text);">Website Customization</div>
 </div>
-<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories and sliders. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
+<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories, sliders and pharmacy media. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
 
 <div class="wc-wrap">
   <nav class="wc-tabs">
@@ -1240,6 +1261,20 @@ tbody tr:last-child td { border-bottom: none; }
       <button class="btn btn-primary btn-sm" onclick="openModal('sliders')"><i class="fas fa-plus"></i> Add slide</button>
     </div>
     <div class="wc-slider-grid" id="slidersBody"></div>
+  </section>
+
+  <section class="wc-card wc-section active" id="sec-media">
+    <div class="wc-card-head">
+      <div class="wc-card-title">
+        <div class="wc-card-icon"><i class="fas fa-photo-film"></i></div>
+        <div>
+          <h3>Pharmacy Media</h3>
+          <p>Photos and videos of the pharmacy</p>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('media')"><i class="fas fa-plus"></i> Add media</button>
+    </div>
+    <div class="wc-slider-grid wc-media-grid" id="mediaBody"></div>
   </section>
 </div>
 </main>
@@ -1309,6 +1344,7 @@ overlay.addEventListener('click', () => {
    DATA — loaded from the database via AdminController@pharmacy_sliders
 ============================================================================ */
 let sliders = @json($sliders);
+let mediaItems = @json($media);
 
 const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
 const SLIDER_ROUTES = {
@@ -1316,6 +1352,13 @@ const SLIDER_ROUTES = {
   update:  (id) => @json(url('admin/pharmacy_sliders')) + '/' + id,
   destroy: (id) => @json(url('admin/pharmacy_sliders')) + '/' + id,
 };
+const MEDIA_ROUTES = {
+  store:   @json(route('admin.pharmacy_media.store')),
+  update:  (id) => @json(url('admin/pharmacy_media')) + '/' + id,
+  destroy: (id) => @json(url('admin/pharmacy_media')) + '/' + id,
+};
+const MEDIA_MAX_PHOTO_MB = 5;
+const MEDIA_MAX_VIDEO_MB = 50;
 /* ============================================================================
    HELPERS
 ============================================================================ */
@@ -1409,7 +1452,8 @@ renderSliders();
    MODAL ENGINE (add / edit for all entity types)
 ============================================================================ */
 const ENTITY = {
-  sliders: { store: () => sliders, titleField: 'alt', label:'Slide', crud:true }
+  sliders: { store: () => sliders, titleField: 'alt', label:'Slide', crud:true },
+  media:   { store: () => mediaItems, titleField: 'title', label:'Media', crud:true }
 };
 
 let modalState = { type:null, id:null, draft:null };
@@ -1426,6 +1470,7 @@ function openModal(type, id=null){
 }
 
 function closeModal(){
+  if(modalState.draft && modalState.draft._previewUrl) URL.revokeObjectURL(modalState.draft._previewUrl);
   document.getElementById('wcModalOverlay').classList.remove('open');
   modalState = { type:null, id:null, draft:null };
 }
@@ -1435,6 +1480,13 @@ function defaultDraft(type){
       image: '',
       alt: '',
       sort_order: (sliders.length ? Math.max(...sliders.map(s => s.sort_order)) + 1 : 1),
+      is_active: true,
+    },
+    media: {
+      type: 'photo',
+      file: '',
+      title: '',
+      sort_order: (mediaItems.length ? Math.max(...mediaItems.map(m => m.sort_order)) + 1 : 1),
       is_active: true,
     },
   };
@@ -1495,6 +1547,7 @@ async function handleDraftUpload(input, fieldKey){
   document.getElementById(`upname-${fieldKey}`).textContent = file.name;
 }
 function buildForm(type, d){
+  if(type === 'media') return buildMediaForm(d);
   if(type === 'sliders'){
     const taken = findSliderTaking(d.sort_order, modalState.id);
     return `
@@ -1530,6 +1583,10 @@ document.getElementById('wcModalSaveBtn').addEventListener('click', async () => 
 
   if(type === 'sliders'){
     await saveSlider(id, draft);
+    return;
+  }
+  if(type === 'media'){
+    await saveMedia(id, draft);
     return;
   }
 });
@@ -1607,6 +1664,10 @@ document.getElementById('wcConfirmDeleteBtn').addEventListener('click', async ()
     await deleteSlider(id);
     return;
   }
+  if(type === 'media'){
+    await deleteMedia(id);
+    return;
+  }
 });
 
 async function deleteSlider(id){
@@ -1635,6 +1696,240 @@ async function deleteSlider(id){
     btn.disabled = false;
   }
 }
+/* ============================================================================
+   PHARMACY MEDIA (photos & videos — full CRUD)
+============================================================================ */
+function mediaThumbHtml(m){
+  if(!m.file){
+    return `<div class="wc-thumb-fallback" title="No file set"><i class="fas fa-photo-film"></i></div>`;
+  }
+  if(m.type === 'video'){
+    return `<video src="${esc(m.file)}#t=0.1" preload="metadata" muted playsinline></video>
+            <div class="wc-media-play"><i class="fas fa-play"></i></div>`;
+  }
+  return thumbHtml(m.file, m.title);
+}
+
+function renderMedia(){
+  const sorted = [...mediaItems].sort((a,b)=>a.sort_order-b.sort_order);
+  document.getElementById('mediaBody').innerHTML = sorted.length ? sorted.map(m => `
+    <div class="wc-slide-card">
+      <div class="wc-slide-card-media">
+        <span class="wc-slide-card-order">#${m.sort_order}</span>
+        <span class="wc-media-type"><i class="fas ${m.type === 'video' ? 'fa-video' : 'fa-image'}"></i> ${m.type === 'video' ? 'Video' : 'Photo'}</span>
+        ${mediaThumbHtml(m)}
+        <button class="wc-slide-card-fullscreen" title="${m.type === 'video' ? 'Play video' : 'View fullscreen'}" onclick="viewMediaFullscreen(event, ${m.id})"><i class="fas ${m.type === 'video' ? 'fa-play' : 'fa-expand'}"></i></button>
+      </div>
+      <div class="wc-slide-card-body">
+        <div class="wc-slide-card-title">${esc(m.title) || '<span style="color:var(--wc-subtle);font-weight:500;">Untitled</span>'}</div>
+        <div class="wc-slide-card-file">${esc(fileBase(m.file)) || '—'}</div>
+        ${m.is_active ? '' : '<span class="wc-media-hidden">Hidden</span>'}
+      </div>
+      <div class="wc-slide-card-actions">
+        <button class="btn-icon" title="Edit" onclick="openModal('media', ${m.id})"><i class="fas fa-pen"></i></button>
+        <button class="btn-icon danger" title="Delete" onclick="confirmDeleteMedia(${m.id})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('') : `<div class="wc-slide-empty">No photos or videos yet. Click "Add media" to upload one.</div>`;
+}
+
+function confirmDeleteMedia(id){
+  const m = mediaItems.find(x => x.id === id);
+  if(!m) return;
+  const label = m.type === 'video' ? 'video' : 'photo';
+  openConfirm('media', id, m.title ? `"${m.title}"` : `this ${label}`);
+}
+
+function closeMediaViewer(){
+  const ov = document.getElementById('wcMediaViewer');
+  if(ov) ov.remove();   // removing the element also stops any playing video
+}
+function viewMediaFullscreen(evt, id){
+  evt.stopPropagation();
+  const m = mediaItems.find(x => x.id === id);
+  if(!m || !m.file) return;
+  closeMediaViewer();
+  const ov = document.createElement('div');
+  ov.id = 'wcMediaViewer';
+  ov.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:9999; display:flex; align-items:center; justify-content:center;';
+  ov.innerHTML = (m.type === 'video'
+    ? `<video src="${esc(m.file)}" controls autoplay playsinline style="max-width:92vw; max-height:92vh; border-radius:4px; background:#000;"></video>`
+    : `<img src="${esc(m.file)}" alt="${esc(m.title || '')}" style="max-width:92vw; max-height:92vh; object-fit:contain; border-radius:4px;">`)
+    + `<button type="button" class="wc-lightbox-close" title="Close"><i class="fas fa-times"></i></button>`;
+  ov.addEventListener('click', (e) => { if(e.target === ov || e.target.closest('.wc-lightbox-close')) closeMediaViewer(); });
+  document.body.appendChild(ov);
+}
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeMediaViewer(); });
+
+/** Preview box content for the upload control (photo → <img>, video → <video>). */
+function mediaPreviewHtml(src, type){
+  if(!src) return '<i class="fas fa-photo-film"></i>';
+  return type === 'video'
+    ? `<video src="${esc(src)}#t=0.1" preload="metadata" muted playsinline></video>`
+    : `<img src="${esc(src)}" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-image&quot;></i>'">`;
+}
+
+function onMediaSortOrderInput(value){
+  modalState.draft.sort_order = parseInt(value, 10) || 0;
+  const n = Number(modalState.draft.sort_order);
+  const taken = mediaItems.find(m => m.sort_order === n && m.id !== modalState.id) || null;
+  const pill = document.getElementById('mediaTakenPill');
+  const hint = document.getElementById('mediaSortOrderHint');
+  if(!pill || !hint) return;
+  if(taken){
+    pill.style.display = '';
+    hint.textContent = `"${taken.title || ('#' + taken.id)}" is currently #${taken.sort_order} — saving will swap the two positions.`;
+  } else {
+    pill.style.display = 'none';
+    hint.textContent = 'Pick any position — if it\'s already used, the two items will swap places.';
+  }
+}
+
+function handleMediaUpload(input){
+  const file = input.files[0];
+  if(!file) return;
+
+  const isVideo = file.type.startsWith('video/');
+  const isImage = file.type.startsWith('image/');
+  if(!isVideo && !isImage){
+    toast('Please choose a photo or a video file.');
+    input.value = '';
+    return;
+  }
+  const limitMb = isVideo ? MEDIA_MAX_VIDEO_MB : MEDIA_MAX_PHOTO_MB;
+  if(file.size > limitMb * 1024 * 1024){
+    toast(`${isVideo ? 'Videos' : 'Photos'} can be up to ${limitMb} MB.`);
+    input.value = '';
+    return;
+  }
+
+  // Object URLs (not data URLs) so large videos aren't read into memory just to preview.
+  if(modalState.draft._previewUrl) URL.revokeObjectURL(modalState.draft._previewUrl);
+  const url = URL.createObjectURL(file);
+  modalState.draft._mediaFile   = file;
+  modalState.draft._previewUrl  = url;
+  modalState.draft.type         = isVideo ? 'video' : 'photo';
+  modalState.draft.file         = url;
+  document.getElementById('upbox-media').innerHTML = mediaPreviewHtml(url, modalState.draft.type);
+  document.getElementById('upname-media').textContent = file.name;
+}
+
+function buildMediaForm(d){
+  const n = Number(d.sort_order);
+  const taken = mediaItems.find(m => m.sort_order === n && m.id !== modalState.id) || null;
+  return `
+    ${fieldRow('Photo or video', `
+      <div class="wc-upload">
+        <div class="wc-upload-box" id="upbox-media">${mediaPreviewHtml(d.file, d.type)}</div>
+        <div class="wc-upload-actions">
+          <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+            <i class="fas fa-upload"></i> Choose file
+            <input type="file" class="wc-file-input" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" onchange="handleMediaUpload(this)">
+          </label>
+          <span class="wc-upload-filename" id="upname-media">${esc(fileBase(d.file)) || 'No file selected'}</span>
+        </div>
+      </div>`, `Photos: JPG, PNG or WEBP up to ${MEDIA_MAX_PHOTO_MB} MB · Videos: MP4, WEBM or MOV up to ${MEDIA_MAX_VIDEO_MB} MB`)}
+    ${fieldRow('Title', `<input class="wc-input" value="${esc(d.title)}" oninput="modalState.draft.title=this.value" placeholder="e.g. Our dispensing counter">`)}
+    <div class="wc-field">
+      <label>Sort order</label>
+      <div class="wc-sort-row">
+        <input class="wc-input" type="number" min="1" value="${d.sort_order}" oninput="onMediaSortOrderInput(this.value)">
+        <span class="wc-taken-pill" id="mediaTakenPill" style="${taken ? '' : 'display:none;'}"><i class="fas fa-right-left"></i> Taken</span>
+      </div>
+      <div class="hint" id="mediaSortOrderHint">${taken
+        ? `"${esc(taken.title || ('#' + taken.id))}" is currently #${taken.sort_order} — saving will swap the two positions.`
+        : 'Pick any position — if it\'s already used, the two items will swap places.'}</div>
+    </div>
+    <div class="wc-field">
+      <label>Active</label>
+      <div class="wc-switch-row">
+        <span class="hint" style="margin:0;">Shown to visitors on the storefront</span>
+        <label class="wc-switch">
+          <input type="checkbox" ${d.is_active ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked">
+          <span class="track"></span>
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+/** Persist a photo/video (create or update). The server does the sort_order swap. */
+async function saveMedia(id, draft){
+  if(!id && !draft._mediaFile){
+    toast('Please choose a photo or video.');
+    return;
+  }
+  if(!draft.sort_order || draft.sort_order < 1){
+    toast('Please enter a valid sort order (1 or higher).');
+    return;
+  }
+
+  const fd = new FormData();
+  fd.append('_token', CSRF_TOKEN);
+  fd.append('title', draft.title || '');
+  fd.append('sort_order', draft.sort_order);
+  fd.append('is_active', draft.is_active === false ? '0' : '1');
+  if(draft._mediaFile) fd.append('file', draft._mediaFile);
+
+  let url = MEDIA_ROUTES.store;
+  if(id){
+    url = MEDIA_ROUTES.update(id);
+    fd.append('_method', 'PUT');
+  }
+
+  const btn = document.getElementById('wcModalSaveBtn');
+  btn.disabled = true;
+  const originalHtml = btn.innerHTML;
+  if(draft._mediaFile && draft._mediaFile.size > 5 * 1024 * 1024) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading…';
+  try {
+    const res = await fetch(url, { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+    const data = await res.json().catch(() => ({}));
+
+    if(!res.ok){
+      const firstError = data.errors ? Object.values(data.errors)[0]?.[0] : null;
+      toast(firstError || (res.status === 413 ? 'That file is too large for the server.' : data.message) || 'Something went wrong. Please try again.');
+      return;
+    }
+
+    mediaItems = data.items || mediaItems;
+    toast(data.message || 'Media saved.');
+    closeModal();
+    renderMedia();
+  } catch (err) {
+    toast('Network error — please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+async function deleteMedia(id){
+  const fd = new FormData();
+  fd.append('_token', CSRF_TOKEN);
+  fd.append('_method', 'DELETE');
+
+  const btn = document.getElementById('wcConfirmDeleteBtn');
+  btn.disabled = true;
+  try {
+    const res = await fetch(MEDIA_ROUTES.destroy(id), { method: 'POST', body: fd, headers: { 'Accept': 'application/json' } });
+    const data = await res.json().catch(() => ({}));
+
+    if(!res.ok){
+      toast(data.message || 'Something went wrong. Please try again.');
+      return;
+    }
+
+    mediaItems = data.items || mediaItems.filter(m => m.id !== id);
+    toast(data.message || 'Media removed.');
+    closeConfirm();
+    renderMedia();
+  } catch (err) {
+    toast('Network error — please try again.');
+  } finally {
+    btn.disabled = false;
+  }
+}
+renderMedia();
 // close modals on overlay click
 document.getElementById('wcModalOverlay').addEventListener('click', (e) => { if(e.target === e.currentTarget) closeModal(); });
 document.getElementById('wcConfirmOverlay').addEventListener('click', (e) => { if(e.target === e.currentTarget) closeConfirm(); });

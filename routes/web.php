@@ -22,6 +22,7 @@ use App\Http\Controllers\StaffInventoryController;
 use App\Http\Controllers\StaffOrdersController;
 use App\Http\Controllers\StaffReportsController;
 use App\Http\Controllers\StaffStocksController;
+use App\Http\Controllers\StoreInfoController;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,7 @@ Route::middleware(PreventBackHistory::class)->group(function () {
 // ── Public ────────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/product/{product}', [ProductController::class, 'show'])->name('product.show');
+Route::get('/store-info', [StoreInfoController::class, 'index'])->name('store.info');
 
 // ── Cart (AJAX; guests get a 401 + {status:'guest'} instead of a redirect) ─────
 Route::post('/cart/add',   [CartController::class, 'add'])->name('cart.add');
@@ -180,6 +182,9 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::post('/pharmacy_sliders', [AdminController::class, 'storeSlider'])->name('pharmacy_sliders.store');
         Route::put('/pharmacy_sliders/{slider}', [AdminController::class, 'updateSlider'])->name('pharmacy_sliders.update');
         Route::delete('/pharmacy_sliders/{slider}', [AdminController::class, 'destroySlider'])->name('pharmacy_sliders.destroy');
+        Route::post('/pharmacy_media', [AdminController::class, 'storeMedia'])->name('pharmacy_media.store');
+        Route::put('/pharmacy_media/{media}', [AdminController::class, 'updateMedia'])->name('pharmacy_media.update');
+        Route::delete('/pharmacy_media/{media}', [AdminController::class, 'destroyMedia'])->name('pharmacy_media.destroy');
         Route::get('/pharmacy_categories', [AdminController::class, 'pharmacy_categories'])->name('pharmacy_categories');
         Route::post('/pharmacy_categories', [AdminController::class, 'storeCategory'])->name('pharmacy_categories.store');
         Route::put('/pharmacy_categories/{category}', [AdminController::class, 'updateCategory'])->name('pharmacy_categories.update');

@@ -405,7 +405,7 @@
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
+  <a href="{{ route('store.info') }}" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
   <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
@@ -1116,7 +1116,7 @@ showSlide(currentIndex); autoplay();
       <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
-      <a href="#">Store Information</a>
+      <a href="{{ route('store.info') }}">Store Information</a>
       <a href="#">Contact Us</a>
       <a href="#">Terms And Conditions</a>
       <a href="#">Privacy Policy</a>

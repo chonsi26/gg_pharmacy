@@ -453,7 +453,7 @@
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
+  <a href="{{ route('store.info') }}" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
   <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
@@ -980,7 +980,7 @@
       <h4>ABOUT ['site_name']</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
-      <a href="#">Store Info</a>
+      <a href="{{ route('store.info') }}">Store Info</a>
       <a href="#">Contact Us</a>
       <a href="#">Terms And Conditions</a>
       <a href="#">Privacy Policy</a>

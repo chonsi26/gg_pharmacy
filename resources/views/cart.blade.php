@@ -558,7 +558,7 @@
 
 <!-- TOP BAR -->
 <div class="top-bar">
-  <a href="#" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
+  <a href="{{ route('store.info') }}" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
   <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>

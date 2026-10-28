@@ -17,6 +17,7 @@ use App\Models\CardImage;
 use App\Models\PromoBanner;
 use App\Models\Section;
 use App\Models\Slider;
+use App\Models\Media;
 use App\Models\PaymentAccount;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -1406,7 +1407,8 @@ class AdminController extends Controller
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
     $sliders = $this->allSlidersFormatted();
-    return view('admin.pharmacy_sliders', compact('logo2', 'siteName', 'sliders'));
+    $media = $this->allMediaFormatted();
+    return view('admin.pharmacy_sliders', compact('logo2', 'siteName', 'sliders', 'media'));
 }
 
     /**
@@ -1563,6 +1565,214 @@ class AdminController extends Controller
         return Slider::orderBy('sort_order')
             ->get(['id', 'image', 'alt', 'sort_order', 'is_active'])
             ->map(fn (Slider $slider) => $this->formatSlider($slider))
+            ->values();
+    }
+
+       // ── Pharmacy Media (photos & videos) ─────────────────────────────────────────────────────
+
+    private const MEDIA_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov'];
+    private const MEDIA_MAX_PHOTO_KB     = 5120;   // 5 MB
+    private const MEDIA_MAX_VIDEO_KB     = 51200;  // 50 MB (also raise upload_max_filesize / post_max_size in php.ini)
+
+    /**
+     * Add a new photo or video of the pharmacy. Whether it is a photo or a
+     * video is worked out from the uploaded file itself, never from a
+     * client-supplied field. sort_order may already be taken — the other
+     * item is bumped out of the way by reorderMediaFor().
+     */
+    public function storeMedia(Request $request)
+    {
+        $data = $this->validatedMediaData($request);
+
+        $file = $request->file('file');
+        $type = $this->mediaTypeOf($file);
+        $this->assertMediaSizeAllowed($file, $type);
+
+        $this->reorderMediaFor($data['sort_order']);
+
+        $path = $file->store('media', 'public');
+
+        $media = Media::create([
+            'type'       => $type,
+            'file'       => 'storage/' . $path,
+            'title'      => $data['title'] ?? null,
+            'sort_order' => $data['sort_order'],
+            'is_active'  => $request->boolean('is_active', true),
+        ]);
+
+        $label = $type === Media::TYPE_VIDEO ? 'Video' : 'Photo';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => "{$label} added successfully.",
+                'media'   => $this->formatMedia($media),
+                'items'   => $this->allMediaFormatted(),
+            ], 201);
+        }
+
+        return redirect()->route('admin.pharmacy_sliders')
+            ->with('status', "{$label} added successfully.");
+    }
+
+    /**
+     * Update a photo/video. Title, sort_order and active state can always be
+     * changed; uploading a new file replaces the old one on disk (and the
+     * item's type follows the new file, so a photo can be swapped for a video).
+     */
+    public function updateMedia(Request $request, Media $media)
+    {
+        $data = $this->validatedMediaData($request, $media->id);
+
+        if ((int) $data['sort_order'] !== (int) $media->sort_order) {
+            $this->reorderMediaFor($data['sort_order'], $media->id, (int) $media->sort_order);
+        }
+
+        $attributes = [
+            'title'      => $data['title'] ?? null,
+            'sort_order' => $data['sort_order'],
+            'is_active'  => $request->boolean('is_active', $media->is_active),
+        ];
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $type = $this->mediaTypeOf($file);
+            $this->assertMediaSizeAllowed($file, $type);
+
+            $this->deleteMediaFile($media->file);
+
+            $attributes['type'] = $type;
+            $attributes['file'] = 'storage/' . $file->store('media', 'public');
+        }
+
+        $media->update($attributes);
+
+        $label = $media->type === Media::TYPE_VIDEO ? 'Video' : 'Photo';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => "{$label} updated successfully.",
+                'media'   => $this->formatMedia($media),
+                'items'   => $this->allMediaFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_sliders')
+            ->with('status', "{$label} updated successfully.");
+    }
+
+    public function destroyMedia(Request $request, Media $media)
+    {
+        $label = $media->type === Media::TYPE_VIDEO ? 'Video' : 'Photo';
+
+        $this->deleteMediaFile($media->file);
+        $media->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => "{$label} deleted successfully.",
+                'items'   => $this->allMediaFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_sliders')
+            ->with('status', "{$label} deleted successfully.");
+    }
+
+    /**
+     * Validate incoming media form data. The file is required when adding
+     * and optional when editing. sort_order is intentionally not unique —
+     * see reorderMediaFor().
+     */
+    private function validatedMediaData(Request $request, ?int $ignoreId = null): array
+    {
+        $maxKb = max(self::MEDIA_MAX_PHOTO_KB, self::MEDIA_MAX_VIDEO_KB);
+
+        return $request->validate([
+            'sort_order' => ['required', 'integer', 'min:1'],
+            'file'       => [
+                $ignoreId ? 'nullable' : 'required',
+                'file',
+                'mimes:jpg,jpeg,png,webp,mp4,webm,mov',
+                'max:' . $maxKb,
+            ],
+            'title'      => ['nullable', 'string', 'max:255'],
+            'is_active'  => ['nullable', 'boolean'],
+        ], [
+            'file.required' => 'Please choose a photo or video.',
+            'file.mimes'    => 'Allowed files: JPG, PNG, WEBP photos and MP4, WEBM, MOV videos.',
+            'file.max'      => 'That file is too large. Photos can be up to 5 MB and videos up to 50 MB.',
+            'file.uploaded' => 'The upload failed — the file is probably larger than the server allows.',
+        ]);
+    }
+
+    /** "photo" or "video", decided from the uploaded file's real extension. */
+    private function mediaTypeOf(\Illuminate\Http\UploadedFile $file): string
+    {
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+
+        return in_array($ext, self::MEDIA_VIDEO_EXTENSIONS, true)
+            ? Media::TYPE_VIDEO
+            : Media::TYPE_PHOTO;
+    }
+
+    /** Photos have a tighter size cap than videos. */
+    private function assertMediaSizeAllowed(\Illuminate\Http\UploadedFile $file, string $type): void
+    {
+        if ($type === Media::TYPE_PHOTO && $file->getSize() > self::MEDIA_MAX_PHOTO_KB * 1024) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'file' => 'Photos can be up to 5 MB. Please choose a smaller photo.',
+            ]);
+        }
+    }
+
+    private function deleteMediaFile(?string $path): void
+    {
+        if ($path && Str::startsWith($path, 'storage/')) {
+            Storage::disk('public')->delete(Str::after($path, 'storage/'));
+        }
+    }
+
+    /**
+     * If $desiredOrder is already held by another item, free it up:
+     *  - Editing: the other item takes the position the current one vacates.
+     *  - Creating: the other item is bumped to the end of the list.
+     */
+    private function reorderMediaFor(int $desiredOrder, ?int $currentId = null, ?int $currentOldOrder = null): void
+    {
+        $occupant = Media::where('sort_order', $desiredOrder)
+            ->when($currentId, fn ($query) => $query->where('id', '!=', $currentId))
+            ->first();
+
+        if (!$occupant) {
+            return;
+        }
+
+        if ($currentOldOrder !== null) {
+            $occupant->update(['sort_order' => $currentOldOrder]);
+        } else {
+            $occupant->update(['sort_order' => (Media::max('sort_order') ?? 0) + 1]);
+        }
+    }
+
+    /** Shape a Media model into the flat array the blade JS expects. */
+    private function formatMedia(Media $media): array
+    {
+        return [
+            'id'         => $media->id,
+            'type'       => $media->type,
+            'file'       => $this->fullWidthBannerImageUrl($media->file),
+            'title'      => $media->title,
+            'sort_order' => $media->sort_order,
+            'is_active'  => $media->is_active,
+        ];
+    }
+
+    /** All media, ordered and formatted — refreshes the whole list after any change. */
+    private function allMediaFormatted()
+    {
+        return Media::orderBy('sort_order')
+            ->get(['id', 'type', 'file', 'title', 'sort_order', 'is_active'])
+            ->map(fn (Media $media) => $this->formatMedia($media))
             ->values();
     }
 
