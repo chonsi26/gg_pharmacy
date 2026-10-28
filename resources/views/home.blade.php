@@ -686,9 +686,16 @@ showSlide(currentIndex); autoplay();
   @endforelse
 </div>
 
+@php
+  // Ordered promo banners: slots 1 & 2 go in the two-tile row below,
+  // slot 3 replaces the old "Smart Refills" banner further down the page.
+  $promoList  = collect($promoBanners ?? [])->sortBy('sort_order')->values();
+  $promoThird = $promoList->get(2);
+@endphp
+
 <!-- PROMO BANNERS -->
 <div class="promo-banners">
-  @forelse(($promoBanners ?? []) as $banner)
+  @forelse($promoList->take(2) as $banner)
     <div class="promo-banner {{ $banner->type ?? '' }}" style="gap:20px;justify-content:space-between;padding:0;">
       <img src="{{ $banner->image ?? '' }}" alt="{{ $banner->alt ?? '' }}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
     </div>
@@ -925,20 +932,17 @@ showSlide(currentIndex); autoplay();
   </div>
 </div>
 
-<!-- SMART REFILLS BANNER -->
+<!-- 3RD PROMO BANNER (replaces the former SMART REFILLS banner) -->
 <div class="fw-banner">
-  <div style="background:linear-gradient(135deg,var(--red),#880e4f,#4a148c);border-radius:12px;padding:40px 60px;color:#fff;display:flex;align-items:center;justify-content:space-between;min-height:220px;">
-    <div>
-      <div style="font-size:12px;color:rgba(255,255,255,0.7);font-weight:700;letter-spacing:2px;margin-bottom:6px;">{{ $settings['site_name'] ?? 'GGPharmacy' }}</div>
-      <h2 style="font-family:'Montserrat',sans-serif;font-size:44px;font-weight:900;line-height:1.1;">SMART REFILLS,<br>BIGGER SAVINGS!</h2>
+  @if($promoThird)
+    <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
+      <img src="{{ $promoThird->image ?? '' }}" alt="{{ $promoThird->alt ?? '' }}" style="width:100%;height:100%;object-fit:cover;display:block;">
     </div>
-    <div style="background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:8px;padding:20px;text-align:center;">
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:4px;">{{ $settings['site_name'] ?? 'GGPharmacy' }}</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:#fff;">Paracetamol</div>
-      <div style="font-size:10px;color:rgba(255,255,255,0.7);">500mg Tablet<br>Analgesic/Antipyretic</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:14px;font-weight:900;color:#ffd600;margin-top:6px;">100 Tablets</div>
+  @else
+    <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
+      <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;min-height:220px;">No promo banners</div>
     </div>
-  </div>
+  @endif
 </div>
 
 <!-- GG PHARMACY GENERICS — products split into top/bottom rows -->

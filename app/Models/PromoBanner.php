@@ -9,10 +9,11 @@ use Illuminate\Support\Str;
 class PromoBanner extends Model
 {
     /**
-     * Promo banners are limited to two slots (sort_order 1 and 2), matching
-     * the two-tile layout reserved for them on the homepage sidebar.
+     * Promo banners are limited to three slots (sort_order 1, 2 and 3).
+     * Slots 1 and 2 fill the two-tile row on the homepage; slot 3 is shown
+     * in the full-width banner further down the page.
      */
-    public const MAX_BANNERS = 2;
+    public const MAX_BANNERS = 3;
 
     protected $fillable = ['image', 'alt', 'type', 'sort_order', 'is_active'];
     protected $casts    = ['is_active' => 'boolean'];
