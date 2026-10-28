@@ -13,6 +13,7 @@ use App\Models\Brand;
 use App\Models\Blog;
 use App\Models\Setting;
 use App\Models\FullWidthBanner;
+use App\Models\CardImage;
 use App\Models\PromoBanner;
 use App\Models\Section;
 use App\Models\Slider;
@@ -410,6 +411,7 @@ class AdminController extends Controller
     // Running this on every page load guarantees the table never shows
     // more than MAX_BANNERS banners regardless of how a row got in.
     FullWidthBanner::pruneToMaxBanners();
+    CardImage::pruneToMaxImages();
 
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
@@ -417,13 +419,14 @@ class AdminController extends Controller
         ->get(['id', 'section_key', 'sort_order', 'image', 'alt', 'is_active'])
         ->map(fn (FullWidthBanner $banner) => $this->formatFullWidthBanner($banner))
         ->values();
+    $cardImages = $this->allCardImagesFormatted();
     $blogs = Blog::with('category')->latest()->get()
         ->map(fn (Blog $blog) => $this->formatBlog($blog))
         ->values();
     $blogCategories = Category::orderBy('name')->get(['id', 'name'])
         ->map(fn (Category $c) => ['id' => $c->id, 'name' => $c->name])
         ->values();
-    return view('admin.pharmacy_full_width_banners', compact('logo2', 'siteName', 'fullWidthBanners', 'blogs', 'blogCategories'));
+    return view('admin.pharmacy_full_width_banners', compact('logo2', 'siteName', 'fullWidthBanners', 'cardImages', 'blogs', 'blogCategories'));
 }
 
     /**
@@ -646,6 +649,200 @@ class AdminController extends Controller
         }
 
         return Str::startsWith($image, ['http://', 'https://']) ? $image : asset($image);
+    }
+
+       // ── Pharmacy Card Images (max 2) ─────────────────────────────────────────────────────
+
+    /**
+     * Create a new card image. Limited to CardImage::MAX_IMAGES total
+     * (2 — the two tiles beside the dual-row product grids on the homepage).
+     * The section_key is always derived from the chosen sort_order.
+     */
+    public function storeCardImage(Request $request)
+    {
+        if (CardImage::count() >= CardImage::MAX_IMAGES) {
+            $message = 'You can only have ' . CardImage::MAX_IMAGES . ' card images at a time.';
+
+            if ($request->wantsJson()) {
+                return response()->json(['message' => $message], 422);
+            }
+
+            return back()->with('error', $message);
+        }
+
+        $data = $this->validatedCardImageData($request);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('card_images', 'public');
+            $data['image'] = 'storage/' . $path;
+        }
+
+        $data['is_active'] = $request->boolean('is_active', true);
+
+        $sortOrder = (int) $data['sort_order'];
+        unset($data['sort_order']);
+
+        $card = new CardImage($data);
+        $this->applyCardImageSortOrder($card, $sortOrder);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'    => 'Card image added successfully.',
+                'cardImage'  => $this->formatCardImage($card),
+                'cardImages' => $this->allCardImagesFormatted(),
+            ], 201);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Card image added successfully.');
+    }
+
+    /**
+     * Update an existing card image. Changing the sort_order automatically
+     * re-derives the section_key (e.g. sort_order 2 -> card_image_2).
+     */
+    public function updateCardImage(Request $request, CardImage $cardImage)
+    {
+        $data = $this->validatedCardImageData($request, $cardImage->id);
+
+        if ($request->hasFile('image')) {
+            if ($cardImage->image && Str::startsWith($cardImage->image, 'storage/')) {
+                Storage::disk('public')->delete(Str::after($cardImage->image, 'storage/'));
+            }
+
+            $path = $request->file('image')->store('card_images', 'public');
+            $data['image'] = 'storage/' . $path;
+        }
+
+        $data['is_active'] = $request->boolean('is_active', $cardImage->is_active);
+
+        $sortOrder = (int) $data['sort_order'];
+        unset($data['sort_order']);
+
+        $cardImage->fill($data);
+        $this->applyCardImageSortOrder($cardImage, $sortOrder);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'    => 'Card image updated successfully.',
+                'cardImage'  => $this->formatCardImage($cardImage),
+                'cardImages' => $this->allCardImagesFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Card image updated successfully.');
+    }
+
+    public function destroyCardImage(Request $request, CardImage $cardImage)
+    {
+        if ($cardImage->image && Str::startsWith($cardImage->image, 'storage/')) {
+            Storage::disk('public')->delete(Str::after($cardImage->image, 'storage/'));
+        }
+
+        $cardImage->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Card image deleted successfully.']);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Card image deleted successfully.');
+    }
+
+    /**
+     * Validate incoming card image form data. sort_order is deliberately NOT
+     * required to be unique — a duplicate is resolved afterwards by
+     * applyCardImageSortOrder(), which swaps the two cards.
+     */
+    private function validatedCardImageData(Request $request, ?int $ignoreId = null): array
+    {
+        return $request->validate([
+            'sort_order' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:' . CardImage::MAX_IMAGES,
+            ],
+            'image'     => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'alt'       => ['nullable', 'string', 'max:255'],
+            'is_active' => ['nullable', 'boolean'],
+        ]);
+    }
+
+    /**
+     * Assign $desiredOrder to $card and persist it. If another card already
+     * holds that slot, the two are swapped (editing) or the occupant is
+     * bumped to the next free slot (creating). Routed through an unused
+     * placeholder slot inside a transaction so the unique constraints on
+     * sort_order / section_key are never violated mid-swap.
+     */
+    private function applyCardImageSortOrder(CardImage $card, int $desiredOrder): void
+    {
+        $currentOrder = $card->sort_order;
+
+        $occupant = CardImage::where('sort_order', $desiredOrder)
+            ->when($card->exists, fn ($query) => $query->where('id', '!=', $card->id))
+            ->first();
+
+        if (!$occupant) {
+            $card->sort_order = $desiredOrder;
+            $card->save();
+            return;
+        }
+
+        DB::transaction(function () use ($card, $occupant, $desiredOrder, $currentOrder) {
+            $placeholder = $this->nextUnusedCardImageSlot();
+            $occupant->update(['sort_order' => $placeholder]);
+
+            $card->sort_order = $desiredOrder;
+            $card->save();
+
+            if ($currentOrder === null) {
+                $occupant->update(['sort_order' => $this->nextUnusedCardImageSlot()]);
+            } else {
+                $occupant->update(['sort_order' => $currentOrder]);
+            }
+        });
+    }
+
+    /**
+     * Lowest sort_order value (starting at 0, so it never collides with a
+     * real 1..MAX_IMAGES slot) not used by any card image — a scratch slot
+     * for swaps.
+     */
+    private function nextUnusedCardImageSlot(): int
+    {
+        $used = CardImage::pluck('sort_order')->all();
+
+        $candidate = 0;
+        while (in_array($candidate, $used, true)) {
+            $candidate++;
+        }
+
+        return $candidate;
+    }
+
+    /** All card images, ordered and formatted for the blade JS. */
+    private function allCardImagesFormatted()
+    {
+        return CardImage::orderBy('sort_order')
+            ->get(['id', 'section_key', 'sort_order', 'image', 'alt', 'is_active'])
+            ->map(fn (CardImage $card) => $this->formatCardImage($card))
+            ->values();
+    }
+
+    /** Shape a CardImage model into the flat array the blade JS expects. */
+    private function formatCardImage(CardImage $card): array
+    {
+        return [
+            'id'          => $card->id,
+            'section_key' => $card->section_key,
+            'sort_order'  => $card->sort_order,
+            'image'       => $this->fullWidthBannerImageUrl($card->image),
+            'alt'         => $card->alt,
+            'is_active'   => $card->is_active,
+        ];
     }
 
        // ── Pharmacy Blogs (unlimited add / edit / delete) ─────────────────────────────────────

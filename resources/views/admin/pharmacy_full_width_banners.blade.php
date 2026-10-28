@@ -742,6 +742,35 @@ tbody tr:last-child td { border-bottom: none; }
   .stat-card { padding: 14px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
 }
+/* ── NOTIFICATIONS ── */
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-width: 88vw;
+  background: var(--card, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 50; overflow: hidden;
+}
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
+.notif-pill { font-size: 11px; font-weight: 600; color: #CC1F1F; background: rgba(204,31,31,.1); padding: 2px 8px; border-radius: 20px; }
+.notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
+.notif-link-btn:hover { color: #CC1F1F; }
+.notif-list { max-height: 400px; overflow-y: auto; }
+.notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-section.important { color: #CC1F1F; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border, #e5e7eb); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+.notif-item:hover { background: var(--hover, rgba(0,0,0,.03)); }
+.notif-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.notif-item.read:not(.important) { opacity: .6; }
+.notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: #CC1F1F; flex-shrink: 0; }
+.notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
+.notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
+
 </style>
 <style>
   /* ---- Fallback tokens (only apply if shared.css doesn't already define them) ---- */
@@ -1140,10 +1169,31 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="search-panel" id="adminSearchPanel" role="listbox" hidden></div>
   </form>
   <div class="header-actions">
-    <button class="icon-btn" title="Notifications">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="dot"></div>
-    </button>
+    <div style="position:relative;">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="dot" id="notifDot" style="display:none;"></div>
+      </button>
+
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="notif-link-btn" id="notifReadAll" style="display:none;">Mark all read</button>
+            <span class="notif-pill" id="notifCount" style="display:none;"></span>
+          </span>
+        </div>
+
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
+        </div>
+
+        <div class="notif-foot">
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:#CC1F1F;font-size:12px;">View all notifications</button>
+        </div>
+      </div>
+    </div>
+
     <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
       <span id="themeIco"></span>
     </button>
@@ -1215,6 +1265,36 @@ tbody tr:last-child td { border-bottom: none; }
       </table>
     </div>
   </section>
+
+  <section class="wc-card wc-section active" id="sec-card-images">
+    <div class="wc-card-head">
+      <div class="wc-card-title">
+        <div class="wc-card-icon"><i class="fas fa-id-card"></i></div>
+        <div>
+          <h3>Card Images</h3>
+          <p>Promotional tiles shown beside the product grids on the homepage — up to 2</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="wc-badge-count" id="cardCount"></span>
+        <button class="btn btn-primary btn-sm" id="cardAddBtn" type="button" onclick="openModal('card')"><i class="fas fa-plus"></i> Add Card Image</button>
+      </div>
+    </div>
+    <div class="wc-table-scroll">
+      <table class="wc-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Slot</th>
+            <th>Key</th>
+            <th>Status</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="cardBody"></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 </main>
 <!-- ============ IMAGE LIGHTBOX ============ -->
@@ -1266,6 +1346,154 @@ overlay.addEventListener('click', () => {
   sidebar.classList.remove('open');
   overlay.classList.remove('on');
 });
+</script>
+<script>
+// ── Notifications (data comes from AdminNotificationsController) ─────────────
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notifDropdown');
+  if (!btn || !dropdown) return;
+
+  const listEl    = document.getElementById('notifList');
+  const dotEl     = document.getElementById('notifDot');
+  const countEl   = document.getElementById('notifCount');
+  const readAllEl = document.getElementById('notifReadAll');
+  const moreEl    = document.getElementById('notifMore');
+
+  const URLS = {
+    list:    @json(route('admin.notifications')),
+    readAll: @json(route('admin.notifications.readAll')),
+    read:    @json(route('admin.notifications.read', ['notification' => '__ID__'])),
+  };
+  const CSRF = @json(csrf_token());
+  const POLL_MS = 60000;
+  const LIMIT = 15;
+
+  let items = [];
+
+  const TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+  const svg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const ICONS = {
+    box:    svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+    alert:  svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    clock:  svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    order:  svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    check:  svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:      svg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    money:  svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+    file:   svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+    user:   svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    bell:   svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  };
+  const TYPE_ICON = {
+    out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+    order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+    refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+  };
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(url, method = 'GET') {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': CSRF },
+      credentials: 'same-origin',
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
+    return res.json();
+  }
+
+  function itemHtml(n) {
+    const tone = TONES[n.tone] || TONES.neutral;
+    return `
+      <div class="notif-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+        <div class="notif-ico">${ICONS[TYPE_ICON[n.type]] || ICONS.bell}</div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}${n.is_read ? '' : '<span class="notif-unread"></span>'}</div>
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">${esc(n.time)}</div>
+        </div>
+      </div>`;
+  }
+
+  function render(data) {
+    items = data.items || [];
+
+    // Badge / dot / header
+    const unread = data.unread || 0, important = data.important || 0;
+    dotEl.style.display = (unread > 0 || important > 0) ? '' : 'none';
+    countEl.style.display = unread > 0 ? '' : 'none';
+    countEl.textContent = `${unread} New`;
+    readAllEl.style.display = unread > 0 ? '' : 'none';
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="notif-empty">You\'re all caught up 🎉</div>';
+      return;
+    }
+
+    // Important (unhandled) ones are pinned in their own section at the top.
+    const pinned = items.filter(n => n.important);
+    const rest   = items.filter(n => !n.important);
+    let html = '';
+    if (pinned.length) {
+      html += `<div class="notif-section important">Needs attention · ${pinned.length}</div>` + pinned.map(itemHtml).join('');
+    }
+    if (rest.length) {
+      if (pinned.length) html += '<div class="notif-section">Recent activity</div>';
+      html += rest.map(itemHtml).join('');
+    }
+    listEl.innerHTML = html;
+  }
+
+  async function load() {
+    try {
+      render(await api(`${URLS.list}?limit=${LIMIT}`));
+    } catch (err) {
+      console.error(err);
+      if (dropdown.style.display === 'block') listEl.innerHTML = '<div class="notif-empty">Couldn\'t load notifications.</div>';
+    }
+  }
+
+  // Click a notification → mark it read, then go to the related page.
+  listEl.addEventListener('click', async (e) => {
+    const row = e.target.closest('.notif-item');
+    if (!row) return;
+    const n = items.find(x => String(x.id) === row.dataset.id);
+    if (!n) return;
+    try { if (!n.is_read) await api(URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+    if (n.link) window.location.href = n.link; else load();
+  });
+
+  readAllEl.addEventListener('click', async () => {
+    try { await api(URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+    load();
+  });
+
+  // "View all notifications" → Settings page, Notifications row (full list).
+  moreEl.addEventListener('click', () => {
+    window.location.href = @json(route('admin.notifications.view'));
+  });
+
+  // Open / close
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = dropdown.style.display === 'block';
+    dropdown.style.display = open ? 'none' : 'block';
+    if (!open) load();
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
+
+  // Initial load + keep the badge fresh.
+  load();
+  setInterval(() => { if (!document.hidden) load(); }, POLL_MS);
+})();
 </script>
 <script>
 /* ============================================================================
@@ -1454,10 +1682,78 @@ async function deleteBlog(id){
   }
 }
 /* ============================================================================
+   CARD IMAGES — max 2 (stored in the `card_images` database table)
+============================================================================ */
+let cardImages = @json($cardImages);
+const CARD_MAX = {{ \App\Models\CardImage::MAX_IMAGES }};
+
+function renderCards(){
+  cardImages.sort((a, b) => a.sort_order - b.sort_order);
+  document.getElementById('cardCount').textContent = cardImages.length + ' / ' + CARD_MAX + ' card images';
+
+  const addBtn = document.getElementById('cardAddBtn');
+  addBtn.disabled = cardImages.length >= CARD_MAX;
+  addBtn.title = addBtn.disabled ? `Maximum of ${CARD_MAX} card images reached` : '';
+  addBtn.style.opacity = addBtn.disabled ? '.5' : '1';
+  addBtn.style.cursor = addBtn.disabled ? 'not-allowed' : 'pointer';
+
+  document.getElementById('cardBody').innerHTML = cardImages.length ? cardImages.map(c => `
+    <tr>
+      <td>
+        <div class="wc-name-cell">
+          ${thumbHtml(c.image, c.alt)}
+          <div style="min-width:0;">
+            <div>${esc(c.alt || '—')}</div>
+          </div>
+        </div>
+      </td>
+      <td style="white-space:nowrap;">Slot ${esc(c.sort_order)}</td>
+      <td><span class="wc-sub">${esc(c.section_key)}</span></td>
+      <td><span class="wc-pill ${c.is_active ? 'on' : 'off'}">${c.is_active ? 'Active' : 'Hidden'}</span></td>
+      <td>
+        <div class="wc-cell-actions">
+          ${c.image ? `<button class="btn-icon" title="View fullscreen" onclick="openFwbLightbox('${esc(c.image)}', '${esc(c.alt || '')}')"><i class="fas fa-expand"></i></button>` : ''}
+          <button class="btn-icon" title="Edit" onclick="openModal('card', ${c.id})"><i class="fas fa-pen"></i></button>
+          <button class="btn-icon danger" title="Delete" onclick="deleteCard(${c.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="5" class="wc-empty">No card images yet. Click “Add Card Image” to create one.</td></tr>`;
+}
+renderCards();
+
+async function deleteCard(id){
+  const card = cardImages.find(x => x.id === id);
+  if(!card) return;
+  if(!confirm(`Delete the card image in slot ${card.sort_order}? This cannot be undone.`)) return;
+
+  try{
+    const fd = new FormData();
+    fd.append('_method', 'DELETE');
+    const res = await fetch(`{{ url('/admin/pharmacy_card_images') }}/${id}`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json',
+      },
+      body: fd,
+    });
+    const data = await res.json();
+    if(!res.ok){ toast(data.message || 'Could not delete card image.'); return; }
+
+    cardImages = cardImages.filter(x => x.id !== id);
+    renderCards();
+    toast(data.message || 'Card image deleted successfully.');
+  }catch(err){
+    toast('Something went wrong. Please try again.');
+  }
+}
+/* ============================================================================
    MODAL ENGINE (add / edit for all entity types)
 ============================================================================ */
 const ENTITY = {
   fwb: { store: () => fullWidthBanners, titleField: 'sort_order', label:'Full-Width Banner', crud:true },
+  card: { store: () => cardImages, titleField: 'sort_order', label:'Card Image', crud:true },
   blog: { store: () => blogPosts, titleField: 'title', label:'Blog', crud:true }
 };
 
@@ -1481,6 +1777,7 @@ function closeModal(){
 function defaultDraft(type){
   const bases = {
     fwb: { sort_order: null, image: null, alt: '', is_active: true },
+    card: { sort_order: null, image: null, alt: '', is_active: true },
     blog: { title: '', excerpt: '', image: null, icon_class: '', icon_color: '#CC1F1F', icon_bg: '#f5e0e0',
             day: new Date().getDate(), month: BLOG_MONTHS[new Date().getMonth()], comment_count: 0,
             category_id: null, is_active: true, remove_image: false },
@@ -1492,6 +1789,13 @@ function defaultDraft(type){
 function takenFwbSlots(excludeId){
   return new Set(
     fullWidthBanners.filter(b => b.id !== excludeId).map(b => b.sort_order)
+  );
+}
+
+/** Which sort_order slots (1..CARD_MAX) are already used by *other* card images. */
+function takenCardSlots(excludeId){
+  return new Set(
+    cardImages.filter(c => c.id !== excludeId).map(c => c.sort_order)
   );
 }
 
@@ -1538,6 +1842,25 @@ function buildForm(type, d){
       ${fieldRow('Banner image', imageUploadControl('image', d.image))}
       ${fieldRow('Alt text', `<input class="wc-input" value="${esc(d.alt)}" oninput="modalState.draft.alt=this.value">`)}
       ${fieldRow('Active', `<div class="wc-switch-row"><span class="hint" style="margin:0;">Show this banner on the storefront</span><label class="wc-switch"><input type="checkbox" ${d.is_active ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked"><span class="track"></span></label></div>`)}
+    `;
+  }
+
+  if(type === 'card'){
+    const taken = takenCardSlots(modalState.id);
+    const options = Array.from({length: CARD_MAX}, (_, i) => i + 1).map(n => {
+      const isTaken = taken.has(n);
+      const isSelected = d.sort_order === n;
+      return `<option value="${n}" ${isSelected ? 'selected' : ''}>Slot ${n} (card_image_${n})${isTaken ? ' — taken' : ''}</option>`;
+    }).join('');
+
+    return `
+      ${fieldRow('Sort order', `<select class="wc-select" onchange="modalState.draft.sort_order=parseInt(this.value,10)">
+          <option value="" ${d.sort_order ? '' : 'selected'} disabled>Choose a slot…</option>
+          ${options}
+        </select>`, 'Slot 1 is shown beside the first product grid, slot 2 beside the second. Slots marked "taken" are already used — choosing one will swap that card into this one\'s old position.')}
+      ${fieldRow('Card image', imageUploadControl('image', d.image))}
+      ${fieldRow('Alt text', `<input class="wc-input" value="${esc(d.alt)}" oninput="modalState.draft.alt=this.value">`)}
+      ${fieldRow('Active', `<div class="wc-switch-row"><span class="hint" style="margin:0;">Show this card image on the storefront</span><label class="wc-switch"><input type="checkbox" ${d.is_active ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked"><span class="track"></span></label></div>`)}
     `;
   }
 
@@ -1625,6 +1948,59 @@ document.getElementById('wcModalSaveBtn').addEventListener('click', async () => 
       toast(data.message || `${ENTITY.fwb.label} saved.`);
       closeModal();
       renderFwb();
+    }catch(err){
+      toast('Something went wrong. Please try again.');
+    }finally{
+      saveBtn.disabled = false;
+    }
+    return;
+  }
+
+  if(type === 'card'){
+    if(!draft.sort_order){
+      toast('Please choose a sort order.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('sort_order', draft.sort_order);
+    fd.append('alt', draft.alt || '');
+    fd.append('is_active', draft.is_active ? '1' : '0');
+    if(modalState.draftFiles && modalState.draftFiles.image){
+      fd.append('image', modalState.draftFiles.image);
+    }
+    if(id) fd.append('_method', 'PUT');
+
+    const url = id
+      ? `{{ url('/admin/pharmacy_card_images') }}/${id}`
+      : `{{ route('admin.pharmacy_card_images.store') }}`;
+
+    const saveBtn = document.getElementById('wcModalSaveBtn');
+    saveBtn.disabled = true;
+
+    try{
+      const res = await fetch(url, {
+        method: 'POST', // Laravel method-spoofs PUT via _method above
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json',
+        },
+        body: fd,
+      });
+      const data = await res.json();
+
+      if(!res.ok){
+        const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message;
+        toast(firstError || 'Could not save card image.');
+        return;
+      }
+
+      // A swap may have moved another card's slot too, so replace the whole list.
+      cardImages = Array.isArray(data.cardImages) ? data.cardImages : cardImages;
+
+      toast(data.message || 'Card image saved.');
+      closeModal();
+      renderCards();
     }catch(err){
       toast('Something went wrong. Please try again.');
     }finally{

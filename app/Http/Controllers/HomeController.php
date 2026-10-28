@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Blog;
 use App\Models\Brand;
+use App\Models\CardImage;
 use App\Models\Category;
 use App\Models\FullWidthBanner;
 use App\Models\NavItem;
@@ -87,6 +88,8 @@ class HomeController extends Controller
             $fbanner_1      = null;
             $fbanner_2    = null;
             $fbanner_3    = null;
+            $cardImage_1  = null;
+            $cardImage_2  = null;
             $section1  = null;
             $section2      = null;
             $section3 = null;
@@ -110,6 +113,9 @@ class HomeController extends Controller
             $fbanner_1   = FullWidthBanner::forSection('fbanner_1');
             $fbanner_2 = FullWidthBanner::forSection('fbanner_2');
             $fbanner_3   = FullWidthBanner::forSection('fbanner_3');
+
+            $cardImage_1 = CardImage::forSection('card_image_1');
+            $cardImage_2 = CardImage::forSection('card_image_2');
 
             $productWith = ['products' => fn ($q) => $q->with(['category', 'brand'])];
 
@@ -147,6 +153,7 @@ class HomeController extends Controller
             'tickerBrands', 'featuredBrands',
             'promoBanners',
             'fbanner_1', 'fbanner_2', 'fbanner_3',
+            'cardImage_1', 'cardImage_2',
             'section1', 'section2', 'section3',
             'section4',
             'section5', 'section5_top', 'section5_bottom',

@@ -297,6 +297,35 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   border: 1.5px solid var(--surface);
 }
 
+/* ── NOTIFICATIONS ── */
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-width: 88vw;
+  background: var(--card, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 50; overflow: hidden;
+}
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
+.notif-pill { font-size: 11px; font-weight: 600; color: #CC1F1F; background: rgba(204,31,31,.1); padding: 2px 8px; border-radius: 20px; }
+.notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
+.notif-link-btn:hover { color: #CC1F1F; }
+.notif-list { max-height: 400px; overflow-y: auto; }
+.notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-section.important { color: #CC1F1F; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border, #e5e7eb); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+.notif-item:hover { background: var(--hover, rgba(0,0,0,.03)); }
+.notif-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.notif-item.read:not(.important) { opacity: .6; }
+.notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: #CC1F1F; flex-shrink: 0; }
+.notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
+.notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
+
 /* ── MAIN CONTENT ── */
 .main {
   margin-left: var(--sidebar-w);
@@ -1170,10 +1199,30 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="search-panel" id="adminSearchPanel" role="listbox" hidden></div>
   </form>
   <div class="header-actions">
-    <button class="icon-btn" title="Notifications">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="dot"></div>
-    </button>
+    <div style="position:relative;">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="dot" id="notifDot" style="display:none;"></div>
+      </button>
+
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="notif-link-btn" id="notifReadAll" style="display:none;">Mark all read</button>
+            <span class="notif-pill" id="notifCount" style="display:none;"></span>
+          </span>
+        </div>
+
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
+        </div>
+
+        <div class="notif-foot">
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:#CC1F1F;font-size:12px;">View all notifications</button>
+        </div>
+      </div>
+    </div>
     <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
       <span id="themeIco"></span>
     </button>
@@ -1247,6 +1296,154 @@ overlay.addEventListener('click', () => {
   sidebar.classList.remove('open');
   overlay.classList.remove('on');
 });
+</script>
+<script>
+// ── Notifications (data comes from AdminNotificationsController) ─────────────
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notifDropdown');
+  if (!btn || !dropdown) return;
+
+  const listEl    = document.getElementById('notifList');
+  const dotEl     = document.getElementById('notifDot');
+  const countEl   = document.getElementById('notifCount');
+  const readAllEl = document.getElementById('notifReadAll');
+  const moreEl    = document.getElementById('notifMore');
+
+  const URLS = {
+    list:    @json(route('admin.notifications')),
+    readAll: @json(route('admin.notifications.readAll')),
+    read:    @json(route('admin.notifications.read', ['notification' => '__ID__'])),
+  };
+  const CSRF = @json(csrf_token());
+  const POLL_MS = 60000;
+  const LIMIT = 15;
+
+  let items = [];
+
+  const TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+  const svg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const ICONS = {
+    box:    svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+    alert:  svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    clock:  svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    order:  svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    check:  svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:      svg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    money:  svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+    file:   svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+    user:   svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    bell:   svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  };
+  const TYPE_ICON = {
+    out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+    order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+    refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+  };
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(url, method = 'GET') {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': CSRF },
+      credentials: 'same-origin',
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
+    return res.json();
+  }
+
+  function itemHtml(n) {
+    const tone = TONES[n.tone] || TONES.neutral;
+    return `
+      <div class="notif-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+        <div class="notif-ico">${ICONS[TYPE_ICON[n.type]] || ICONS.bell}</div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}${n.is_read ? '' : '<span class="notif-unread"></span>'}</div>
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">${esc(n.time)}</div>
+        </div>
+      </div>`;
+  }
+
+  function render(data) {
+    items = data.items || [];
+
+    // Badge / dot / header
+    const unread = data.unread || 0, important = data.important || 0;
+    dotEl.style.display = (unread > 0 || important > 0) ? '' : 'none';
+    countEl.style.display = unread > 0 ? '' : 'none';
+    countEl.textContent = `${unread} New`;
+    readAllEl.style.display = unread > 0 ? '' : 'none';
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="notif-empty">You\'re all caught up 🎉</div>';
+      return;
+    }
+
+    // Important (unhandled) ones are pinned in their own section at the top.
+    const pinned = items.filter(n => n.important);
+    const rest   = items.filter(n => !n.important);
+    let html = '';
+    if (pinned.length) {
+      html += `<div class="notif-section important">Needs attention · ${pinned.length}</div>` + pinned.map(itemHtml).join('');
+    }
+    if (rest.length) {
+      if (pinned.length) html += '<div class="notif-section">Recent activity</div>';
+      html += rest.map(itemHtml).join('');
+    }
+    listEl.innerHTML = html;
+  }
+
+  async function load() {
+    try {
+      render(await api(`${URLS.list}?limit=${LIMIT}`));
+    } catch (err) {
+      console.error(err);
+      if (dropdown.style.display === 'block') listEl.innerHTML = '<div class="notif-empty">Couldn\'t load notifications.</div>';
+    }
+  }
+
+  // Click a notification → mark it read, then go to the related page.
+  listEl.addEventListener('click', async (e) => {
+    const row = e.target.closest('.notif-item');
+    if (!row) return;
+    const n = items.find(x => String(x.id) === row.dataset.id);
+    if (!n) return;
+    try { if (!n.is_read) await api(URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+    if (n.link) window.location.href = n.link; else load();
+  });
+
+  readAllEl.addEventListener('click', async () => {
+    try { await api(URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+    load();
+  });
+
+  // "View all notifications" → Settings page, Notifications row (full list).
+  moreEl.addEventListener('click', () => {
+    window.location.href = @json(route('admin.notifications.view'));
+  });
+
+  // Open / close
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const open = dropdown.style.display === 'block';
+    dropdown.style.display = open ? 'none' : 'block';
+    if (!open) load();
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
+
+  // Initial load + keep the badge fresh.
+  load();
+  setInterval(() => { if (!document.hidden) load(); }, POLL_MS);
+})();
 </script>
 <script>
 /* ============================================================================

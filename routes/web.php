@@ -162,6 +162,9 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::post('/pharmacy_full_width_banners', [AdminController::class, 'storeFullWidthBanner'])->name('pharmacy_full_width_banners.store');
         Route::put('/pharmacy_full_width_banners/{fullWidthBanner}', [AdminController::class, 'updateFullWidthBanner'])->name('pharmacy_full_width_banners.update');
         Route::delete('/pharmacy_full_width_banners/{fullWidthBanner}', [AdminController::class, 'destroyFullWidthBanner'])->name('pharmacy_full_width_banners.destroy');
+        Route::post('/pharmacy_card_images', [AdminController::class, 'storeCardImage'])->name('pharmacy_card_images.store');
+        Route::put('/pharmacy_card_images/{cardImage}', [AdminController::class, 'updateCardImage'])->name('pharmacy_card_images.update');
+        Route::delete('/pharmacy_card_images/{cardImage}', [AdminController::class, 'destroyCardImage'])->name('pharmacy_card_images.destroy');
         Route::post('/pharmacy_blogs', [AdminController::class, 'storeBlog'])->name('pharmacy_blogs.store');
         Route::put('/pharmacy_blogs/{blog}', [AdminController::class, 'updateBlog'])->name('pharmacy_blogs.update');
         Route::delete('/pharmacy_blogs/{blog}', [AdminController::class, 'destroyBlog'])->name('pharmacy_blogs.destroy');

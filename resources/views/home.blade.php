@@ -890,7 +890,7 @@ showSlide(currentIndex); autoplay();
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;overflow:hidden;">
-      <img src="{{ !empty($settings['section5_card_image']) ? asset($settings['section5_card_image']) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $section5?->label ?? 'Promotion' }}" style="width:100%;height:100%;min-height:280px;object-fit:cover;display:block;">
+      <img src="{{ !empty($cardImage_1?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_1->image, ['http://', 'https://']) ? $cardImage_1->image : asset($cardImage_1->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_1?->alt ?: ($section5?->label ?? 'Promotion') }}" style="width:100%;height:100%;min-height:280px;object-fit:cover;display:block;">
     </div>
     @forelse(($section5_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
@@ -952,7 +952,7 @@ showSlide(currentIndex); autoplay();
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">
-      <img src="{{ !empty($settings['section6_card_image']) ? asset($settings['section6_card_image']) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $section6?->label ?? 'Low Price Everyday' }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+      <img src="{{ !empty($cardImage_2?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_2->image, ['http://', 'https://']) ? $cardImage_2->image : asset($cardImage_2->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_2?->alt ?: ($section6?->label ?? 'Low Price Everyday') }}" style="width:100%;height:100%;object-fit:cover;display:block;">
     </div>
     @forelse(($section6_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
