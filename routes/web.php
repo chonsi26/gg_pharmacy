@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminInventoryController;
 use App\Http\Controllers\AdminNotificationsController;
 use App\Http\Controllers\AdminOrdersController;
 use App\Http\Controllers\AdminReportsController;
+use App\Http\Controllers\AdminSettingsController;
 use App\Http\Controllers\AdminSearchController;
 use App\Http\Controllers\AdminStocksController;
 use App\Http\Controllers\AuthController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\StaffInventoryController;
 use App\Http\Controllers\StaffOrdersController;
 use App\Http\Controllers\StaffReportsController;
 use App\Http\Controllers\StaffStocksController;
+use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Support\Facades\Route;
 
@@ -77,7 +79,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
-Route::prefix('admin')->name('admin.')->group(function () {
+// LogAdminActivity records every successful create/update/delete/approve/login/logout
+// made below into the `logs` table (shown in Settings → Activity Log).
+Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->group(function () {
 
     // Guest-only: login & register screens
     Route::middleware('guest:admin')->group(function () {
@@ -158,6 +162,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/pharmacy_full_width_banners', [AdminController::class, 'storeFullWidthBanner'])->name('pharmacy_full_width_banners.store');
         Route::put('/pharmacy_full_width_banners/{fullWidthBanner}', [AdminController::class, 'updateFullWidthBanner'])->name('pharmacy_full_width_banners.update');
         Route::delete('/pharmacy_full_width_banners/{fullWidthBanner}', [AdminController::class, 'destroyFullWidthBanner'])->name('pharmacy_full_width_banners.destroy');
+        Route::post('/pharmacy_blogs', [AdminController::class, 'storeBlog'])->name('pharmacy_blogs.store');
+        Route::put('/pharmacy_blogs/{blog}', [AdminController::class, 'updateBlog'])->name('pharmacy_blogs.update');
+        Route::delete('/pharmacy_blogs/{blog}', [AdminController::class, 'destroyBlog'])->name('pharmacy_blogs.destroy');
         Route::get('/pharmacy_sections', [AdminController::class, 'pharmacy_sections'])->name('pharmacy_sections');
         Route::post('/pharmacy_sections', [AdminController::class, 'storeSection'])->name('pharmacy_sections.store');
         Route::put('/pharmacy_sections/{section}', [AdminController::class, 'updateSection'])->name('pharmacy_sections.update');
@@ -193,6 +200,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/profile/photo', [AdminController::class, 'updatePhoto'])->name('profile.photo');
         Route::put('/profile/password', [AdminController::class, 'updatePassword'])->name('profile.password');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        // ── Activity Log feed (AdminSettingsController, JSON) ─────────────
+        Route::get('/settings/logs', [AdminSettingsController::class, 'logs'])->name('settings.logs');
     });
 });
 

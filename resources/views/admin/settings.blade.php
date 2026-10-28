@@ -883,6 +883,23 @@ tbody tr:last-child td { border-bottom: none; }
     color: var(--text);
     line-height: 1.4;
   }
+  .log-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+  .log-time { cursor: default; }
+  .al-total { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 6px; }
+  .al-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  .al-input, .al-select {
+    height: 34px; padding: 0 10px; font-family: inherit; font-size: 13px; color: var(--text);
+    background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 7px; outline: none;
+    transition: border-color .2s;
+  }
+  .al-input:focus, .al-select:focus { border-color: #cd0000; }
+  .al-input[type="search"] { flex: 1 1 100%; }
+  .al-select { flex: 1 1 120px; min-width: 0; }
+  .al-date { flex: 1 1 120px; min-width: 0; }
+  .al-empty { padding: 32px 20px; text-align: center; font-size: 13px; color: var(--muted); }
+  .al-more { padding: 12px 20px; text-align: center; }
+  .al-more button { background: none; border: none; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; color: #cd0000; }
+  .al-more button:disabled { opacity: .5; cursor: default; }
 
   /* Shared List Option Styles (used for Notifications & Security) */
   .list-option {
@@ -1148,34 +1165,22 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <div class="modal-backdrop" id="activityLogModal">
-  <div class="modal-window" style="max-width: 500px;">
+  <div class="modal-window" style="max-width: 640px;">
     <div class="modal-header">
-      <h3 class="modal-title">Activity Log</h3>
+      <h3 class="modal-title">Activity Log <span class="al-total" id="alTotal"></span></h3>
       <button class="modal-close" id="closeActivityLogModal">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="modal-body log-list" style="padding: 0;">
-      <div class="log-entry">
-        <div class="log-time">Today, 10:42 AM</div>
-        <div class="log-action"><strong>Admin User</strong> updated stock for Paracetamol 500mg (+50 units).</div>
-      </div>
-      <div class="log-entry">
-        <div class="log-time">Today, 09:15 AM</div>
-        <div class="log-action"><strong>Admin User</strong> generated Monthly Sales Report.</div>
-      </div>
-      <div class="log-entry">
-        <div class="log-time">Yesterday, 04:30 PM</div>
-        <div class="log-action"><strong>John Doe</strong> processed Prescription #10294.</div>
-      </div>
-      <div class="log-entry">
-        <div class="log-time">Yesterday, 02:10 PM</div>
-        <div class="log-action">System flagged Amoxicillin 250mg for approaching expiry.</div>
-      </div>
-      <div class="log-entry">
-        <div class="log-time">Apr 21, 11:05 AM</div>
-        <div class="log-action"><strong>Admin User</strong> switched appearance to Light Mode.</div>
-      </div>
+    <div class="al-bar">
+      <input type="search" id="alSearch" class="al-input" placeholder="Search activity…" maxlength="100" autocomplete="off" aria-label="Search activity log">
+      <select id="alModule" class="al-select" aria-label="Filter by module"><option value="all">All modules</option></select>
+      <select id="alAction" class="al-select" aria-label="Filter by action"><option value="all">All actions</option></select>
+      <input type="date" id="alFrom" class="al-input al-date" aria-label="From date" title="From date">
+      <input type="date" id="alTo" class="al-input al-date" aria-label="To date" title="To date">
+    </div>
+    <div class="modal-body log-list" id="alList" style="padding: 0;">
+      <div class="al-empty">Loading…</div>
     </div>
   </div>
 </div>
@@ -1905,6 +1910,105 @@ overlay.addEventListener('click', () => {
       });
     }
   });
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   ACTIVITY LOG — data comes from AdminSettingsController@logs
+   Every create / update / delete / approve / login / logout made in the
+   admin portal is recorded by the LogAdminActivity middleware.
+   ══════════════════════════════════════════════════════ */
+(function () {
+  const modal   = document.getElementById('activityLogModal');
+  const trigger = document.getElementById('activityLogTrigger');
+  if (!modal || !trigger) return;
+
+  const listEl   = document.getElementById('alList');
+  const totalEl  = document.getElementById('alTotal');
+  const searchEl = document.getElementById('alSearch');
+  const moduleEl = document.getElementById('alModule');
+  const actionEl = document.getElementById('alAction');
+  const fromEl   = document.getElementById('alFrom');
+  const toEl     = document.getElementById('alTo');
+  const LOGS_URL = @json(route('admin.settings.logs'));
+
+  let nextPage = null, loading = false, optionsFilled = false, timer = null, seq = 0, rows = [];
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+
+  const entryHtml = l => `
+    <div class="log-entry">
+      <div class="log-time" title="${esc(l.full_time)}">${esc(l.time)}</div>
+      <div class="log-action"><strong>${esc(l.admin)}</strong> ${esc(l.description)}.</div>
+      <div class="log-meta">
+        <span class="pill ${esc(l.tone)}">${esc(cap(l.action))}</span>
+        <span>${esc(l.module)}</span>${l.ip ? `<span>· ${esc(l.ip)}</span>` : ''}
+      </div>
+    </div>`;
+
+  function fillOptions(select, values, allLabel, labeler) {
+    const current = select.value;
+    select.innerHTML = `<option value="all">${allLabel}</option>` +
+      (values || []).map(v => `<option value="${esc(v)}">${esc(labeler ? labeler(v) : v)}</option>`).join('');
+    select.value = [...select.options].some(o => o.value === current) ? current : 'all';
+  }
+
+  function render() {
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="al-empty">No activity found.</div>';
+      return;
+    }
+    listEl.innerHTML = rows.map(entryHtml).join('') +
+      (nextPage ? '<div class="al-more"><button type="button" id="alMore">Load more</button></div>' : '');
+  }
+
+  async function load(page = 1) {
+    if (loading && page > 1) return;
+    loading = true;
+    const mine = ++seq;                       // ignore responses from superseded requests
+    const params = new URLSearchParams({ page });
+    if (searchEl.value.trim())       params.set('search', searchEl.value.trim());
+    if (moduleEl.value !== 'all')    params.set('module', moduleEl.value);
+    if (actionEl.value !== 'all')    params.set('action', actionEl.value);
+    if (fromEl.value)                params.set('date_from', fromEl.value);
+    if (toEl.value)                  params.set('date_to', toEl.value);
+
+    try {
+      const res = await fetch(`${LOGS_URL}?${params}`, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+      });
+      if (!res.ok) throw new Error(`Activity log → ${res.status}`);
+      const data = await res.json();
+      if (mine !== seq) return;
+
+      rows = page === 1 ? data.logs : rows.concat(data.logs);
+      nextPage = data.next_page;
+      totalEl.textContent = `(${data.total})`;
+
+      if (data.modules) fillOptions(moduleEl, data.modules, 'All modules');
+      if (data.actions) fillOptions(actionEl, data.actions, 'All actions', cap);
+      render();
+    } catch (err) {
+      console.error(err);
+      if (mine === seq && page === 1) listEl.innerHTML = '<div class="al-empty">Couldn\'t load the activity log.</div>';
+    } finally {
+      if (mine === seq) loading = false;
+    }
+  }
+
+  // Opening the modal always shows fresh data (the existing handler shows the modal).
+  trigger.addEventListener('click', () => load(1));
+
+  searchEl.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(() => load(1), 300); });
+  [moduleEl, actionEl, fromEl, toEl].forEach(el => el.addEventListener('change', () => load(1)));
+
+  listEl.addEventListener('click', e => {
+    if (e.target.closest('#alMore') && nextPage) { e.target.closest('#alMore').disabled = true; load(nextPage); }
+  });
+})();
 </script>
 
 <script>

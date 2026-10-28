@@ -889,12 +889,8 @@ showSlide(currentIndex); autoplay();
 </div>
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
-    <div style="border:2px solid var(--red);border-radius:8px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;">
-      <div class="most-sold" style="position:static;margin-bottom:10px;">MOST SOLD</div>
-      <i class="fas fa-pump-soap" style="font-size:80px;color:#e91e63;margin-bottom:16px;"></i>
-      <div style="font-size:9px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:0.5px;">BABY LIQUID SOAP, PROMOTION</div>
-      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;text-align:center;margin-top:4px;">Guardian Kids Strawberry Yogurt He...</div>
-      <div style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-top:8px;">₱189.00</div>
+    <div style="border:2px solid var(--red);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;overflow:hidden;">
+      <img src="{{ !empty($settings['section5_card_image']) ? asset($settings['section5_card_image']) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $section5?->label ?? 'Promotion' }}" style="width:100%;height:100%;min-height:280px;object-fit:cover;display:block;">
     </div>
     @forelse(($section5_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
@@ -955,17 +951,8 @@ showSlide(currentIndex); autoplay();
 </div>
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
-    <div style="border:2px solid var(--red);border-radius:8px;padding:24px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;">
-      <div>
-        <h3 style="font-family:'Montserrat',sans-serif;font-size:18px;font-weight:900;color:var(--red);margin-bottom:6px;">{{ $settings['site_name'] ?? 'No Pharmacy Name' }} Generics</h3>
-        <p style="font-size:12px;color:var(--gray);margin-bottom:12px;">the Brand you can Trust with Assured Quality &amp; Big Savings</p>
-        <div style="font-size:12px;color:#555;margin-bottom:16px;">Safe • Quality • Effective</div>
-        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;color:var(--red);">Low Price Everyday</div>
-      </div>
-      <div>
-        <a href="#" style="background:var(--green);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:10px 20px;border-radius:6px;display:inline-block;margin-bottom:12px;">SHOP NOW</a>
-        <a href="#" style="display:block;text-align:center;background:var(--red);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:12px;border-radius:6px;">VIEW ALL NOW</a>
-      </div>
+    <div style="border:2px solid var(--red);border-radius:8px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">
+      <img src="{{ !empty($settings['section6_card_image']) ? asset($settings['section6_card_image']) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $section6?->label ?? 'Low Price Everyday' }}" style="width:100%;height:100%;object-fit:cover;display:block;">
     </div>
     @forelse(($section6_top ?? []) as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])

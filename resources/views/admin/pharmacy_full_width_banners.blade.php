@@ -633,7 +633,7 @@ tbody tr:last-child td { border-bottom: none; }
   z-index: 200;
   display: flex; align-items: center; gap: 8px;
 }
-.toast.on { opacity: 1; transform: translateY(0); }
+.toast.on, .toast.show { opacity: 1; transform: translateY(0); }
 .toast svg { width: 16px; height: 16px; }
 
 /* ── MODAL ── */
@@ -1184,6 +1184,37 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="wc-fwb-grid" id="fwbBody"></div>
   </section>
+
+  <section class="wc-card wc-section active" id="sec-blogs">
+    <div class="wc-card-head">
+      <div class="wc-card-title">
+        <div class="wc-card-icon"><i class="fas fa-newspaper"></i></div>
+        <div>
+          <h3>Blogs</h3>
+          <p>Posts shown in the storefront blog section — add as many as you like</p>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="wc-badge-count" id="blogCount"></span>
+        <button class="btn btn-primary btn-sm" type="button" onclick="openModal('blog')"><i class="fas fa-plus"></i> Add Blog</button>
+      </div>
+    </div>
+    <div class="wc-table-scroll">
+      <table class="wc-table">
+        <thead>
+          <tr>
+            <th>Post</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Comments</th>
+            <th>Status</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="blogBody"></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 </main>
 <!-- ============ IMAGE LIGHTBOX ============ -->
@@ -1349,10 +1380,85 @@ async function deleteFwb(id){
   }
 }
 /* ============================================================================
+   BLOGS — unlimited add / edit / delete (stored in the `blogs` table)
+============================================================================ */
+let blogPosts = @json($blogs);
+const blogCategories = @json($blogCategories);
+const BLOG_MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+
+function isHexColor(v){ return /^#[0-9a-fA-F]{6}$/.test(v || ''); }
+
+function blogThumb(b){
+  if(b.image) return thumbHtml(b.image, b.title);
+  if(b.icon_class){
+    const bg = esc(b.icon_bg || 'var(--wc-bg)');
+    const fg = esc(b.icon_color || 'var(--wc-subtle)');
+    return `<div class="wc-thumb-fallback" style="background:${bg};color:${fg};border-style:solid;"><i class="${esc(b.icon_class)}"></i></div>`;
+  }
+  return thumbHtml(null);
+}
+
+function renderBlogs(){
+  document.getElementById('blogCount').textContent = blogPosts.length + (blogPosts.length === 1 ? ' blog' : ' blogs');
+
+  document.getElementById('blogBody').innerHTML = blogPosts.length ? blogPosts.map(b => `
+    <tr>
+      <td>
+        <div class="wc-name-cell">
+          ${blogThumb(b)}
+          <div style="min-width:0;">
+            <div>${esc(b.title)}</div>
+            <div class="wc-sub" style="max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(b.excerpt)}</div>
+          </div>
+        </div>
+      </td>
+      <td>${b.category_name ? esc(b.category_name) : '<span class="wc-sub">—</span>'}</td>
+      <td style="white-space:nowrap;">${esc(b.month)} ${esc(b.day)}</td>
+      <td>${esc(b.comment_count)}</td>
+      <td><span class="wc-pill ${b.is_active ? 'on' : 'off'}">${b.is_active ? 'Active' : 'Hidden'}</span></td>
+      <td>
+        <div class="wc-cell-actions">
+          <button class="btn-icon" title="Edit" onclick="openModal('blog', ${b.id})"><i class="fas fa-pen"></i></button>
+          <button class="btn-icon danger" title="Delete" onclick="deleteBlog(${b.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="wc-empty">No blogs yet. Click “Add Blog” to create one.</td></tr>`;
+}
+renderBlogs();
+
+async function deleteBlog(id){
+  const blog = blogPosts.find(x => x.id === id);
+  if(!blog) return;
+  if(!confirm(`Delete the blog "${blog.title}"? This cannot be undone.`)) return;
+
+  try{
+    const fd = new FormData();
+    fd.append('_method', 'DELETE');
+    const res = await fetch(`{{ url('/admin/pharmacy_blogs') }}/${id}`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json',
+      },
+      body: fd,
+    });
+    const data = await res.json();
+    if(!res.ok){ toast(data.message || 'Could not delete blog.'); return; }
+
+    blogPosts = blogPosts.filter(x => x.id !== id);
+    renderBlogs();
+    toast(data.message || 'Blog deleted successfully.');
+  }catch(err){
+    toast('Something went wrong. Please try again.');
+  }
+}
+/* ============================================================================
    MODAL ENGINE (add / edit for all entity types)
 ============================================================================ */
 const ENTITY = {
-  fwb: { store: () => fullWidthBanners, titleField: 'sort_order', label:'Full-Width Banner', crud:true }
+  fwb: { store: () => fullWidthBanners, titleField: 'sort_order', label:'Full-Width Banner', crud:true },
+  blog: { store: () => blogPosts, titleField: 'title', label:'Blog', crud:true }
 };
 
 let modalState = { type:null, id:null, draft:null };
@@ -1375,6 +1481,9 @@ function closeModal(){
 function defaultDraft(type){
   const bases = {
     fwb: { sort_order: null, image: null, alt: '', is_active: true },
+    blog: { title: '', excerpt: '', image: null, icon_class: '', icon_color: '#CC1F1F', icon_bg: '#f5e0e0',
+            day: new Date().getDate(), month: BLOG_MONTHS[new Date().getMonth()], comment_count: 0,
+            category_id: null, is_active: true, remove_image: false },
   };
   return bases[type] || {};
 }
@@ -1429,6 +1538,33 @@ function buildForm(type, d){
       ${fieldRow('Banner image', imageUploadControl('image', d.image))}
       ${fieldRow('Alt text', `<input class="wc-input" value="${esc(d.alt)}" oninput="modalState.draft.alt=this.value">`)}
       ${fieldRow('Active', `<div class="wc-switch-row"><span class="hint" style="margin:0;">Show this banner on the storefront</span><label class="wc-switch"><input type="checkbox" ${d.is_active ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked"><span class="track"></span></label></div>`)}
+    `;
+  }
+
+  if(type === 'blog'){
+    const catOptions = `<option value="">— No category —</option>` + blogCategories.map(c =>
+      `<option value="${c.id}" ${d.category_id === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('');
+    const monthOptions = BLOG_MONTHS.map(m =>
+      `<option value="${m}" ${d.month === m ? 'selected' : ''}>${m}</option>`).join('');
+
+    return `
+      ${fieldRow('Title', `<input class="wc-input" maxlength="255" value="${esc(d.title)}" oninput="modalState.draft.title=this.value">`)}
+      ${fieldRow('Excerpt', `<textarea class="wc-textarea" rows="3" maxlength="2000" oninput="modalState.draft.excerpt=this.value">${esc(d.excerpt)}</textarea>`)}
+      ${fieldRow('Category', `<select class="wc-select" onchange="modalState.draft.category_id=this.value ? parseInt(this.value,10) : null">${catOptions}</select>`)}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        ${fieldRow('Day', `<input class="wc-input" type="number" min="1" max="31" value="${esc(d.day)}" oninput="modalState.draft.day=this.value">`)}
+        ${fieldRow('Month', `<select class="wc-select" onchange="modalState.draft.month=this.value">${monthOptions}</select>`)}
+        ${fieldRow('Comments', `<input class="wc-input" type="number" min="0" value="${esc(d.comment_count)}" oninput="modalState.draft.comment_count=this.value">`)}
+      </div>
+      ${fieldRow('Blog image', `${imageUploadControl('image', d.image)}
+        ${d.image ? `<label class="hint" style="display:flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;"><input type="checkbox" onchange="modalState.draft.remove_image=this.checked"> Remove current image</label>` : ''}`,
+        'Optional. If no image is set, the icon below is shown instead.')}
+      ${fieldRow('Icon class (FontAwesome)', `<input class="wc-input" placeholder="fas fa-heartbeat" value="${esc(d.icon_class)}" oninput="modalState.draft.icon_class=this.value">`, 'Used only when there is no image.')}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        ${fieldRow('Icon color', `<div class="wc-color-control"><input type="color" value="${isHexColor(d.icon_color) ? d.icon_color : '#CC1F1F'}" oninput="modalState.draft.icon_color=this.value"></div>`)}
+        ${fieldRow('Icon background', `<div class="wc-color-control"><input type="color" value="${isHexColor(d.icon_bg) ? d.icon_bg : '#f5e0e0'}" oninput="modalState.draft.icon_bg=this.value"></div>`)}
+      </div>
+      ${fieldRow('Active', `<div class="wc-switch-row"><span class="hint" style="margin:0;">Show this blog on the storefront</span><label class="wc-switch"><input type="checkbox" ${d.is_active ? 'checked' : ''} onchange="modalState.draft.is_active=this.checked"><span class="track"></span></label></div>`)}
     `;
   }
   return '';
@@ -1489,6 +1625,68 @@ document.getElementById('wcModalSaveBtn').addEventListener('click', async () => 
       toast(data.message || `${ENTITY.fwb.label} saved.`);
       closeModal();
       renderFwb();
+    }catch(err){
+      toast('Something went wrong. Please try again.');
+    }finally{
+      saveBtn.disabled = false;
+    }
+    return;
+  }
+
+  if(type === 'blog'){
+    if(!(draft.title || '').trim()){ toast('Please enter a blog title.'); return; }
+    if(!(draft.excerpt || '').trim()){ toast('Please enter a short excerpt.'); return; }
+    if(!draft.day || draft.day < 1 || draft.day > 31){ toast('Please enter a valid day (1–31).'); return; }
+
+    const fd = new FormData();
+    fd.append('title', draft.title.trim());
+    fd.append('excerpt', draft.excerpt.trim());
+    fd.append('day', draft.day);
+    fd.append('month', draft.month);
+    fd.append('comment_count', draft.comment_count || 0);
+    fd.append('category_id', draft.category_id || '');
+    const hasIcon = (draft.icon_class || '').trim() !== '';
+    fd.append('icon_class', hasIcon ? draft.icon_class.trim() : '');
+    fd.append('icon_color', hasIcon ? (draft.icon_color || '') : '');
+    fd.append('icon_bg',    hasIcon ? (draft.icon_bg || '') : '');
+    fd.append('is_active', draft.is_active ? '1' : '0');
+    if(modalState.draftFiles && modalState.draftFiles.image){
+      fd.append('image', modalState.draftFiles.image);
+    } else if(draft.remove_image){
+      fd.append('remove_image', '1');
+    }
+    if(id) fd.append('_method', 'PUT');
+
+    const url = id
+      ? `{{ url('/admin/pharmacy_blogs') }}/${id}`
+      : `{{ route('admin.pharmacy_blogs.store') }}`;
+
+    const saveBtn = document.getElementById('wcModalSaveBtn');
+    saveBtn.disabled = true;
+
+    try{
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'Accept': 'application/json',
+        },
+        body: fd,
+      });
+      const data = await res.json();
+
+      if(!res.ok){
+        const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message;
+        toast(firstError || 'Could not save blog.');
+        return;
+      }
+
+      const idx = blogPosts.findIndex(x => x.id === data.blog.id);
+      if(idx > -1){ blogPosts[idx] = data.blog; } else { blogPosts.unshift(data.blog); }
+
+      toast(data.message || 'Blog saved.');
+      closeModal();
+      renderBlogs();
     }catch(err){
       toast('Something went wrong. Please try again.');
     }finally{

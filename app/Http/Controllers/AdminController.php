@@ -10,6 +10,7 @@ use App\Models\Stock;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Brand;
+use App\Models\Blog;
 use App\Models\Setting;
 use App\Models\FullWidthBanner;
 use App\Models\PromoBanner;
@@ -416,7 +417,13 @@ class AdminController extends Controller
         ->get(['id', 'section_key', 'sort_order', 'image', 'alt', 'is_active'])
         ->map(fn (FullWidthBanner $banner) => $this->formatFullWidthBanner($banner))
         ->values();
-    return view('admin.pharmacy_full_width_banners', compact('logo2', 'siteName', 'fullWidthBanners'));
+    $blogs = Blog::with('category')->latest()->get()
+        ->map(fn (Blog $blog) => $this->formatBlog($blog))
+        ->values();
+    $blogCategories = Category::orderBy('name')->get(['id', 'name'])
+        ->map(fn (Category $c) => ['id' => $c->id, 'name' => $c->name])
+        ->values();
+    return view('admin.pharmacy_full_width_banners', compact('logo2', 'siteName', 'fullWidthBanners', 'blogs', 'blogCategories'));
 }
 
     /**
@@ -640,6 +647,136 @@ class AdminController extends Controller
 
         return Str::startsWith($image, ['http://', 'https://']) ? $image : asset($image);
     }
+
+       // ── Pharmacy Blogs (unlimited add / edit / delete) ─────────────────────────────────────
+
+    /**
+     * Create a blog post. There is no cap on how many blogs can exist.
+     */
+    public function storeBlog(Request $request)
+    {
+        $data = $this->validatedBlogData($request);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('blogs', 'public');
+            $data['image'] = 'storage/' . $path;
+        }
+
+        $data['is_active']     = $request->boolean('is_active', true);
+        $data['comment_count'] = (int) ($data['comment_count'] ?? 0);
+
+        $blog = Blog::create($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Blog added successfully.',
+                'blog'    => $this->formatBlog($blog->load('category')),
+            ], 201);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Blog added successfully.');
+    }
+
+    public function updateBlog(Request $request, Blog $blog)
+    {
+        $data = $this->validatedBlogData($request);
+
+        if ($request->hasFile('image')) {
+            $this->deleteBlogImage($blog);
+            $path = $request->file('image')->store('blogs', 'public');
+            $data['image'] = 'storage/' . $path;
+        } elseif ($request->boolean('remove_image')) {
+            $this->deleteBlogImage($blog);
+            $data['image'] = null;
+        } else {
+            unset($data['image']);
+        }
+
+        $data['is_active']     = $request->boolean('is_active', $blog->is_active);
+        $data['comment_count'] = (int) ($data['comment_count'] ?? 0);
+
+        $blog->update($data);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Blog updated successfully.',
+                'blog'    => $this->formatBlog($blog->load('category')),
+            ]);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Blog updated successfully.');
+    }
+
+    public function destroyBlog(Request $request, Blog $blog)
+    {
+        $this->deleteBlogImage($blog);
+        $blog->delete();
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Blog deleted successfully.']);
+        }
+
+        return redirect()->route('admin.pharmacy_full_width_banners')
+            ->with('status', 'Blog deleted successfully.');
+    }
+
+    /**
+     * Validate incoming blog form data. The month is normalised to upper case
+     * first so "sep" and "Sep" both satisfy the 3-letter SEP, OCT … format.
+     */
+    private function validatedBlogData(Request $request): array
+    {
+        if ($request->has('month')) {
+            $request->merge(['month' => strtoupper(trim((string) $request->input('month')))]);
+        }
+
+        return $request->validate([
+            'title'         => ['required', 'string', 'max:255'],
+            'excerpt'       => ['required', 'string', 'max:2000'],
+            'image'         => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:4096'],
+            'icon_class'    => ['nullable', 'string', 'max:100'],
+            'icon_color'    => ['nullable', 'string', 'max:50'],
+            'icon_bg'       => ['nullable', 'string', 'max:50'],
+            'day'           => ['required', 'integer', 'between:1,31'],
+            'month'         => ['required', Rule::in(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])],
+            'comment_count' => ['nullable', 'integer', 'min:0'],
+            'category_id'   => ['nullable', 'integer', 'exists:categories,id'],
+        ], [
+            'title.required'   => 'Please enter a blog title.',
+            'excerpt.required' => 'Please enter a short excerpt.',
+        ]);
+    }
+
+    /** Remove a blog's uploaded image from disk (externally-hosted URLs are left alone). */
+    private function deleteBlogImage(Blog $blog): void
+    {
+        if ($blog->image && Str::startsWith($blog->image, 'storage/')) {
+            Storage::disk('public')->delete(Str::after($blog->image, 'storage/'));
+        }
+    }
+
+    /** Shape a Blog model into the flat array the blade JS expects. */
+    private function formatBlog(Blog $blog): array
+    {
+        return [
+            'id'            => $blog->id,
+            'title'         => $blog->title,
+            'excerpt'       => $blog->excerpt,
+            'image'         => $this->fullWidthBannerImageUrl($blog->image),
+            'icon_class'    => $blog->icon_class,
+            'icon_color'    => $blog->icon_color,
+            'icon_bg'       => $blog->icon_bg,
+            'day'           => $blog->day,
+            'month'         => $blog->month,
+            'comment_count' => $blog->comment_count,
+            'category_id'   => $blog->category_id,
+            'category_name' => $blog->category?->name,
+            'is_active'     => $blog->is_active,
+        ];
+    }
+
 
        // ── Pharmacy Sections─────────────────────────────────────────────────────────────
 
