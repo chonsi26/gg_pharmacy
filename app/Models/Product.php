@@ -57,6 +57,12 @@ class Product extends Model
         return $this->hasMany(Stock::class);
     }
 
+    /** Wishlist entries that reference this product. */
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
     // ── Scopes ──────────────────────────────────────────────────────────────
 
     public function scopeActive($query)

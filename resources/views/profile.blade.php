@@ -359,6 +359,9 @@
       <a href="{{ route('order.myorders') }}" class="profile-tab-btn">
         <i class="fas fa-box"></i> Orders
       </a>
+      <a href="{{ route('wishlists.index') }}" class="profile-tab-btn">
+        <i class="fas fa-heart"></i> Wishlist
+      </a>
     </div>
   </div>
 

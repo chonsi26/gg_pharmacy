@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -29,6 +30,10 @@ class ProductController extends Controller
             ->limit(10)
             ->get();
 
-        return view('product', compact('product', 'settings', 'categories', 'relatedProducts'));
+        // ── Wishlist state (drives whether the heart renders red) ─────────────
+        $inWishlist = Auth::check()
+            && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
+
+        return view('product', compact('product', 'settings', 'categories', 'relatedProducts', 'inWishlist'));
     }
 }

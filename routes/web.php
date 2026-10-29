@@ -23,6 +23,7 @@ use App\Http\Controllers\StaffOrdersController;
 use App\Http\Controllers\StaffReportsController;
 use App\Http\Controllers\StaffStocksController;
 use App\Http\Controllers\StoreInfoController;
+use App\Http\Controllers\WishlistsController;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +79,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile',              [ProfileController::class, 'show'])           ->name('profile');
     Route::put('/profile',              [ProfileController::class, 'update'])         ->name('profile.update');
     Route::put('/profile/password',     [ProfileController::class, 'updatePassword']) ->name('profile.password');
+});
+
+// ── Wishlist (auth only; toggle/destroy are AJAX and return JSON) ─────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/wishlists',                      [WishlistsController::class, 'index'])  ->name('wishlists.index');
+    Route::post('/wishlists/{product}/toggle',    [WishlistsController::class, 'toggle']) ->name('wishlists.toggle');
+    Route::delete('/wishlists/{product}',         [WishlistsController::class, 'destroy'])->name('wishlists.destroy');
 });
 
 // ── Admin ─────────────────────────────────────────────────────────────────────

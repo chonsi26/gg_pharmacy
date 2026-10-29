@@ -264,6 +264,9 @@
   .qty-cart-row .add-cart-main:hover { background: var(--dark-red); }
   .qty-cart-row .wishlist-btn { width: 46px; height: 46px; border: 2px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #aaa; transition: all 0.2s; flex-shrink: 0; }
   .qty-cart-row .wishlist-btn:hover, .qty-cart-row .wishlist-btn.active { border-color: var(--red); color: var(--red); }
+  .qty-cart-row .wishlist-btn.active { background: #fff1f1; }
+  .qty-cart-row .wishlist-btn.pop i { animation: heartPop 0.35s ease; }
+  @keyframes heartPop { 0% { transform: scale(1); } 45% { transform: scale(1.35); } 100% { transform: scale(1); } }
   .buy-now-btn { width: 100%; height: 46px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
   .buy-now-btn:hover { background: var(--dark-green); }
 
@@ -462,10 +465,7 @@
     <span class="sep">|</span>
     <a href="#" id="registerBtn"><i class="fas fa-user-plus"></i> REGISTER</a>
   @else
-    <span style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
-      <i class="fas fa-user-circle"></i> {{ Auth::user()->full_name }}
-    </span>
-    <span class="sep">|</span>
+
     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
       @csrf
       <a href="#" onclick="event.preventDefault();document.getElementById('logoutForm').submit();" style="color:#333;font-weight:600;display:flex;align-items:center;gap:5px;">
@@ -765,7 +765,11 @@
           data-product-id="{{ $product->id }}"
           data-qty-target="#qtyInput"
         ><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
-        <button class="wishlist-btn" id="wishlistBtn" type="button" title="Add to wishlist" aria-label="Add to wishlist"><i class="far fa-heart"></i></button>
+        <button class="wishlist-btn {{ ($inWishlist ?? false) ? 'active' : '' }}" id="wishlistBtn" type="button"
+          data-url="{{ route('wishlists.toggle', $product) }}"
+          title="{{ ($inWishlist ?? false) ? 'Remove from wishlist' : 'Add to wishlist' }}"
+          aria-label="{{ ($inWishlist ?? false) ? 'Remove from wishlist' : 'Add to wishlist' }}"
+          aria-pressed="{{ ($inWishlist ?? false) ? 'true' : 'false' }}"><i class="{{ ($inWishlist ?? false) ? 'fas' : 'far' }} fa-heart"></i></button>
       </div>
 
       <button class="buy-now-btn js-buy-now" type="button" data-product-id="{{ $product->id }}" data-qty-target="#qtyInput"><i class="fas fa-bolt"></i> BUY NOW</button>
@@ -977,7 +981,7 @@
       </div>
     </div>
     <div class="footer-section">
-      <h4>ABOUT ['site_name']</h4>
+      <h4>ABOUT {{ $settings['site_name'] ?? 'GG Pharmacy' }}</h4>
       <a href="#">About Us</a>
       <a href="#">Careers</a>
       <a href="{{ route('store.info') }}">Store Info</a>
@@ -1158,12 +1162,50 @@
   });
 
   // ── Wishlist toggle ─────────────────────────────────────────────────────────
+  // Saves/removes the product on the server. The heart stays red on reload
+  // because the server renders the "active" class when it's in the wishlist.
   const wishlistBtn = document.getElementById('wishlistBtn');
   if (wishlistBtn) {
-    wishlistBtn.addEventListener('click', function() {
-      this.classList.toggle('active');
-      const icon = this.querySelector('i');
-      icon.className = this.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+    wishlistBtn.addEventListener('click', async function () {
+      @guest
+        openModal(loginModal);
+        return;
+      @endguest
+
+      if (this.dataset.busy === '1') return;
+      this.dataset.busy = '1';
+
+      try {
+        const res = await fetch(this.dataset.url, {
+          method: 'POST',
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'same-origin'
+        });
+
+        if (res.status === 401) { openModal(loginModal); return; }
+        if (!res.ok) throw new Error('Request failed');
+
+        const data = await res.json();
+        const on = !!data.wishlisted;
+
+        this.classList.toggle('active', on);
+        this.setAttribute('aria-pressed', on ? 'true' : 'false');
+        const label = on ? 'Remove from wishlist' : 'Add to wishlist';
+        this.title = label;
+        this.setAttribute('aria-label', label);
+        this.querySelector('i').className = (on ? 'fas' : 'far') + ' fa-heart';
+
+        this.classList.remove('pop'); void this.offsetWidth; this.classList.add('pop');
+        showCartToast(data.message);
+      } catch (e) {
+        showCartToast('Something went wrong. Please try again.');
+      } finally {
+        this.dataset.busy = '0';
+      }
     });
   }
 
