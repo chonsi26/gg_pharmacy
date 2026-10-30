@@ -23,6 +23,7 @@ use App\Http\Controllers\StaffOrdersController;
 use App\Http\Controllers\StaffReportsController;
 use App\Http\Controllers\StaffStocksController;
 use App\Http\Controllers\StoreInfoController;
+use App\Http\Controllers\UserNotificationsController;
 use App\Http\Controllers\WishlistsController;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\PreventBackHistory;
@@ -86,6 +87,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/wishlists',                      [WishlistsController::class, 'index'])  ->name('wishlists.index');
     Route::post('/wishlists/{product}/toggle',    [WishlistsController::class, 'toggle']) ->name('wishlists.toggle');
     Route::delete('/wishlists/{product}',         [WishlistsController::class, 'destroy'])->name('wishlists.destroy');
+});
+
+// ── Customer notifications bell (auth only; JSON) ─────────────────────────────
+// 'read-all' is a literal segment, registered before the {notification} wildcard.
+Route::middleware('auth')->group(function () {
+    Route::get('/notifications',                     [UserNotificationsController::class, 'index'])      ->name('notifications.index');
+    Route::put('/notifications/read-all',            [UserNotificationsController::class, 'markAllRead'])->name('notifications.readAll');
+    Route::put('/notifications/{notification}/read', [UserNotificationsController::class, 'markRead'])   ->name('notifications.read');
 });
 
 // ── Admin ─────────────────────────────────────────────────────────────────────

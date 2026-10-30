@@ -790,7 +790,7 @@
         </div>
         <div class="guarantee-item">
           <i class="fas fa-truck"></i>
-          <div><strong>Fast Delivery</strong>{{ $settings['location_strip'] ?? 'Local & nearby areas' }}</div>
+          <div><strong>Fast Reservation</strong>{{ $settings['location_strip'] ?? 'Local & nearby areas' }}</div>
         </div>
         <div class="guarantee-item">
           <i class="fas fa-undo"></i>
