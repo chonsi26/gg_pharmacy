@@ -99,7 +99,9 @@ class AdminController extends Controller
     $logo2 = Setting::get('logo2');
     $siteName = Setting::get('site_name', 'Pharmacy');
 
-    $staffs = Staff::orderBy('first_name')
+    // Pending sign-ups live in the Requests modal, not in the staff list.
+    $staffs = Staff::registered()
+        ->orderBy('first_name')
         ->orderBy('last_name')
         ->get();
 
@@ -110,7 +112,7 @@ class AdminController extends Controller
     {
         $query = trim((string) $request->query('q', ''));
 
-        $staffs = Staff::query()
+        $staffs = Staff::registered()
             ->when($query !== '', function ($builder) use ($query) {
                 $builder->where(function ($sub) use ($query) {
                     $sub->where('first_name', 'like', "%{$query}%")

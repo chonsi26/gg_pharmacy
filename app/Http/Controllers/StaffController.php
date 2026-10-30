@@ -207,7 +207,18 @@ class StaffController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        // Only active staff accounts may sign in.
+        // Tell a correctly-authenticated but still-pending applicant why they can't get in.
+        $pending = Staff::where('email', $credentials['email'])->first();
+        if ($pending
+            && $pending->status === Staff::STATUS_PENDING
+            && Hash::check($credentials['password'], $pending->password)) {
+            return back()
+                ->withErrors(['email' => 'Your account is still waiting for admin approval. Please try again once it has been accepted.'])
+                ->withInput($request->only('email'));
+        }
+
+        // Only accepted ('registered') and active staff accounts may sign in.
+        $credentials['status']    = Staff::STATUS_REGISTERED;
         $credentials['is_active'] = true;
 
         if (Auth::guard('staff')->attempt($credentials, $request->boolean('remember'))) {
@@ -217,7 +228,7 @@ class StaffController extends Controller
         }
 
         return back()
-            ->withErrors(['email' => 'These credentials do not match our records, or the account is inactive.'])
+            ->withErrors(['email' => 'These credentials do not match our records, or the account is inactive or not yet approved.'])
             ->withInput($request->only('email'));
     }
 
@@ -252,15 +263,15 @@ class StaffController extends Controller
             ? '+63' . $data['contact_number']
             : null;
 
+        // New sign-ups wait for an admin to accept them (Admin → Staffs → Requests).
+        $data['status'] = Staff::STATUS_PENDING;
+
         // The Staff model's "hashed" cast hashes the password on save.
-        $staff = Staff::create($data);
+        Staff::create($data);
 
-        Auth::guard('staff')->login($staff);
-
-        $request->session()->regenerate();
-
-        return redirect()->route('staff.dashboard')
-            ->with('status', 'Account created! Welcome to the team.');
+        // Not logged in: the account can only be used once it is accepted.
+        return redirect()->route('staff.login')
+            ->with('status', 'Registration submitted! You can log in once an admin approves your account.');
     }
 
     // ── Logout ────────────────────────────────────────────────────────────────

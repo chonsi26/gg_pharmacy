@@ -1710,7 +1710,7 @@ overlay.addEventListener('click', () => {
     out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
     order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
     refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
-    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user', staff_request: 'user',
   };
 
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2259,35 +2259,35 @@ function confirmDeleteStaff() {
 /* ══════════════════════════════════════════════════════
    STAFF REGISTRATION REQUESTS
    ══════════════════════════════════════════════════════ */
-let staffRequests = [
-  {
-    id: 'REQ-2001',
-    first: 'Angelo', last: 'Reyes',
-    email: 'angelo.reyes@gmail.com',
-    contact: '+63 920 111 2222',
-    address: 'Talamban, Cebu City, Cebu',
-    submitted: 'Aug 20, 2026',
-    avatarClass: 'bg-staff-3'
-  },
-  {
-    id: 'REQ-2002',
-    first: 'Liza', last: 'Cortez',
-    email: 'liza.cortez@yahoo.com',
-    contact: '+63 933 444 5566',
-    address: 'Lahug, Cebu City, Cebu',
-    submitted: 'Aug 21, 2026',
-    avatarClass: 'bg-staff-5'
-  },
-  {
-    id: 'REQ-2003',
-    first: 'Miguel', last: 'Torres',
-    email: 'miguel.torres@outlook.com',
-    contact: '+63 906 777 8899',
-    address: 'Mandaue City, Cebu',
-    submitted: 'Aug 22, 2026',
-    avatarClass: 'bg-staff-6'
+const REQUESTS_URL = @json(route('admin.staffs.requests'));
+const REQUEST_APPROVE_URL = @json(route('admin.staffs.requests.approve', ['staff' => '__ID__']));
+const REQUEST_REJECT_URL  = @json(route('admin.staffs.requests.reject',  ['staff' => '__ID__']));
+
+let staffRequests = [];   // pending requests, loaded from the server
+
+const escHtml = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+async function requestsApi(url, method = 'GET') {
+  const res = await fetch(url, {
+    method,
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+    credentials: 'same-origin',
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw { status: res.status, body };
+  return body;
+}
+
+async function loadRequests() {
+  try {
+    const data = await requestsApi(REQUESTS_URL);
+    staffRequests = data.requests || [];
+  } catch (e) {
+    /* keep the previous list on a network error */
   }
-];
+  updateReqBadge();
+  if (document.getElementById('staffRequestsModalBg').classList.contains('on')) renderRequestsList();
+}
 
 function updateReqBadge() {
   const badge = document.getElementById('reqBadgeCount');
@@ -2303,6 +2303,7 @@ function updateReqBadge() {
 function openRequestsModal() {
   renderRequestsList();
   document.getElementById('staffRequestsModalBg').classList.add('on');
+  loadRequests();   // refresh in case someone registered since the page loaded
 }
 function closeRequestsModal() {
   document.getElementById('staffRequestsModalBg').classList.remove('on');
@@ -2322,19 +2323,19 @@ function renderRequestsList() {
   }
   list.innerHTML = staffRequests.map(r => `
     <div class="request-item" data-req-id="${r.id}">
-      <div class="request-avatar ${r.avatarClass}">${initialsOf(r.first, r.last)}</div>
+      <div class="request-avatar ${r.image ? '' : r.avatarClass}" style="${r.image ? 'overflow:hidden;' : ''}">${r.image ? `<img src="${escHtml(r.image)}" alt="" style="width:100%;height:100%;object-fit:cover;">` : initialsOf(r.first, r.last)}</div>
       <div class="request-info">
-        <div class="request-name">${r.first} ${r.last}</div>
-        <div class="request-meta" title="${r.email} · ${r.contact}">${r.email} · ${r.contact}</div>
-        <div class="request-meta" title="${r.address}">· ${r.address || '—'}</div>
-        <div class="request-date">Submitted ${r.submitted}</div>
+        <div class="request-name">${escHtml(r.first)} ${escHtml(r.last)}</div>
+        <div class="request-meta" title="${escHtml(r.email)} · ${escHtml(r.contact || '—')}">${escHtml(r.email)} · ${escHtml(r.contact || '—')}</div>
+        <div class="request-meta" title="${escHtml(r.address)}">· ${escHtml(r.address || '—')}</div>
+        <div class="request-date">Submitted ${escHtml(r.submitted)}</div>
       </div>
       <div class="request-actions">
-        <button class="btn-approve" onclick="approveRequest('${r.id}')">
+        <button class="btn-approve" onclick="approveRequest(${r.id}, this)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           Approve
         </button>
-        <button class="btn-reject" onclick="rejectRequest('${r.id}')">
+        <button class="btn-reject" onclick="rejectRequest(${r.id}, this)">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           Reject
         </button>
@@ -2354,40 +2355,73 @@ function removeRequestFromList(id, cb) {
   }
 }
 
-function approveRequest(id) {
-  const idx = staffRequests.findIndex(r => r.id === id);
-  if (idx === -1) return;
-  const r = staffRequests[idx];
-
-  removeRequestFromList(id, () => {
-    staffRequests.splice(staffRequests.findIndex(x => x.id === id), 1);
-
-    const newId = 'STF-' + (Math.floor(Math.random() * 9000) + 1000);
-    const card = buildStaffCard({
-      id: newId, first: r.first, last: r.last, email: r.email,
-      contact: r.contact, address: r.address, password: '', status: 'Active',
-      image: '', avatarClass: r.avatarClass
-    });
-    document.getElementById('staffGrid').appendChild(card);
-
-    renderRequestsList();
-    showToast(`"${r.first} ${r.last}" approved and added to staff.`);
-  });
+function lockRequestButtons(id, locked) {
+  document.querySelectorAll(`.request-item[data-req-id="${id}"] button`).forEach(b => b.disabled = locked);
 }
 
-function rejectRequest(id) {
-  const idx = staffRequests.findIndex(r => r.id === id);
-  if (idx === -1) return;
-  const r = staffRequests[idx];
+async function approveRequest(id) {
+  const r = staffRequests.find(x => x.id === id);
+  if (!r) return;
+  lockRequestButtons(id, true);
 
-  removeRequestFromList(id, () => {
-    staffRequests.splice(staffRequests.findIndex(x => x.id === id), 1);
-    renderRequestsList();
-    showToast(`Registration request from "${r.first} ${r.last}" rejected.`);
-  });
+  try {
+    const body = await requestsApi(REQUEST_APPROVE_URL.replace('__ID__', id), 'PUT');
+    const s = body.staff || {};
+
+    removeRequestFromList(id, () => {
+      staffRequests = staffRequests.filter(x => x.id !== id);
+
+      const card = buildStaffCard({
+        id: s.staff_code, dbId: s.id, first: s.first_name, last: s.last_name,
+        email: s.email, contact: s.contact_number || '', address: s.address || '',
+        password: '', status: 'Active', image: s.profile_picture || '',
+        avatarClass: r.avatarClass
+      });
+      document.getElementById('staffGrid').appendChild(card);
+
+      renderRequestsList();
+      showToast(body.message || `"${r.first} ${r.last}" approved and added to staff.`);
+    });
+  } catch (err) {
+    lockRequestButtons(id, false);
+    showToast((err && err.body && err.body.message) || 'Could not approve the request. Please try again.');
+    if (err && err.status === 409) loadRequests();
+  }
+}
+
+async function rejectRequest(id) {
+  const r = staffRequests.find(x => x.id === id);
+  if (!r) return;
+  lockRequestButtons(id, true);
+
+  try {
+    const body = await requestsApi(REQUEST_REJECT_URL.replace('__ID__', id), 'DELETE');
+
+    removeRequestFromList(id, () => {
+      staffRequests = staffRequests.filter(x => x.id !== id);
+      renderRequestsList();
+      showToast(body.message || `Registration request from "${r.first} ${r.last}" rejected.`);
+    });
+  } catch (err) {
+    lockRequestButtons(id, false);
+    showToast((err && err.body && err.body.message) || 'Could not reject the request. Please try again.');
+    if (err && err.status === 409) loadRequests();
+  }
 }
 
 updateReqBadge();
+loadRequests();
+setInterval(() => { if (!document.hidden) loadRequests(); }, 30000);
+
+/* Deep link from the notification bell: /admin/staffs?open_requests=1 opens the Requests modal. */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('open_requests')) return;
+  params.delete('open_requests');
+  const qs = params.toString();
+  history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+  openRequestsModal();
+})();
 
 /* ── Show toast for actions that reload the page ───────── */
 (function () {

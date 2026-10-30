@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -75,6 +76,7 @@ class AdminNotificationsController extends Controller
         'prescription_uploaded' => ['priority' => 0, 'tone' => 'info'],
         'order_completed'       => ['priority' => 0, 'tone' => 'success'],
         'new_customer'          => ['priority' => 0, 'tone' => 'success'],
+        'staff_request'         => ['priority' => 0, 'tone' => 'info'],
         'order_cancelled'       => ['priority' => 0, 'tone' => 'neutral'],
     ];
 
@@ -233,7 +235,8 @@ class AdminNotificationsController extends Controller
             ->concat($this->cancelledOrderEvents())
             ->concat($this->paymentProofEvents())
             ->concat($this->prescriptionEvents())
-            ->concat($this->newCustomerEvents());
+            ->concat($this->newCustomerEvents())
+            ->concat($this->staffRequestEvents());
 
         $this->store($alerts->concat($events));
 
@@ -242,6 +245,11 @@ class AdminNotificationsController extends Controller
             ->whereNotNull('ref_key')
             ->whereNotIn('ref_key', $alerts->pluck('ref_key')->all())
             ->update(['resolved_at' => now(), 'is_read' => true]);
+
+        // Staff requests that were accepted/rejected (or deleted) no longer need a notification.
+        Notification::where('type', 'staff_request')
+            ->whereNotIn('ref_key', $events->where('type', 'staff_request')->pluck('ref_key')->all())
+            ->delete();
 
         // Housekeeping.
         Notification::where('updated_at', '<', now()->subDays(self::PRUNE_AFTER_DAYS))
@@ -546,6 +554,26 @@ class AdminNotificationsController extends Controller
             route('admin.dashboard'),
             Carbon::parse($u->created_at)
         ))->all();
+    }
+
+    /**
+     * A staff member registered and is waiting for approval.
+     * Informational only (priority 0) — it is removed once the request is handled.
+     */
+    private function staffRequestEvents(): array
+    {
+        return Staff::pending()
+            ->orderByDesc('created_at')
+            ->limit(self::PER_TYPE_CAP)
+            ->get()
+            ->map(fn (Staff $s) => $this->alert(
+                'staff_request', "staff_request:{$s->id}",
+                'New staff request',
+                trim("{$s->first_name} {$s->last_name}") . ' registered a staff account and is waiting for approval.',
+                route('admin.staffs', ['open_requests' => 1]),
+                $s->created_at
+            ))
+            ->all();
     }
 
     // ══════════════════════════════════════════════════════════════════════

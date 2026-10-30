@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminNotificationsController;
 use App\Http\Controllers\AdminOrdersController;
 use App\Http\Controllers\AdminReportsController;
 use App\Http\Controllers\AdminSettingsController;
+use App\Http\Controllers\AdminStaffRequestsController;
 use App\Http\Controllers\AdminSearchController;
 use App\Http\Controllers\AdminStocksController;
 use App\Http\Controllers\AuthController;
@@ -166,6 +167,11 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::delete('/orders/{order}', [AdminOrdersController::class, 'destroy'])->name('orders.destroy');
         Route::get('/staffs', [AdminController::class, 'staffs'])->name('staffs');
         Route::get('/staffs/search', [AdminController::class, 'searchStaffs'])->name('staffs.search');
+        // ── Staff registration requests (AdminStaffRequestsController, JSON) ──
+        // Literal 'requests' segments are registered before the {staff} wildcard routes.
+        Route::get('/staffs/requests', [AdminStaffRequestsController::class, 'index'])->name('staffs.requests');
+        Route::put('/staffs/requests/{staff}/approve', [AdminStaffRequestsController::class, 'approve'])->name('staffs.requests.approve');
+        Route::delete('/staffs/requests/{staff}', [AdminStaffRequestsController::class, 'reject'])->name('staffs.requests.reject');
         Route::post('/staffs', [AdminController::class, 'storeStaff'])->name('staffs.store');
         Route::put('/staffs/{staff}', [AdminController::class, 'updateStaff'])->name('staffs.update');
         Route::delete('/staffs/{staff}', [AdminController::class, 'destroyStaff'])->name('staffs.destroy');
