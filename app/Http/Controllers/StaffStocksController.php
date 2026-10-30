@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
- * Staff-side stocks screen. Mirrors AdminStocksController (same rules, same
- * JSON shapes) so the shared stocks blade works unchanged — only the guard
- * (auth:staff), the view, and the redirect targets (staff.stocks) differ.
+ * Staff-side stocks screen. Mirrors AdminStocksController function-for-function
+ * (same rules, same JSON shapes, same filters) — only the guard (auth:staff),
+ * the view, and the redirect targets (staff.stocks) differ.
  */
 class StaffStocksController extends Controller
 {
@@ -200,6 +200,25 @@ class StaffStocksController extends Controller
             'product' => ['id' => $product->id, 'name' => $product->name],
             'stocks'  => $stocks,
         ]);
+    }
+
+    // ── Shared data helpers (parity with AdminStocksController) ──────────────
+
+    /**
+     * All stock batches, newest first, formatted for the stocks table.
+     */
+    public static function formattedStocks()
+    {
+        return (new self())->allStocksFormatted();
+    }
+
+    /**
+     * All products with their In Stock / Out of Stock status, formatted for
+     * the Products modal.
+     */
+    public static function formattedProducts()
+    {
+        return (new self())->allProductsFormatted();
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

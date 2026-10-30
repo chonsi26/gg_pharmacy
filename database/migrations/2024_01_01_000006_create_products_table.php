@@ -11,6 +11,8 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('generic_name')->nullable();
+            // Product type / dosage form, e.g. "Medicine", "Vitamins", "Tablet", "Syrup".
+            $table->string('form', 100)->nullable();
             $table->decimal('price', 10, 2);
             $table->decimal('old_price', 10, 2)->nullable();
             $table->string('image');

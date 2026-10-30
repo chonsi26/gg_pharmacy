@@ -322,7 +322,7 @@ class AdminNotificationsController extends Controller
                     'out_of_stock', "out_of_stock:product:{$r->id}",
                     'Out of stock',
                     "{$r->name} is out of stock.",
-                    route('admin.stocks')
+                    route('admin.stocks', ['status' => 'out-of-stock'])
                 );
             } else {
                 $alerts[] = $this->alert(
@@ -364,7 +364,7 @@ class AdminNotificationsController extends Controller
                     'expired_stock', "expired_stock:stock:{$r->id}",
                     'Expired stock',
                     "{$r->name} expired {$ago} " . Str::plural('day', $ago) . " ago — {$units} still on record.",
-                    route('admin.expiry')
+                    route('admin.stocks', ['status' => 'expired'])
                 );
             } else {
                 $when = $days === 0 ? 'expires today' : "expires in {$days} " . Str::plural('day', $days);
@@ -372,7 +372,7 @@ class AdminNotificationsController extends Controller
                     'expiring_stock', "expiring_stock:stock:{$r->id}",
                     'Stock expiring soon',
                     "{$r->name} {$when} ({$units}).",
-                    route('admin.expiry')
+                    route('admin.stocks', ['status' => 'expiring-soon'])
                 );
             }
         }

@@ -21,17 +21,25 @@ use Illuminate\View\View;
  */
 class StaffOrdersController extends Controller
 {
+    private ?AdminOrdersController $admin = null;
+
     // ── Page ─────────────────────────────────────────────────────────────────
 
     /**
      * Sales Records page. The table itself is filled by data() via fetch(),
-     * so the view only needs the site branding.
+     * so the view only needs the site branding and the signed-in staff member
+     * (sidebar chip). Expired "For Pick Up" orders are swept on page load, so
+     * the first paint never shows an order already past its 5-hour window.
      */
     public function index(): View
     {
+        $this->admin()->autoExpireReadyOrders();
+
         return view('staffs.orders', [
             'logo2'    => Setting::get('logo2'),
             'siteName' => Setting::get('site_name', 'Pharmacy'),
+            'staff'    => auth('staff')->user(),
+            'q'        => '',
         ]);
     }
 
@@ -83,9 +91,9 @@ class StaffOrdersController extends Controller
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Resolved through the container so OrderService is injected. */
+    /** Resolved through the container (so OrderService is injected) and reused for the request. */
     private function admin(): AdminOrdersController
     {
-        return app(AdminOrdersController::class);
+        return $this->admin ??= app(AdminOrdersController::class);
     }
 }

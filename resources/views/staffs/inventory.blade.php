@@ -239,6 +239,49 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .header-search input::placeholder { color: var(--subtle); }
 
+/* ── HEADER SEARCH SUGGESTIONS ── */
+.header-search { position: relative; }
+.search-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 380px; max-width: 90vw; max-height: 70vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 60;
+}
+.search-panel[hidden] { display: none; }
+.sp-label { padding: 10px 14px 4px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+.sp-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; color: var(--text); text-decoration: none; cursor: pointer;
+}
+.sp-item:hover, .sp-item.active { background: var(--red-light); }
+.sp-thumb, .sp-avatar {
+  width: 34px; height: 34px; flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-thumb { border-radius: 8px; background: #fff; border: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted); }
+.sp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.sp-avatar { border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; }
+.sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-tone-1 { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.sp-tone-2 { background: linear-gradient(135deg,#10b981,#047857); }
+.sp-tone-3 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.sp-tone-4 { background: linear-gradient(135deg,#ec4899,#be185d); }
+.sp-tone-5 { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.sp-tone-6 { background: linear-gradient(135deg,#06b6d4,#0e7490); }
+.sp-text { min-width: 0; flex: 1; }
+.sp-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-panel mark { background: transparent; color: var(--red); font-weight: 700; }
+.sp-foot {
+  display: block; padding: 11px 14px; margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: none;
+}
+.sp-foot:hover { background: var(--red-light); }
+.sp-state { padding: 18px 14px; font-size: 13px; color: var(--muted); text-align: center; }
+
+
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
 .icon-btn {
@@ -261,6 +304,38 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   border-radius: 50%;
   border: 1.5px solid var(--surface);
 }
+
+/* ── NOTIFICATIONS ── */
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-width: 88vw;
+  background: var(--card, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 50; overflow: hidden;
+}
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
+.notif-pill { font-size: 11px; font-weight: 600; color: var(--red); background: var(--red-light); padding: 2px 8px; border-radius: 20px; }
+.notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
+.notif-link-btn:hover { color: var(--red); }
+.notif-list { max-height: 400px; overflow-y: auto; }
+.notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-section.important { color: #CC1F1F; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border, #e5e7eb); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+.notif-item:hover { background: var(--hover, rgba(0,0,0,.03)); }
+.notif-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.notif-item.read:not(.important) { opacity: .6; }
+.notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
+.notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
+.notif-more { display: block; width: 100%; padding: 11px 16px; background: none; border: none; border-top: 1px solid var(--border, #e5e7eb); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--red); }
+.notif-more:hover { background: var(--hover, rgba(0,0,0,.03)); }
+
 
 /* ── MAIN CONTENT ── */
 .main {
@@ -1380,9 +1455,13 @@ tbody tr:last-child td { border-bottom: none; }
     Expiry Tracking<span class="nav-badge">2</span>
   </a>
 
-  <a href = "#" style = "text-decoration: none;">
+        <a class="nav-item" href="{{ route('staff.settings') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+  <a href = "{{ route('staff.profile') }}" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-    <form method="POST" action="" style="width:100%;">
       @csrf
       <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
         <div class="user-avatar">
@@ -1397,7 +1476,6 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="user-role">Pharmacy Staff</div>
         </div>
       </button>
-    </form>
   </div>
 </a>
 
@@ -1409,91 +1487,40 @@ tbody tr:last-child td { border-bottom: none; }
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="header-title">Inventory</div>
-  <div class="header-search">
+  <form class="header-search" id="staffSearch" action="{{ route('staff.search') }}" method="GET" role="search" autocomplete="off">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Search products, staffs…">
-  </div>
+    <input type="text" name="q" id="staffSearchInput" placeholder="Search products…" value="{{ $q ?? '' }}" maxlength="100" aria-label="Search products" aria-controls="staffSearchPanel" aria-expanded="false">
+    <div class="search-panel" id="staffSearchPanel" role="listbox" hidden></div>
+  </form>
   <div class="header-actions">
     <div style="position:relative;">
       <button class="icon-btn" id="notifBtn" title="Notifications">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        <div class="dot"></div>
+        <div class="dot" id="notifDot" style="display:none;"></div>
       </button>
 
-      <div id="notifDropdown" style="
-        display:none;
-        position:absolute;
-        top:calc(100% + 10px);
-        right:0;
-        width:340px;
-        max-width:88vw;
-        background:var(--card,#fff);
-        border:1px solid var(--border,#e5e7eb);
-        border-radius:12px;
-        box-shadow:0 12px 32px rgba(0,0,0,.14);
-        z-index:50;
-        overflow:hidden;
-      ">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border,#e5e7eb);background:var(--card,#fff);">
-          <span style="font-size:13px;font-weight:700;color:var(--text,#111);">Notifications</span>
-          <span style="font-size:11px;font-weight:600;color:#2d7a2d;background:rgba(45,122,45,.1);padding:2px 8px;border-radius:20px;">4 New</span>
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="notif-link-btn" id="notifReadAll" style="display:none;">Mark all read</button>
+            <span class="notif-pill" id="notifCount" style="display:none;"></span>
+          </span>
         </div>
 
-        <div style="max-height:360px;overflow-y:auto;background:var(--card,#fff);">
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(204,31,31,.12);display:flex;align-items:center;justify-content:center;color:#cc1f1f;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">New order received</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Order #1043 from Juan dela Cruz · 5 items</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">2 minutes ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(224,123,0,.12);display:flex;align-items:center;justify-content:center;color:#e07b00;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Stock expiry alert</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Amoxicillin 500mg expires in 5 days</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">1 hour ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border,#e5e7eb);cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(37,99,235,.12);display:flex;align-items:center;justify-content:center;color:#2563eb;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Payment received</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Maria Santos paid ₱620 for Sale #1041</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">3 hours ago</div>
-            </div>
-          </div>
-
-          <div style="display:flex;gap:12px;padding:12px 16px;cursor:pointer;" onmouseover="this.style.background='var(--hover,rgba(0,0,0,.03))'" onmouseout="this.style.background='transparent'">
-            <div style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:rgba(45,122,45,.12);display:flex;align-items:center;justify-content:center;color:#2d7a2d;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-            </div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:12.5px;font-weight:600;color:var(--text,#111);">Stock running out</div>
-              <div style="font-size:11.5px;color:var(--muted,#666);margin-top:2px;">Paracetamol has only 8 units left</div>
-              <div style="font-size:10.5px;color:var(--subtle,#999);margin-top:4px;">5 hours ago</div>
-            </div>
-          </div>
-
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
         </div>
 
-        <div style="padding:10px 16px;text-align:center;border-top:1px solid var(--border,#e5e7eb);background:var(--card,#fff);">
-          <a href="#" style="font-size:12px;font-weight:600;color:#2d7a2d;text-decoration:none;">View all notifications</a>
+        <div class="notif-foot">
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:var(--red);font-size:12px;">View all notifications</button>
         </div>
       </div>
     </div>
 
-    <button class="icon-btn" id="themeBtn" title="Toggle dark mode"><span id="themeIco"></span></button>
+    <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
+      <span id="themeIco"></span>
+    </button>
   </div>
 </header>
 
@@ -1526,11 +1553,11 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <button class="btn-chip" onclick="openCategoriesModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
-          Categories
+          Add Categories
         </button>
         <button class="btn-chip" onclick="openBrandsModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
-          Brand
+          Add brand
         </button>
         <div class="header-search" style="height:32px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;color:var(--subtle);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1550,7 +1577,7 @@ tbody tr:last-child td { border-bottom: none; }
           $catColor   = $category->icon_color ?? '#6b7280';
           $catBg      = $category->bg_color ?? '#f3f4f6';
           $catName    = $category->name ?? 'Uncategorized';
-          $searchKey  = strtolower($product->name.' '.$catName.' '.($brand->name ?? ''));
+          $searchKey  = strtolower($product->name.' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
           $barColor   = $qty <= 10 ? 'var(--red)' : ($qty <= 50 ? 'var(--orange)' : 'var(--green)');
           $barWidth   = min($qty, 100);
           $badgeClass = $product->badge_type === 'sale-badge' ? 'warning' : 'ok';
@@ -1558,6 +1585,7 @@ tbody tr:last-child td { border-bottom: none; }
         <div class="med-card" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
              data-id="{{ $product->id }}"
              data-generic-name="{{ $product->generic_name }}"
+             data-form="{{ $product->form }}"
              data-brand-name="{{ $brand->name ?? '' }}"
              data-brand-id="{{ $product->brand_id }}"
              data-medicine="{{ $product->name }}"
@@ -1622,6 +1650,18 @@ tbody tr:last-child td { border-bottom: none; }
   </div><!-- /card -->
 </main>
 
+<!-- Suggestions for the typable Brand / Category fields (kept in sync by refreshComboOptions()) -->
+<datalist id="brandOptions">
+  @foreach($brands as $brand)
+    <option value="{{ $brand->name }}"></option>
+  @endforeach
+</datalist>
+<datalist id="categoryOptions">
+  @foreach($categories as $cat)
+    <option value="{{ $cat->name }}"></option>
+  @endforeach
+</datalist>
+
 <!-- ════════════════════════════════════════════════════
      ADD PRODUCT MODAL
      ════════════════════════════════════════════════════ -->
@@ -1684,36 +1724,59 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Brand</label>
-              <select id="mBrand">
-                <option value="">— Select —</option>
-                @foreach($brands as $brand)
-                  <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="mBrandText" list="brandOptions" placeholder="Type or pick a brand" autocomplete="off"
+                     oninput="syncCombo('m','brand')" onchange="handleComboCommit('m','brand')">
+              <input type="hidden" id="mBrand">
             </div>
           </div>
           <div class="row-2">
             <div class="field">
               <label>Category <span style="font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);">(FK)</span></label>
-              <select id="mCat">
-                <option value="">— Select —</option>
-                @foreach($categories as $cat)
-                  <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="mCatText" list="categoryOptions" placeholder="Type or pick a category" autocomplete="off"
+                     oninput="syncCombo('m','category')" onchange="handleComboCommit('m','category')">
+              <input type="hidden" id="mCat">
             </div>
             <div class="field">
               <label>Form</label>
-              <select id="mForm">
+              <select id="mForm" onchange="applyFormProfile('m')">
                 <option value="">— Select —</option>
-                <option>Tablet</option>
-                <option>Capsule</option>
-                <option>Syrup</option>
-                <option>Suspension</option>
-                <option>Injection</option>
-                <option>Drops</option>
-                <option>Cream / Ointment</option>
-                <option>Patch</option>
+                <optgroup label="Product Types">
+                  <option>Medicine</option>
+                  <option>Vitamins</option>
+                  <option>Alcohol</option>
+                  <option>Shampoo</option>
+                  <option>Conditioner</option>
+                  <option>Soap</option>
+                  <option>Body Wash</option>
+                  <option>Lotion</option>
+                  <option>Skincare</option>
+                  <option>Sunscreen</option>
+                  <option>Makeup</option>
+                  <option>Perfume</option>
+                  <option>Deodorant</option>
+                  <option>Toothpaste</option>
+                  <option>Toothbrush</option>
+                  <option>Mouthwash</option>
+                  <option>Hair Color</option>
+                  <option>Hair Treatment</option>
+                  <option>Feminine Care</option>
+                  <option>Baby Care</option>
+                  <option>Diapers</option>
+                  <option>Supplements</option>
+                  <option>Medical Supplies</option>
+                  <option>Household Cleaning</option>
+                  <option>Food and Beverages</option>
+                </optgroup>
+                <optgroup label="Medicine Dosage Forms">
+                  <option>Tablet</option>
+                  <option>Capsule</option>
+                  <option>Syrup</option>
+                  <option>Suspension</option>
+                  <option>Injection</option>
+                  <option>Drops</option>
+                  <option>Cream / Ointment</option>
+                  <option>Patch</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -1753,7 +1816,7 @@ tbody tr:last-child td { border-bottom: none; }
               <input type="number" placeholder="0.00" step="0.01" min="0" id="mDepth">
             </div>
           </div>
-          <label class="field-check" style="margin-bottom:6px;">
+          <label class="field-check" id="mRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="mRequiresPrescription"> Requires Prescription
           </label>
         </div>
@@ -1831,36 +1894,59 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
             <div class="field">
               <label>Brand</label>
-              <select id="eBrand">
-                <option value="">— Select —</option>
-                @foreach($brands as $brand)
-                  <option value="{{ $brand->id }}">{{ $brand->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="eBrandText" list="brandOptions" placeholder="Type or pick a brand" autocomplete="off"
+                     oninput="syncCombo('e','brand')" onchange="handleComboCommit('e','brand')">
+              <input type="hidden" id="eBrand">
             </div>
           </div>
           <div class="row-2">
             <div class="field">
               <label>Category <span style="font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);">(FK)</span></label>
-              <select id="eCat">
-                <option value="">— Select —</option>
-                @foreach($categories as $cat)
-                  <option value="{{ $cat->id }}">{{ $cat->name }}</option>
-                @endforeach
-              </select>
+              <input type="text" id="eCatText" list="categoryOptions" placeholder="Type or pick a category" autocomplete="off"
+                     oninput="syncCombo('e','category')" onchange="handleComboCommit('e','category')">
+              <input type="hidden" id="eCat">
             </div>
             <div class="field">
               <label>Form</label>
-              <select id="eForm">
+              <select id="eForm" onchange="applyFormProfile('e')">
                 <option value="">— Select —</option>
-                <option>Tablet</option>
-                <option>Capsule</option>
-                <option>Syrup</option>
-                <option>Suspension</option>
-                <option>Injection</option>
-                <option>Drops</option>
-                <option>Cream / Ointment</option>
-                <option>Patch</option>
+                <optgroup label="Product Types">
+                  <option>Medicine</option>
+                  <option>Vitamins</option>
+                  <option>Alcohol</option>
+                  <option>Shampoo</option>
+                  <option>Conditioner</option>
+                  <option>Soap</option>
+                  <option>Body Wash</option>
+                  <option>Lotion</option>
+                  <option>Skincare</option>
+                  <option>Sunscreen</option>
+                  <option>Makeup</option>
+                  <option>Perfume</option>
+                  <option>Deodorant</option>
+                  <option>Toothpaste</option>
+                  <option>Toothbrush</option>
+                  <option>Mouthwash</option>
+                  <option>Hair Color</option>
+                  <option>Hair Treatment</option>
+                  <option>Feminine Care</option>
+                  <option>Baby Care</option>
+                  <option>Diapers</option>
+                  <option>Supplements</option>
+                  <option>Medical Supplies</option>
+                  <option>Household Cleaning</option>
+                  <option>Food and Beverages</option>
+                </optgroup>
+                <optgroup label="Medicine Dosage Forms">
+                  <option>Tablet</option>
+                  <option>Capsule</option>
+                  <option>Syrup</option>
+                  <option>Suspension</option>
+                  <option>Injection</option>
+                  <option>Drops</option>
+                  <option>Cream / Ointment</option>
+                  <option>Patch</option>
+                </optgroup>
               </select>
             </div>
           </div>
@@ -1900,7 +1986,7 @@ tbody tr:last-child td { border-bottom: none; }
               <input type="number" placeholder="0.00" step="0.01" min="0" id="eDepth">
             </div>
           </div>
-          <label class="field-check" style="margin-bottom:6px;">
+          <label class="field-check" id="eRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="eRequiresPrescription"> Requires Prescription
           </label>
         </div>
@@ -2240,31 +2326,181 @@ overlay.addEventListener('click', () => {
 });
 </script>
 <script>
-// ── Notifications Dropdown ──────────────────────────────────────────────
-(function() {
-  const notifBtn = document.getElementById('notifBtn');
-  const notifDropdown = document.getElementById('notifDropdown');
-  if (!notifBtn || !notifDropdown) return;
+// ── Notifications (data comes from StaffNotificationsController) ─────────────
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notifDropdown');
+  if (!btn || !dropdown) return;
 
-  notifBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notifDropdown.style.display = notifDropdown.style.display === 'block' ? 'none' : 'block';
+  const listEl    = document.getElementById('notifList');
+  const dotEl     = document.getElementById('notifDot');
+  const countEl   = document.getElementById('notifCount');
+  const readAllEl = document.getElementById('notifReadAll');
+  const moreEl    = document.getElementById('notifMore');
+
+  const URLS = {
+    list:    @json(route('staff.notifications')),
+    all:     @json(route('staff.notifications.all')),
+    readAll: @json(route('staff.notifications.readAll')),
+    read:    @json(route('staff.notifications.read', ['notification' => '__ID__'])),
+  };
+  const CSRF = @json(csrf_token());
+  const POLL_MS = 60000;
+  const LIMIT = 15;
+  const PER_PAGE = 20;
+
+  let items = [];
+  let expanded = false;     // false = latest 15 · true = full paginated list ("View all")
+  let nextPage = null;
+
+  const TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+  const svg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const ICONS = {
+    box:    svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+    alert:  svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    clock:  svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    order:  svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    check:  svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:      svg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    money:  svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+    file:   svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+    user:   svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    bell:   svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  };
+  const TYPE_ICON = {
+    out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+    order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+    refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+  };
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(url, method = 'GET') {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': CSRF },
+      credentials: 'same-origin',
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
+    return res.json();
+  }
+
+  function itemHtml(n) {
+    const tone = TONES[n.tone] || TONES.neutral;
+    return `
+      <div class="notif-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+        <div class="notif-ico">${ICONS[TYPE_ICON[n.type]] || ICONS.bell}</div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}${n.is_read ? '' : '<span class="notif-unread"></span>'}</div>
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">${esc(n.time)}</div>
+        </div>
+      </div>`;
+  }
+
+  function render(data) {
+    items = data.items || [];
+
+    // Badge / dot / header
+    const unread = data.unread || 0, important = data.important || 0;
+    dotEl.style.display = (unread > 0 || important > 0) ? '' : 'none';
+    countEl.style.display = unread > 0 ? '' : 'none';
+    countEl.textContent = `${unread} New`;
+    readAllEl.style.display = unread > 0 ? '' : 'none';
+    moreEl.textContent = expanded ? 'Show recent only' : 'View all notifications';
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="notif-empty">You\'re all caught up 🎉</div>';
+      return;
+    }
+
+    // Important (unhandled) ones are pinned in their own section at the top.
+    const pinned = items.filter(n => n.important);
+    const rest   = items.filter(n => !n.important);
+    let html = '';
+    if (pinned.length) {
+      html += `<div class="notif-section important">Needs attention · ${pinned.length}</div>` + pinned.map(itemHtml).join('');
+    }
+    if (rest.length) {
+      if (pinned.length) html += '<div class="notif-section">Recent activity</div>';
+      html += rest.map(itemHtml).join('');
+    }
+    if (expanded && nextPage) html += '<button type="button" class="notif-more" id="notifLoadMore">Load more</button>';
+    listEl.innerHTML = html;
+  }
+
+  async function load(append = false) {
+    try {
+      if (!expanded) {
+        render(await api(`${URLS.list}?limit=${LIMIT}`));
+        return;
+      }
+      const page = append ? nextPage : 1;
+      const data = await api(`${URLS.all}?page=${page}&per_page=${PER_PAGE}`);
+      nextPage = data.has_more ? data.next_page : null;
+      if (append) data.items = items.concat(data.items || []);
+      render(data);
+    } catch (err) {
+      console.error(err);
+      if (dropdown.style.display === 'block') listEl.innerHTML = '<div class="notif-empty">Couldn\'t load notifications.</div>';
+    }
+  }
+
+  // Click a notification → mark it read, then go to the related page.
+  listEl.addEventListener('click', async (e) => {
+    if (e.target.closest('#notifLoadMore')) { load(true); return; }
+    const row = e.target.closest('.notif-item');
+    if (!row) return;
+    const n = items.find(x => String(x.id) === row.dataset.id);
+    if (!n) return;
+    try { if (!n.is_read) await api(URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+    if (n.link) window.location.href = n.link; else load();
   });
 
+  readAllEl.addEventListener('click', async () => {
+    try { await api(URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+    load();
+  });
+
+  // "View all notifications" ⇄ "Show recent only": staff have no Settings page,
+  // so the full paginated list is shown right inside the bell.
+  moreEl.addEventListener('click', () => {
+    expanded = !expanded;
+    nextPage = null;
+    listEl.scrollTop = 0;
+    load();
+  });
+
+  // Open / close
+  function openDropdown() { dropdown.style.display = 'block'; load(); }
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.style.display === 'block') dropdown.style.display = 'none';
+    else openDropdown();
+  });
   document.addEventListener('click', (e) => {
-    if (notifDropdown.style.display === 'block' && !notifDropdown.contains(e.target) && e.target !== notifBtn) {
-      notifDropdown.style.display = 'none';
+    if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.style.display = 'none';
     }
   });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') notifDropdown.style.display = 'none';
-  });
+  // Initial load + keep the badge fresh (the expanded list is not auto-refreshed).
+  load();
+  setInterval(() => { if (!document.hidden && !expanded) load(); }, POLL_MS);
+
+  // /staff/notifications/view → dashboard?open=notifications → bell opens on the full list.
+  if (new URLSearchParams(window.location.search).get('open') === 'notifications') {
+    expanded = true;
+    openDropdown();
+  }
 })();
 </script>
 <script>
 /* ── Add modal ─────────────────────────────────────── */
-function openModal()  { document.getElementById('modalBg').classList.add('on'); }
+function openModal()  { applyFormProfile('m'); document.getElementById('modalBg').classList.add('on'); }
 function closeModal() { document.getElementById('modalBg').classList.remove('on'); }
 document.getElementById('modalBg').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
@@ -2400,6 +2636,7 @@ function renderViewModal(p) {
     : null;
 
   const topFacts = [
+    field('Form', p.form),
     field('Origin / Manufacturer', p.origin),
     field('Dimensions (W × H × D)', dims),
   ].filter(Boolean).join('');
@@ -2431,6 +2668,7 @@ function renderViewModal(p) {
           ${p.generic_name ? `<div class="view-aside-generic">${esc(p.generic_name)}</div>` : ''}
           <div class="view-badges" style="margin-top:8px;">
             <span class="pill" style="background:${p.category_bg};color:${p.category_color};">${esc(p.category_name)}</span>
+            ${p.form ? `<span class="pill" style="background:var(--bg-soft,#f3f4f6);color:var(--text,#374151);">${esc(p.form)}</span>` : ''}
             ${p.brand_name ? `<span class="pill ok">${esc(p.brand_name)}</span>` : ''}
             ${p.section_label ? `<span class="pill blue">${esc(p.section_label)}</span>` : ''}
             ${p.requires_prescription ? `<span class="pill warning">Rx Only</span>` : ''}
@@ -2499,6 +2737,7 @@ function collectProductForm(p) {
 
   fd.append('name',          val(p + 'Name'));
   fd.append('generic_name',  val(p + 'GenericName'));
+  fd.append('form',          val(p + 'Form'));
   fd.append('brand_id',      val(p + 'Brand'));
   fd.append('category_id',   val(p + 'Cat'));
   fd.append('section_id',    val(p + 'Section'));
@@ -2601,6 +2840,7 @@ async function saveMedicine() {
   if (priceEl.value === '')  { flagField(priceEl); return; }
   nameEl.style.borderColor = '';
   priceEl.style.borderColor = '';
+  if (!guardCombos('m')) return;
 
   const btn = document.querySelector('#modalBg .btn.primary');
   btn.disabled = true;
@@ -2630,6 +2870,197 @@ async function saveMedicine() {
   }
 }
 
+/* ── Form-specific field labels ───────────────────────────
+   Picking a Form re-labels (and re-hints) the shared inputs so
+   each product type asks for what actually matters to it. The
+   input IDs never change, so saving works exactly as before.
+   Each profile: [label, placeholder] per field; `rx` toggles the
+   "Requires Prescription" checkbox. Missing keys use BASE.     */
+const FORM_BASE = {
+  name:    ['Product Name',          'e.g. Product name and size'],
+  generic: ['Generic Name',          'e.g. Generic / variant name'],
+  origin:  ['Origin / Manufacturer', 'e.g. Unilab, Philippines'],
+  desc:    ['Description',           'Product details or any relevant notes…'],
+  ingr:    ['Ingredients',           'List the ingredients…'],
+  warn:    ['Warnings',              'Precautions or safety warnings…'],
+  rx:      false
+};
+
+const FORM_PROFILES = {
+  'Medicine': {
+    name:['Medicine Name','e.g. Paracetamol 500mg'], generic:['Generic Name','e.g. Paracetamol'],
+    desc:['Indications / Description','Indications, dosage, or any relevant notes…'],
+    ingr:['Active & Inactive Ingredients','Active and inactive ingredients…'],
+    warn:['Warnings & Contraindications','Precautions, contraindications, or safety warnings…'], rx:true },
+  'Vitamins': {
+    name:['Vitamin Name','e.g. Vitamin C 500mg'], generic:['Active Nutrient','e.g. Ascorbic Acid'],
+    origin:['Manufacturer','e.g. Pharex, Philippines'],
+    desc:['Health Benefits','e.g. Supports immune health…'],
+    ingr:['Nutrient Content','Nutrients per serving and other ingredients…'],
+    warn:['Dosage Warnings & Allergens','Max daily intake, allergens, interactions…'] },
+  'Alcohol': {
+    name:['Alcohol Product Name','e.g. Isopropyl Alcohol 70% 500ml'], generic:['Alcohol Type','e.g. Ethyl / Isopropyl'],
+    desc:['Intended Use','e.g. Disinfectant, antiseptic, cleaning…'],
+    ingr:['Alcohol Content','e.g. 70% ethyl alcohol, denatured, water…'],
+    warn:['Flammability & Safety Warnings','Flammable, keep away from fire, external use only…'] },
+  'Shampoo': {
+    name:['Shampoo Name','e.g. Anti-Dandruff Shampoo 340ml'], generic:['Hair Type / Variant','e.g. Dry, Oily, Anti-Dandruff'],
+    desc:['Benefits & Directions','How to use and what it does…'],
+    ingr:['Key Ingredients','e.g. Zinc pyrithione, keratin…'],
+    warn:['Precautions','Avoid contact with eyes…'] },
+  'Conditioner': {
+    name:['Conditioner Name','e.g. Smooth & Silky Conditioner 340ml'], generic:['Hair Concern','e.g. Frizz, Damage, Color-treated'],
+    desc:['Benefits & Directions','How to use and what it does…'],
+    ingr:['Key Ingredients','e.g. Argan oil, silicone…'],
+    warn:['Precautions','Avoid contact with eyes…'] },
+  'Soap': {
+    name:['Soap Name','e.g. Antibacterial Bar Soap 90g'], generic:['Soap Type / Variant','e.g. Antibacterial, Moisturizing, Whitening'],
+    desc:['Benefits & Usage','Skin benefits and how to use…'],
+    ingr:['Ingredients','e.g. Sodium tallowate, glycerin…'],
+    warn:['Skin Precautions','Discontinue if irritation occurs…'] },
+  'Body Wash': {
+    name:['Body Wash Name','e.g. Moisturizing Body Wash 400ml'], generic:['Skin Type / Variant','e.g. Sensitive, Dry, Refreshing'],
+    desc:['Benefits & Usage','Skin benefits and how to use…'],
+    ingr:['Ingredients','e.g. Glycerin, aloe vera…'],
+    warn:['Skin Precautions','Avoid contact with eyes…'] },
+  'Lotion': {
+    name:['Lotion Name','e.g. Daily Moisture Lotion 200ml'], generic:['Skin Type','e.g. Dry, Sensitive, Normal'],
+    desc:['Benefits & Usage','Hydration benefits and how to apply…'],
+    ingr:['Ingredients','e.g. Shea butter, vitamin E…'],
+    warn:['Skin Precautions','For external use only…'] },
+  'Skincare': {
+    name:['Skincare Product Name','e.g. Niacinamide 10% Serum 30ml'], generic:['Product Type','e.g. Serum, Toner, Moisturizer, Cleanser'],
+    desc:['Skin Concern & Usage','e.g. Brightening, acne-prone skin, AM/PM use…'],
+    ingr:['Active Ingredients','e.g. Niacinamide, hyaluronic acid…'],
+    warn:['Patch Test & Precautions','Patch test first, avoid eye area…'] },
+  'Sunscreen': {
+    name:['Sunscreen Name','e.g. UV Shield Sunscreen 50ml'], generic:['SPF / PA Rating','e.g. SPF 50 PA++++'],
+    desc:['Protection & Usage','e.g. Water-resistant, reapply every 2 hours…'],
+    ingr:['UV Filters & Ingredients','e.g. Zinc oxide, avobenzone…'],
+    warn:['Sun Safety Precautions','For external use only, avoid eyes…'] },
+  'Makeup': {
+    name:['Makeup Product Name','e.g. Matte Lipstick'], generic:['Shade / Finish','e.g. Ruby Red, Matte'],
+    desc:['Product Details','Coverage, finish, wear time…'],
+    ingr:['Ingredients','Full ingredient list…'],
+    warn:['Allergen & Safety Warnings','Discontinue use if irritation occurs…'] },
+  'Perfume': {
+    name:['Fragrance Name','e.g. Ocean Breeze Eau de Toilette 50ml'], generic:['Fragrance Family','e.g. Floral, Woody, Citrus'],
+    desc:['Scent Description','Overall scent profile and occasion…'],
+    ingr:['Fragrance Notes','Top / Middle / Base notes…'],
+    warn:['Safety Warnings','Flammable, avoid contact with eyes…'] },
+  'Deodorant': {
+    name:['Deodorant Name','e.g. Fresh Roll-On 50ml'], generic:['Type / Scent','e.g. Roll-on, Spray, Stick — Cool Fresh'],
+    desc:['Protection & Usage','e.g. 48-hour protection, apply to dry underarms…'],
+    ingr:['Ingredients','e.g. Aluminum chlorohydrate…'],
+    warn:['Skin Precautions','Do not apply on broken skin…'] },
+  'Toothpaste': {
+    name:['Toothpaste Name','e.g. Whitening Toothpaste 150g'], generic:['Variant / Purpose','e.g. Whitening, Sensitive, Cavity Protection'],
+    desc:['Benefits & Usage','Dental benefits and brushing directions…'],
+    ingr:['Active Ingredients','e.g. Sodium fluoride 1450 ppm…'],
+    warn:['Warnings','Do not swallow, keep out of reach of children…'] },
+  'Toothbrush': {
+    name:['Toothbrush Name','e.g. Soft Bristle Toothbrush'], generic:['Bristle Type','e.g. Soft, Medium, Ultra-soft'],
+    origin:['Manufacturer / Brand Origin','e.g. Colgate, Philippines'],
+    desc:['Features','e.g. Tongue cleaner, slim head, pack of 2…'],
+    ingr:['Materials','e.g. Nylon bristles, polypropylene handle…'],
+    warn:['Care & Replacement','Replace every 3 months…'] },
+  'Mouthwash': {
+    name:['Mouthwash Name','e.g. Antiseptic Mouthwash 500ml'], generic:['Mouthwash Type','e.g. Antiseptic, Fluoride, Alcohol-free'],
+    desc:['Benefits & Usage','Oral benefits and rinsing directions…'],
+    ingr:['Active Ingredients','e.g. Cetylpyridinium chloride…'],
+    warn:['Warnings','Do not swallow, not for children under 6…'] },
+  'Hair Color': {
+    name:['Hair Color Name','e.g. Permanent Hair Color 4N'], generic:['Shade / Color Code','e.g. 4N Natural Brown'],
+    desc:['Application Instructions','Mixing ratio, processing time…'],
+    ingr:['Dye & Developer Ingredients','Color cream and developer contents…'],
+    warn:['Patch Test & Allergy Warnings','Perform a patch test 48 hours before use…'] },
+  'Hair Treatment': {
+    name:['Hair Treatment Name','e.g. Keratin Repair Hair Mask 250ml'], generic:['Treatment Type','e.g. Mask, Serum, Hair Oil, Ampoule'],
+    desc:['Benefits & Usage','Hair concern addressed and how to apply…'],
+    ingr:['Key Ingredients','e.g. Keratin, argan oil…'],
+    warn:['Precautions','Avoid contact with eyes and scalp irritation…'] },
+  'Feminine Care': {
+    name:['Feminine Care Product Name','e.g. Ultra-Thin Napkins 8s'], generic:['Product Type','e.g. Napkin, Panty Liner, Intimate Wash'],
+    desc:['Absorbency & Usage','e.g. Heavy flow, with wings, overnight…'],
+    ingr:['Materials / Ingredients','e.g. Cotton-soft top sheet, pH-balanced formula…'],
+    warn:['Hygiene Warnings','Change regularly, discontinue if irritation occurs…'] },
+  'Baby Care': {
+    name:['Baby Product Name','e.g. Gentle Baby Wash 200ml'], generic:['Product Type / Age Range','e.g. Baby wash, 0–12 months'],
+    desc:['Benefits & Usage','Gentleness, suitability, directions…'],
+    ingr:['Ingredients','e.g. Hypoallergenic, tear-free formula…'],
+    warn:['Safety Warnings','Keep out of reach of children, avoid eyes…'] },
+  'Diapers': {
+    name:['Diaper Name','e.g. Dry Comfort Diapers Medium 40s'], generic:['Size / Weight Range','e.g. Medium (6–11 kg)'],
+    desc:['Features & Pack Count','e.g. 40 pcs, wetness indicator, 12-hr protection…'],
+    ingr:['Materials','e.g. Fluff pulp, SAP, breathable backsheet…'],
+    warn:['Safety Warnings','Dispose properly, keep away from children…'] },
+  'Supplements': {
+    name:['Supplement Name','e.g. Omega-3 Fish Oil 1000mg'], generic:['Active Compound','e.g. EPA / DHA'],
+    origin:['Manufacturer','e.g. Nature\u2019s Bounty, USA'],
+    desc:['Benefits & Recommended Dosage','Intended benefit and suggested serving…'],
+    ingr:['Supplement Facts','Serving size, amount per serving, other ingredients…'],
+    warn:['Side Effects & Interactions','Consult a doctor if pregnant or on medication…'] },
+  'Medical Supplies': {
+    name:['Item Name','e.g. Disposable Syringe 3ml (Box of 100)'], generic:['Item Type','e.g. Syringe, Bandage, BP Monitor'],
+    desc:['Specifications & Intended Use','Size, quantity per pack, intended use…'],
+    ingr:['Materials','e.g. Latex-free, medical-grade plastic…'],
+    warn:['Sterility & Disposal','Single-use only, dispose as medical waste…'] },
+  'Household Cleaning': {
+    name:['Cleaning Product Name','e.g. Multi-Surface Disinfectant 1L'], generic:['Cleaner Type','e.g. Disinfectant, Bleach, Dishwashing'],
+    desc:['Usage Directions','Dilution, surfaces, and how to apply…'],
+    ingr:['Active Ingredients','e.g. Sodium hypochlorite 5%…'],
+    warn:['Hazard & Safety Warnings','Irritant, do not mix with other cleaners…'] },
+  'Food and Beverages': {
+    name:['Food / Beverage Name','e.g. Oat Biscuits 200g'], generic:['Food Type / Variant','e.g. Biscuit, Juice Drink, Chocolate'],
+    origin:['Manufacturer / Country of Origin','e.g. Monde Nissin, Philippines'],
+    desc:['Description & Serving Info','Flavor, serving size, shelf life…'],
+    ingr:['Ingredients & Nutrition','Ingredient list and nutrition highlights…'],
+    warn:['Allergen Warnings','Contains milk, soy, gluten…'] }
+};
+
+// Legacy dosage forms (kept so existing data still selects) use the Medicine profile.
+['Tablet','Capsule','Syrup','Suspension','Injection','Drops','Cream / Ointment','Patch']
+  .forEach(f => { FORM_PROFILES[f] = FORM_PROFILES['Medicine']; });
+
+/** Re-label the shared inputs for the selected Form. `p` is 'm' (add) or 'e' (edit). */
+function applyFormProfile(p) {
+  const sel     = document.getElementById(p + 'Form');
+  const profile = Object.assign({}, FORM_BASE, FORM_PROFILES[sel ? sel.value : ''] || {});
+
+  const fields = {
+    name:    { id: p + 'Name',        optional: false },
+    generic: { id: p + 'GenericName', optional: false },
+    origin:  { id: p + 'Origin',      optional: false },
+    desc:    { id: p + 'Desc',        optional: true  },
+    ingr:    { id: p + 'Ingredients', optional: true  },
+    warn:    { id: p + 'Warnings',    optional: true  }
+  };
+
+  Object.keys(fields).forEach(key => {
+    const input = document.getElementById(fields[key].id);
+    if (!input) return;
+    const label = input.closest('.field')?.querySelector('label');
+    const [text, placeholder] = profile[key];
+    if (label) {
+      label.textContent = text;
+      if (fields[key].optional) {
+        const opt = document.createElement('span');
+        opt.style.cssText = 'font-size:10px;font-weight:400;text-transform:none;color:var(--subtle);';
+        opt.textContent = ' (optional)';
+        label.appendChild(opt);
+      }
+    }
+    input.placeholder = placeholder;
+  });
+
+  // "Requires Prescription" only applies to Medicine (and its dosage forms).
+  const rxWrap = document.getElementById(p + 'RxWrap');
+  if (rxWrap) {
+    rxWrap.style.display = profile.rx ? '' : 'none';
+    if (!profile.rx) document.getElementById(p + 'RequiresPrescription').checked = false;
+  }
+}
+
 /* ── Reset the add-medicine form ─────────────────────── */
 function resetAddForm() {
   ['mName','mGenericName','mOrigin','mDesc','mIngredients','mWarnings','mWidth','mHeight','mDepth','mPrice'].forEach(id => {
@@ -2638,7 +3069,10 @@ function resetAddForm() {
     el.style.borderColor = '';
   });
   document.getElementById('mRequiresPrescription').checked = false;
-  ['mCat','mForm','mSection','mBrand'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  ['mForm','mSection'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  applyFormProfile('m');
+  clearCombo('m', 'brand');
+  clearCombo('m', 'category');
 
   // No section selected yet, so there's no "next free slot" to suggest.
   document.getElementById('mSortOrder').value = '';
@@ -2753,7 +3187,7 @@ function openEditModal(btn) {
 
   document.getElementById('eName').value   = name;
   document.getElementById('eGenericName').value = generic;
-  document.getElementById('eBrand').value = brandId;
+  setCombo('e', 'brand', brandId);
   document.getElementById('eOrigin').value = origin;
   document.getElementById('ePrice').value  = price;
   document.getElementById('eDesc').value   = desc;
@@ -2764,8 +3198,7 @@ function openEditModal(btn) {
   document.getElementById('eDepth').value        = depth;
   document.getElementById('eRequiresPrescription').checked = requiresRx;
 
-  const catSel = document.getElementById('eCat');
-  catSel.value = cat;
+  setCombo('e', 'category', cat);
 
   document.getElementById('eSection').value = card.dataset.sectionId || '';
 
@@ -2774,9 +3207,11 @@ function openEditModal(btn) {
 
   const formSel = document.getElementById('eForm');
   const formOpts = formSel.options;
+  formSel.selectedIndex = 0;
   for (let i = 0; i < formOpts.length; i++) {
     if (formOpts[i].text === form) { formSel.selectedIndex = i; break; }
   }
+  applyFormProfile('e');
 
   const ePreview = document.getElementById('editImgPreview');
   ePreview.style.display = 'none';
@@ -2808,6 +3243,7 @@ async function saveEdit() {
   priceEl.style.borderColor = '';
 
   if (!_editTarget) { closeEditModal(); return; }
+  if (!guardCombos('e')) return;
 
   const card = _editTarget;
   const btn  = document.querySelector('#editModalBg .btn.primary');
@@ -2849,6 +3285,7 @@ function applyProductToCard(card, p) {
   card.dataset.id          = p.id;
   card.dataset.medicine    = p.name;
   card.dataset.genericName = p.generic_name || '';
+  card.dataset.form        = p.form || '';
   card.dataset.brandId     = p.brand_id || '';
   card.dataset.brandName   = p.brand_name || '';
   card.dataset.cat         = p.category_id || '';
@@ -2869,7 +3306,7 @@ function applyProductToCard(card, p) {
   card.dataset.height      = p.height || '';
   card.dataset.depth       = p.depth || '';
   card.dataset.requiresRx  = p.requires_prescription ? 'true' : 'false';
-  card.dataset.name        = `${p.name} ${p.category_name} ${p.brand_name}`.toLowerCase();
+  card.dataset.name        = `${p.name} ${p.form || ''} ${p.category_name} ${p.brand_name}`.toLowerCase();
 
   const titleEl = card.querySelector('.med-title');
   if (titleEl) titleEl.textContent = p.name;
@@ -3167,9 +3604,11 @@ document.getElementById('confirmAddStock').addEventListener('click', function ()
 @endphp
 let categories = {!! $categoriesJson !!};
 let _catEditId  = null;
+let _catComboTarget = null; // 'm' | 'e' when the form was opened from the typable Category field
 const CATEGORIES_URL = "{{ route('staff.inventory.categories.store') }}";
 
 function renderCategories() {
+  refreshComboOptions();
   const list = document.getElementById('categoriesList');
   if (!categories.length) { list.innerHTML = '<div class="manage-empty">No categories yet.</div>'; return; }
   list.innerHTML = categories.map(c => `
@@ -3198,8 +3637,9 @@ function openCategoriesModal() { renderCategories(); document.getElementById('ca
 function closeCategoriesModal() { document.getElementById('categoriesModalBg').classList.remove('on'); }
 document.getElementById('categoriesModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCategoriesModal(); });
 
-function openCategoryForm(id) {
+function openCategoryForm(id, opts) {
   _catEditId = id || null;
+  _catComboTarget = (opts && opts.target) ? opts.target : null;
   const titleEl = document.getElementById('categoryFormTitle');
   if (id) {
     const c = categories.find(x => x.id === id);
@@ -3217,11 +3657,22 @@ function openCategoryForm(id) {
     document.getElementById('catBgColor').value = '#eff6ff';
     document.getElementById('catStatus').value = 'Active';
   }
+  if (opts && opts.name) document.getElementById('catName').value = opts.name;
   document.getElementById('catName').style.borderColor = '';
   updateCatPreview();
   document.getElementById('categoryFormModalBg').classList.add('on');
+  if (opts && opts.name) setTimeout(() => document.getElementById('catName').focus(), 50);
 }
-function closeCategoryForm() { document.getElementById('categoryFormModalBg').classList.remove('on'); }
+function closeCategoryForm() {
+  document.getElementById('categoryFormModalBg').classList.remove('on');
+  // Cancelled while creating from the typable Category field: drop the unmatched text.
+  if (_catComboTarget) {
+    const prefix = _catComboTarget;
+    _catComboTarget = null;
+    clearCombo(prefix, 'category');
+    document.getElementById(prefix + 'CatText')?.focus();
+  }
+}
 document.getElementById('categoryFormModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCategoryForm(); });
 
 function updateCatPreview() {
@@ -3259,8 +3710,11 @@ async function saveCategory() {
       categories.push(result.category);
     }
 
+    const comboPrefix = _catComboTarget;
+    _catComboTarget = null;          // saved, so closing must not clear the field
     closeCategoryForm();
     renderCategories();
+    if (comboPrefix) setCombo(comboPrefix, 'category', result.category.id);
     showToast(result.message);
   } catch (err) {
     showToast(err.message);
@@ -3301,9 +3755,11 @@ async function deleteCategory(id) {
 @endphp
 let brands = {!! $brandsJson !!};
 let _brandEditId = null;
+let _brandComboTarget = null; // 'm' | 'e' when the form was opened from the typable Brand field
 const BRANDS_URL = "{{ route('staff.inventory.brands.store') }}";
 
 function renderBrands() {
+  refreshComboOptions();
   const list = document.getElementById('brandsList');
   if (!brands.length) { list.innerHTML = '<div class="manage-empty">No brands yet.</div>'; return; }
   list.innerHTML = brands.map(b => `
@@ -3356,8 +3812,9 @@ function showBrandPreview(previewId, src) {
   zone.querySelector('.upload-hint').style.display = 'none';
 }
 
-function openBrandForm(id) {
+function openBrandForm(id, opts) {
   _brandEditId = id || null;
+  _brandComboTarget = (opts && opts.target) ? opts.target : null;
   const titleEl = document.getElementById('brandFormTitle');
   resetBrandImageZone('brandTickerImage', 'brandTickerPreview');
   resetBrandImageZone('brandFeaturedImage', 'brandFeaturedPreview');
@@ -3380,10 +3837,21 @@ function openBrandForm(id) {
     document.getElementById('brandShowFeatured').checked = false;
     document.getElementById('brandStatus').value = 'Active';
   }
+  if (opts && opts.name) document.getElementById('brandName').value = opts.name;
   document.getElementById('brandName').style.borderColor = '';
   document.getElementById('brandFormModalBg').classList.add('on');
+  if (opts && opts.name) setTimeout(() => document.getElementById('brandName').focus(), 50);
 }
-function closeBrandForm() { document.getElementById('brandFormModalBg').classList.remove('on'); }
+function closeBrandForm() {
+  document.getElementById('brandFormModalBg').classList.remove('on');
+  // Cancelled while creating from the typable Brand field: drop the unmatched text.
+  if (_brandComboTarget) {
+    const prefix = _brandComboTarget;
+    _brandComboTarget = null;
+    clearCombo(prefix, 'brand');
+    document.getElementById(prefix + 'BrandText')?.focus();
+  }
+}
 document.getElementById('brandFormModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeBrandForm(); });
 
 async function saveBrand() {
@@ -3420,8 +3888,11 @@ async function saveBrand() {
       brands.push(result.brand);
     }
 
+    const comboPrefix = _brandComboTarget;
+    _brandComboTarget = null;        // saved, so closing must not clear the field
     closeBrandForm();
     renderBrands();
+    if (comboPrefix) setCombo(comboPrefix, 'brand', result.brand.id);
     showToast(result.message);
   } catch (err) {
     showToast(err.message);
@@ -3444,6 +3915,266 @@ async function deleteBrand(id) {
     showToast(err.message);
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   TYPABLE BRAND / CATEGORY FIELDS (Add + Edit modals)
+   Type a name or pick from the suggestions. If the committed text
+   (blur / Enter) isn't an existing record, the matching Add Brand /
+   Add Category modal opens with the typed name already filled in.
+   `prefix` is 'm' (Add modal) or 'e' (Edit modal).
+   ══════════════════════════════════════════════════════ */
+const COMBOS = {
+  brand: {
+    items:  () => brands,
+    textId: p => p + 'BrandText',
+    idId:   p => p + 'Brand',
+    listId: 'brandOptions',
+    open:   (p, name) => openBrandForm(null, { name, target: p }),
+  },
+  category: {
+    items:  () => categories,
+    textId: p => p + 'CatText',
+    idId:   p => p + 'Cat',
+    listId: 'categoryOptions',
+    open:   (p, name) => openCategoryForm(null, { name, target: p }),
+  },
+};
+
+function findComboItem(kind, text) {
+  const t = (text || '').trim().toLowerCase();
+  if (!t) return null;
+  return COMBOS[kind].items().find(x => x.name.trim().toLowerCase() === t) || null;
+}
+
+/** Keep the hidden id field (what actually gets submitted) in step with the typed text. */
+function syncCombo(prefix, kind) {
+  const c = COMBOS[kind];
+  const text = document.getElementById(c.textId(prefix));
+  const item = findComboItem(kind, text.value);
+  document.getElementById(c.idId(prefix)).value = item ? item.id : '';
+  text.style.borderColor = '';
+}
+
+/** Select an existing record (by id) in the field; empty/unknown id clears it. */
+function setCombo(prefix, kind, id) {
+  const c = COMBOS[kind];
+  const item = id ? c.items().find(x => String(x.id) === String(id)) : null;
+  document.getElementById(c.textId(prefix)).value = item ? item.name : '';
+  document.getElementById(c.idId(prefix)).value   = item ? item.id : '';
+  document.getElementById(c.textId(prefix)).style.borderColor = '';
+}
+
+function clearCombo(prefix, kind) { setCombo(prefix, kind, null); }
+
+/** Fired on change (blur / Enter / datalist pick). Unknown name → open the Add modal. */
+function handleComboCommit(prefix, kind) {
+  const c = COMBOS[kind];
+  const text = document.getElementById(c.textId(prefix));
+  const name = text.value.trim();
+
+  syncCombo(prefix, kind);
+  if (!name) return;
+
+  const existing = findComboItem(kind, name);
+  if (existing) { text.value = existing.name; return; }   // normalise casing
+
+  c.open(prefix, name);
+}
+
+/** Before saving a product: an unmatched typed name must not be silently dropped. */
+function guardCombos(prefix) {
+  for (const kind of ['brand', 'category']) {
+    const c = COMBOS[kind];
+    const text = document.getElementById(c.textId(prefix));
+    const name = text.value.trim();
+    if (name && !findComboItem(kind, name)) {
+      text.style.borderColor = 'var(--red)';
+      c.open(prefix, name);
+      return false;
+    }
+    syncCombo(prefix, kind);
+  }
+  return true;
+}
+
+/** Rebuild the suggestion lists after a brand/category is added, edited or deleted. */
+function refreshComboOptions() {
+  for (const kind of Object.keys(COMBOS)) {
+    const dl = document.getElementById(COMBOS[kind].listId);
+    if (!dl) continue;
+    dl.innerHTML = '';
+    COMBOS[kind].items().forEach(x => {
+      const o = document.createElement('option');
+      o.value = x.name;
+      dl.appendChild(o);
+    });
+  }
+}
+</script>
+<script>
+/* ── Deep link from the header search: /staff/inventory?open={id} opens that product's details modal ── */
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('open');
+  if (!id || !/^\d+$/.test(id)) return;   // ignore non-product values such as ?open=notifications
+
+  // Drop the param so a refresh or Back doesn't re-open the modal.
+  params.delete('open');
+  const qs = params.toString();
+  history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+
+  const card = Array.from(document.querySelectorAll('.med-card')).find(c => c.dataset.id === id);
+  if (!card) {
+    if (typeof showToast === 'function') showToast('That product could not be found.');
+    return;
+  }
+  card.scrollIntoView({ block: 'center' });
+  openViewModal(card);
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════
+   HEADER SEARCH — products
+   • Typing shows live suggestions (StaffSearchController@suggest).
+   • Clicking a suggestion opens that product's information modal
+     on the inventory page (?open={id}).
+   • Pressing Enter, or "See all results", goes to the results page.
+   ══════════════════════════════════════════════════════ */
+(function () {
+  const form  = document.getElementById('staffSearch');
+  if (!form) return;
+  const input = document.getElementById('staffSearchInput');
+  const panel = document.getElementById('staffSearchPanel');
+  const SUGGEST_URL = "{{ route('staff.search.suggest') }}";
+
+  let timer = null, controller = null, links = [], active = -1;
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Split the raw text on the match and escape every piece, so user text can never
+  // inject markup and a search like "amp" can't cut through an &amp; entity.
+  const hl = (text, q) => {
+    text = String(text ?? '');
+    if (!q) return esc(text);
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.split(re).map((part, i) => i % 2 ? '<mark>' + esc(part) + '</mark>' : esc(part)).join('');
+  };
+
+  const open  = () => { panel.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+  const close = () => { panel.hidden = true;  input.setAttribute('aria-expanded', 'false'); setActive(-1); };
+
+  function setActive(i) {
+    links.forEach(a => a.classList.remove('active'));
+    active = i;
+    if (i >= 0 && links[i]) {
+      links[i].classList.add('active');
+      links[i].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  const productRow = (p, q) => `
+    <a class="sp-item" role="option" href="${esc(p.url)}">
+      <span class="sp-thumb">${p.image
+        ? `<img src="${esc(p.image)}" alt="">`
+        : esc(p.name.slice(0, 2).toUpperCase())}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(p.name, q)}</div>
+        <div class="sp-meta">${hl(p.meta, q)}</div>
+      </div>
+    </a>`;
+
+  function render(data) {
+    const q = data.query;
+    if (!data.products.length) {
+      panel.innerHTML = `<div class="sp-state">No products match “${esc(q)}”.</div>`;
+    } else {
+      panel.innerHTML =
+        `<div class="sp-label">Products</div>${data.products.map(p => productRow(p, q)).join('')}` +
+        `<a class="sp-foot" href="${esc(data.results_url)}">See all results for “${esc(q)}”</a>`;
+    }
+    links = Array.from(panel.querySelectorAll('.sp-item'));
+    setActive(-1);
+    open();
+  }
+
+  async function fetchSuggestions() {
+    const q = input.value.trim();
+    if (!q) { close(); return; }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    try {
+      const res = await fetch(`${SUGGEST_URL}?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) throw new Error('Suggestions unavailable');
+      const data = await res.json();
+      if (input.value.trim() !== q) return;   // a newer keystroke already superseded this
+      render(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') close();  // Enter still works without suggestions
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(fetchSuggestions, 180);
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim() && panel.innerHTML) open();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); return; }
+    if (panel.hidden || !links.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive(active + 1 >= links.length ? 0 : active + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive(active <= 0 ? links.length - 1 : active - 1);
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();                       // a highlighted suggestion wins over the results page
+      links[active].click();
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    if (!input.value.trim()) e.preventDefault();
+  });
+
+  document.addEventListener('click', e => {
+    if (!form.contains(e.target)) close();
+  });
+})();
+</script>
+<script>
+/* On the Inventory page a product suggestion opens its details modal right here,
+   without reloading. Staff suggestions still navigate to the Staffs page. */
+(function () {
+  const panel = document.getElementById('staffSearchPanel');
+  if (!panel) return;
+  const PRODUCT_PREFIX = "{{ route('staff.inventory') }}?open=";
+
+  panel.addEventListener('click', e => {
+    const link = e.target.closest('a.sp-item');
+    if (!link || !link.href.startsWith(PRODUCT_PREFIX)) return;
+
+    const id   = new URL(link.href).searchParams.get('open');
+    const card = Array.from(document.querySelectorAll('.med-card')).find(c => c.dataset.id === id);
+    if (!card) return;                       // not on the page → fall back to normal navigation
+
+    e.preventDefault();
+    panel.hidden = true;
+    card.scrollIntoView({ block: 'center' });
+    openViewModal(card);
+  });
+})();
 </script>
 </body>
 </html>

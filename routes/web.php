@@ -19,13 +19,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StaffExpiryController;
 use App\Http\Controllers\StaffInventoryController;
+use App\Http\Controllers\StaffNotificationsController;
 use App\Http\Controllers\StaffOrdersController;
 use App\Http\Controllers\StaffReportsController;
+use App\Http\Controllers\StaffSettingsController;
+use App\Http\Controllers\StaffSearchController;
 use App\Http\Controllers\StaffStocksController;
 use App\Http\Controllers\StoreInfoController;
 use App\Http\Controllers\UserNotificationsController;
 use App\Http\Controllers\WishlistsController;
 use App\Http\Middleware\LogAdminActivity;
+use App\Http\Middleware\LogStaffActivity;
 use App\Http\Middleware\PreventBackHistory;
 use Illuminate\Support\Facades\Route;
 
@@ -231,7 +235,9 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
 });
 
 // ── Staff ─────────────────────────────────────────────────────────────────────
-Route::prefix('staff')->name('staff.')->group(function () {
+// LogStaffActivity records every successful create/update/delete/approve/login/logout
+// made in the staff portal into the staff_logs table (Settings → Activity Log).
+Route::prefix('staff')->name('staff.')->middleware(LogStaffActivity::class)->group(function () {
 
     // Guest-only: login & register screens
     Route::middleware('guest:staff')->group(function () {
@@ -249,6 +255,26 @@ Route::prefix('staff')->name('staff.')->group(function () {
     // Auth-only
     Route::middleware('auth:staff')->group(function () {
         Route::get('/', [StaffController::class, 'dashboard'])->name('dashboard');
+
+        // ── Profile (StaffController) ────────────────────────────────────
+        Route::get('/profile',          [StaffController::class, 'profile'])->name('profile');
+        Route::put('/profile',          [StaffController::class, 'updateProfile'])->name('profile.update');
+        Route::post('/profile/photo',   [StaffController::class, 'updatePhoto'])->name('profile.photo');
+        Route::put('/profile/password', [StaffController::class, 'updatePassword'])->name('profile.password');
+
+        // ── Header search (StaffSearchController) — products only ────────
+        // 'suggest' feeds the live dropdown (JSON); the bare route is the results page.
+        Route::get('/search',         [StaffSearchController::class, 'index'])->name('search');
+        Route::get('/search/suggest', [StaffSearchController::class, 'suggest'])->name('search.suggest');
+
+        // ── Notifications bell (StaffNotificationsController, JSON) ──────
+        // 'view', 'all' and 'read-all' are literal segments, registered before
+        // the {notification} wildcard.
+        Route::get('/notifications',          [StaffNotificationsController::class, 'index'])->name('notifications');
+        Route::get('/notifications/view',     [StaffNotificationsController::class, 'viewAll'])->name('notifications.view');
+        Route::get('/notifications/all',      [StaffNotificationsController::class, 'all'])->name('notifications.all');
+        Route::put('/notifications/read-all', [StaffNotificationsController::class, 'markAllRead'])->name('notifications.readAll');
+        Route::put('/notifications/{notification}/read', [StaffNotificationsController::class, 'markRead'])->name('notifications.read');
 
         // ── Dashboard charts (JSON) ───────────────────────────────────
         Route::get('/charts/sales',               [StaffController::class, 'weeklySales'])->name('charts.sales');
@@ -300,13 +326,16 @@ Route::prefix('staff')->name('staff.')->group(function () {
         // ── Reports (StaffReportsController) ─────────────────────────────
         // Same screen + endpoints as the admin reports page.
         Route::get('/reports', [StaffReportsController::class, 'index'])->name('reports');
-        Route::post('/reports', [StaffReportsController::class, 'store'])->name('reports.store');
-        Route::put('/reports/{report}', [StaffReportsController::class, 'update'])->name('reports.update');
-        Route::delete('/reports/{report}', [StaffReportsController::class, 'destroy'])->name('reports.destroy');
+        Route::get('/reports/data', [StaffReportsController::class, 'data'])->name('reports.data');
 
         // ── Expiry Tracking (StaffExpiryController) ──────────────────────
         // Same screen as the admin expiry page.
         Route::get('/expiry', [StaffExpiryController::class, 'index'])->name('expiry');
+
+        // ── Settings (StaffSettingsController) ───────────────────────────
+        Route::get('/settings', [StaffSettingsController::class, 'index'])->name('settings');
+        // ── Activity Log feed (StaffSettingsController, JSON) ─────────────
+        Route::get('/settings/logs', [StaffSettingsController::class, 'logs'])->name('settings.logs');
     });
 });
 

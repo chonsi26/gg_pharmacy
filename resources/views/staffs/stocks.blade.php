@@ -237,6 +237,82 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .header-search input::placeholder { color: var(--subtle); }
 
+/* ── HEADER SEARCH SUGGESTIONS ── */
+.header-search { position: relative; }
+.search-panel {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  width: 380px; max-width: 90vw; max-height: 70vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 60;
+}
+.search-panel[hidden] { display: none; }
+.sp-label { padding: 10px 14px 4px; font-size: 11.5px; font-weight: 700; color: var(--subtle); }
+.sp-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; color: var(--text); text-decoration: none; cursor: pointer;
+}
+.sp-item:hover, .sp-item.active { background: var(--red-light); }
+.sp-thumb, .sp-avatar {
+  width: 34px; height: 34px; flex-shrink: 0; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sp-thumb { border-radius: 8px; background: #fff; border: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted); }
+.sp-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.sp-avatar { border-radius: 50%; color: #fff; font-size: 12px; font-weight: 700; }
+.sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sp-tone-1 { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+.sp-tone-2 { background: linear-gradient(135deg,#10b981,#047857); }
+.sp-tone-3 { background: linear-gradient(135deg,#f59e0b,#b45309); }
+.sp-tone-4 { background: linear-gradient(135deg,#ec4899,#be185d); }
+.sp-tone-5 { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+.sp-tone-6 { background: linear-gradient(135deg,#06b6d4,#0e7490); }
+.sp-text { min-width: 0; flex: 1; }
+.sp-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-panel mark { background: transparent; color: var(--red); font-weight: 700; }
+.sp-foot {
+  display: block; padding: 11px 14px; margin-top: 6px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: none;
+}
+.sp-foot:hover { background: var(--red-light); }
+.sp-state { padding: 18px 14px; font-size: 13px; color: var(--muted); text-align: center; }
+
+
+
+/* ── NOTIFICATIONS ── */
+.notif-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  width: 360px; max-width: 88vw;
+  background: var(--card, #fff); border: 1px solid var(--border, #e5e7eb);
+  border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.14);
+  z-index: 50; overflow: hidden;
+}
+.notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
+.notif-pill { font-size: 11px; font-weight: 600; color: var(--red); background: var(--red-light); padding: 2px 8px; border-radius: 20px; }
+.notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
+.notif-link-btn:hover { color: var(--red); }
+.notif-list { max-height: 400px; overflow-y: auto; }
+.notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
+.notif-section.important { color: #CC1F1F; }
+.notif-item { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border, #e5e7eb); cursor: pointer; border-left: 3px solid transparent; position: relative; }
+.notif-item:hover { background: var(--hover, rgba(0,0,0,.03)); }
+.notif-item.important { border-left-color: var(--tone); background: color-mix(in srgb, var(--tone) 5%, transparent); }
+.notif-item.read:not(.important) { opacity: .6; }
+.notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
+.notif-body { flex: 1; min-width: 0; }
+.notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
+.notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
+.notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
+.notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
+.notif-more { display: block; width: 100%; padding: 11px 16px; background: none; border: none; border-top: 1px solid var(--border, #e5e7eb); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--red); }
+.notif-more:hover { background: var(--hover, rgba(0,0,0,.03)); }
+
+
 .header-actions { display: flex; align-items: center; gap: 8px; }
 
 .icon-btn {
@@ -881,13 +957,13 @@ tbody tr:last-child td { border-bottom: none; }
     white-space: nowrap;
   }
   .qty-badge { font-size: 13px; font-weight: 700; color: var(--text); }
-  .qty-low   { color: #38a169; }
-  .qty-ok    { color: #e53e3e; }
+  .qty-low   { color: #e53e3e; }
+  .qty-ok    { color: #38a169; }
 
   .pill { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
-  .pill.ok      { background: #fee2e2; color: #991b1b; }
+  .pill.ok      { background: #dcfce7; color: #166534; }
   .pill.warning { background: #fef3c7; color: #92400e; }
-  .pill.danger  { background: #dcfce7; color: #166534; }
+  .pill.danger  { background: #fee2e2; color: #991b1b; }
 
   .empty-state {
     text-align: center;
@@ -1146,9 +1222,13 @@ tbody tr:last-child td { border-bottom: none; }
     Expiry Tracking<span class="nav-badge">2</span>
   </a>
 
-  <a href = "#" style = "text-decoration: none;">
+        <a class="nav-item" href="{{ route('staff.settings') }}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </a>
+
+  <a href = "{{ route('staff.profile') }}" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-    <form method="POST" action="" style="width:100%;">
       @csrf
       <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
         <div class="user-avatar">
@@ -1163,7 +1243,6 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="user-role">Pharmacy Staff</div>
         </div>
       </button>
-    </form>
   </div>
 </a>
 
@@ -1174,15 +1253,37 @@ tbody tr:last-child td { border-bottom: none; }
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="header-title">Stocks</div>
-  <div class="header-search">
+  <form class="header-search" id="staffSearch" action="{{ route('staff.search') }}" method="GET" role="search" autocomplete="off">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Search products…">
-  </div>
+    <input type="text" name="q" id="staffSearchInput" placeholder="Search products…" value="{{ $q ?? '' }}" maxlength="100" aria-label="Search products" aria-controls="staffSearchPanel" aria-expanded="false">
+    <div class="search-panel" id="staffSearchPanel" role="listbox" hidden></div>
+  </form>
   <div class="header-actions">
-    <button class="icon-btn" title="Notifications">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <div class="dot"></div>
-    </button>
+    <div style="position:relative;">
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="dot" id="notifDot" style="display:none;"></div>
+      </button>
+
+      <div id="notifDropdown" class="notif-dropdown">
+        <div class="notif-head">
+          <span class="notif-head-title">Notifications</span>
+          <span style="display:flex;align-items:center;gap:10px;">
+            <button type="button" class="notif-link-btn" id="notifReadAll" style="display:none;">Mark all read</button>
+            <span class="notif-pill" id="notifCount" style="display:none;"></span>
+          </span>
+        </div>
+
+        <div class="notif-list" id="notifList">
+          <div class="notif-empty">Loading…</div>
+        </div>
+
+        <div class="notif-foot">
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:var(--red);font-size:12px;">View all notifications</button>
+        </div>
+      </div>
+    </div>
+
     <button class="icon-btn" id="themeBtn" title="Toggle dark mode">
       <span id="themeIco"></span>
     </button>
@@ -1218,7 +1319,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="card summary-card">
       <div class="sc-label">Expiring Soon</div>
-      <div class="sc-value" id="sumExpiring" style="color:#38a169;">—</div>
+      <div class="sc-value" id="sumExpiring" style="color:#e53e3e;">—</div>
       <div class="sc-sub">Within 90 days</div>
     </div>
   </div>
@@ -1235,7 +1336,9 @@ tbody tr:last-child td { border-bottom: none; }
         <select id="filterStatus">
           <option value="Active" selected>Available</option>
           <option value="Inactive">Unavailable</option>
+          <option value="Low Stock">Low Stock</option>
           <option value="Out of Stock">Out of Stock</option>
+          <option value="Expiring Soon">Expiring Soon</option>
           <option value="Expired">Expired</option>
           <option value="">All Stocks</option>
         </select>
@@ -1315,6 +1418,20 @@ const ROUTES = {
 // `status`: Active, Inactive, Out of Stock, or Expired.
 let batches = @json($stocks);
 
+// Batches with this many units or fewer count as "Low Stock" in the status filter.
+const LOW_STOCK_THRESHOLD = 10;
+
+// Batches expiring within this many days count as "Expiring Soon" in the status
+// filter. Keep in sync with StaffNotificationsController's expiring window.
+const EXPIRING_DAYS = 10;
+
+function isExpiringSoon(b) {
+  if (!b.expiry_date || b.quantity <= 0 || b.status === "Expired") return false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((new Date(b.expiry_date + "T00:00:00") - today) / 86400000);
+  return days >= 0 && days <= EXPIRING_DAYS;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function statusPill(s) {
   const cls = { "Active": "ok", "Inactive": "blue", "Out of Stock": "warning", "Expired": "danger" };
@@ -1361,7 +1478,14 @@ function renderTable() {
 
   const rows = batches.filter(b => {
     const matchS = b.medicine.toLowerCase().includes(search) || b.stock_no.toLowerCase().includes(search);
-    const matchF = !filter || b.status === filter;
+    // "Low Stock" is a quantity-based filter (1–10 units left, not expired);
+    // every other option matches on the computed `status`.
+    const matchF = !filter
+      || (filter === "Low Stock"
+            ? b.quantity > 0 && b.quantity <= LOW_STOCK_THRESHOLD && b.status !== "Expired"
+            : filter === "Expiring Soon"
+              ? isExpiringSoon(b)
+              : b.status === filter);
     return matchS && matchF;
   });
 
@@ -1615,7 +1739,334 @@ document.getElementById("backToProducts").addEventListener("click", () => {
 });
 
 // ── Init ───────────────────────────────────────────────────────────────────
+// Deep link from the dashboard: /staff/stocks?status=low-stock
+(function applyStatusFromUrl() {
+  const param = new URLSearchParams(window.location.search).get("status");
+  if (!param) return;
+  const map = {
+    "low-stock": "Low Stock",
+    "out-of-stock": "Out of Stock",
+    "expired": "Expired",
+    "expiring-soon": "Expiring Soon",
+    "active": "Active",
+    "inactive": "Inactive",
+    "all": ""
+  };
+  if (param in map) document.getElementById("filterStatus").value = map[param];
+})();
 renderTable();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════
+   HEADER SEARCH — products
+   • Typing shows live suggestions (StaffSearchController@suggest).
+   • Clicking a suggestion opens that product's information modal
+     on the inventory page (?open={id}).
+   • Pressing Enter, or "See all results", goes to the results page.
+   ══════════════════════════════════════════════════════ */
+(function () {
+  const form  = document.getElementById('staffSearch');
+  if (!form) return;
+  const input = document.getElementById('staffSearchInput');
+  const panel = document.getElementById('staffSearchPanel');
+  const SUGGEST_URL = "{{ route('staff.search.suggest') }}";
+
+  let timer = null, controller = null, links = [], active = -1;
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Split the raw text on the match and escape every piece, so user text can never
+  // inject markup and a search like "amp" can't cut through an &amp; entity.
+  const hl = (text, q) => {
+    text = String(text ?? '');
+    if (!q) return esc(text);
+    const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.split(re).map((part, i) => i % 2 ? '<mark>' + esc(part) + '</mark>' : esc(part)).join('');
+  };
+
+  const open  = () => { panel.hidden = false; input.setAttribute('aria-expanded', 'true'); };
+  const close = () => { panel.hidden = true;  input.setAttribute('aria-expanded', 'false'); setActive(-1); };
+
+  function setActive(i) {
+    links.forEach(a => a.classList.remove('active'));
+    active = i;
+    if (i >= 0 && links[i]) {
+      links[i].classList.add('active');
+      links[i].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  const productRow = (p, q) => `
+    <a class="sp-item" role="option" href="${esc(p.url)}">
+      <span class="sp-thumb">${p.image
+        ? `<img src="${esc(p.image)}" alt="">`
+        : esc(p.name.slice(0, 2).toUpperCase())}</span>
+      <div class="sp-text">
+        <div class="sp-name">${hl(p.name, q)}</div>
+        <div class="sp-meta">${hl(p.meta, q)}</div>
+      </div>
+    </a>`;
+
+  function render(data) {
+    const q = data.query;
+    if (!data.products.length) {
+      panel.innerHTML = `<div class="sp-state">No products match “${esc(q)}”.</div>`;
+    } else {
+      panel.innerHTML =
+        `<div class="sp-label">Products</div>${data.products.map(p => productRow(p, q)).join('')}` +
+        `<a class="sp-foot" href="${esc(data.results_url)}">See all results for “${esc(q)}”</a>`;
+    }
+    links = Array.from(panel.querySelectorAll('.sp-item'));
+    setActive(-1);
+    open();
+  }
+
+  async function fetchSuggestions() {
+    const q = input.value.trim();
+    if (!q) { close(); return; }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+
+    try {
+      const res = await fetch(`${SUGGEST_URL}?q=${encodeURIComponent(q)}`, {
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      });
+      if (!res.ok) throw new Error('Suggestions unavailable');
+      const data = await res.json();
+      if (input.value.trim() !== q) return;   // a newer keystroke already superseded this
+      render(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') close();  // Enter still works without suggestions
+    }
+  }
+
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(fetchSuggestions, 180);
+  });
+
+  input.addEventListener('focus', () => {
+    if (input.value.trim() && panel.innerHTML) open();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { close(); return; }
+    if (panel.hidden || !links.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActive(active + 1 >= links.length ? 0 : active + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActive(active <= 0 ? links.length - 1 : active - 1);
+    } else if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();                       // a highlighted suggestion wins over the results page
+      window.location.href = links[active].href;
+    }
+  });
+
+  form.addEventListener('submit', e => {
+    if (!input.value.trim()) e.preventDefault();
+  });
+
+  document.addEventListener('click', e => {
+    if (!form.contains(e.target)) close();
+  });
+})();
+</script>
+
+<script>
+// ── Notifications (data comes from StaffNotificationsController) ─────────────
+(function () {
+  const btn      = document.getElementById('notifBtn');
+  const dropdown = document.getElementById('notifDropdown');
+  if (!btn || !dropdown) return;
+
+  const listEl    = document.getElementById('notifList');
+  const dotEl     = document.getElementById('notifDot');
+  const countEl   = document.getElementById('notifCount');
+  const readAllEl = document.getElementById('notifReadAll');
+  const moreEl    = document.getElementById('notifMore');
+
+  const URLS = {
+    list:    @json(route('staff.notifications')),
+    all:     @json(route('staff.notifications.all')),
+    readAll: @json(route('staff.notifications.readAll')),
+    read:    @json(route('staff.notifications.read', ['notification' => '__ID__'])),
+  };
+  const CSRF = @json(csrf_token());
+  const POLL_MS = 60000;
+  const LIMIT = 15;
+  const PER_PAGE = 20;
+
+  let items = [];
+  let expanded = false;     // false = latest 15 · true = full paginated list ("View all")
+  let nextPage = null;
+
+  // Stock-related notification types → ?status= value understood by the stocks page.
+  const STOCK_STATUS = { out_of_stock: 'out-of-stock', low_stock: 'low-stock', expired_stock: 'expired', expiring_stock: 'expiring-soon' };
+  const STOCKS_URL = @json(route('staff.stocks'));
+
+  const STATUS_FILTER = { 'out-of-stock': 'Out of Stock', 'low-stock': 'Low Stock', 'expired': 'Expired', 'expiring-soon': 'Expiring Soon' };
+  function openStocks(status) {
+    dropdown.style.display = 'none';
+    const sel = document.getElementById('filterStatus');
+    sel.value = STATUS_FILTER[status];
+    document.getElementById('searchBatch').value = '';
+    renderTable();
+    history.replaceState(null, '', STOCKS_URL + '?status=' + status);
+  }
+
+  const TONES = { danger: '#CC1F1F', warning: '#e07b00', info: '#2563eb', success: '#2D7A2D', neutral: '#65676b' };
+  const svg = p => `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+  const ICONS = {
+    box:    svg('<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>'),
+    alert:  svg('<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'),
+    clock:  svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    order:  svg('<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>'),
+    check:  svg('<polyline points="20 6 9 17 4 12"/>'),
+    x:      svg('<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'),
+    money:  svg('<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>'),
+    file:   svg('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>'),
+    user:   svg('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+    bell:   svg('<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>'),
+  };
+  const TYPE_ICON = {
+    out_of_stock: 'box', low_stock: 'alert', expired_stock: 'x', expiring_stock: 'clock',
+    order_pending: 'order', order_confirmed: 'order', order_ready: 'check',
+    refund_pending: 'money', payment_proof: 'money', prescription_uploaded: 'file',
+    order_completed: 'check', order_cancelled: 'x', new_customer: 'user',
+  };
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  async function api(url, method = 'GET') {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': CSRF },
+      credentials: 'same-origin',
+      keepalive: true,
+    });
+    if (!res.ok) throw new Error(`${url} → ${res.status}`);
+    return res.json();
+  }
+
+  function itemHtml(n) {
+    const tone = TONES[n.tone] || TONES.neutral;
+    return `
+      <div class="notif-item ${n.important ? 'important' : ''} ${n.is_read ? 'read' : ''}" data-id="${n.id}" style="--tone:${tone}">
+        <div class="notif-ico">${ICONS[TYPE_ICON[n.type]] || ICONS.bell}</div>
+        <div class="notif-body">
+          <div class="notif-title">${esc(n.title)}${n.is_read ? '' : '<span class="notif-unread"></span>'}</div>
+          <div class="notif-msg">${esc(n.message)}</div>
+          <div class="notif-time">${esc(n.time)}</div>
+        </div>
+      </div>`;
+  }
+
+  function render(data) {
+    items = data.items || [];
+
+    // Badge / dot / header
+    const unread = data.unread || 0, important = data.important || 0;
+    dotEl.style.display = (unread > 0 || important > 0) ? '' : 'none';
+    countEl.style.display = unread > 0 ? '' : 'none';
+    countEl.textContent = `${unread} New`;
+    readAllEl.style.display = unread > 0 ? '' : 'none';
+    moreEl.textContent = expanded ? 'Show recent only' : 'View all notifications';
+
+    if (!items.length) {
+      listEl.innerHTML = '<div class="notif-empty">You\'re all caught up 🎉</div>';
+      return;
+    }
+
+    // Important (unhandled) ones are pinned in their own section at the top.
+    const pinned = items.filter(n => n.important);
+    const rest   = items.filter(n => !n.important);
+    let html = '';
+    if (pinned.length) {
+      html += `<div class="notif-section important">Needs attention · ${pinned.length}</div>` + pinned.map(itemHtml).join('');
+    }
+    if (rest.length) {
+      if (pinned.length) html += '<div class="notif-section">Recent activity</div>';
+      html += rest.map(itemHtml).join('');
+    }
+    if (expanded && nextPage) html += '<button type="button" class="notif-more" id="notifLoadMore">Load more</button>';
+    listEl.innerHTML = html;
+  }
+
+  async function load(append = false) {
+    try {
+      if (!expanded) {
+        render(await api(`${URLS.list}?limit=${LIMIT}`));
+        return;
+      }
+      const page = append ? nextPage : 1;
+      const data = await api(`${URLS.all}?page=${page}&per_page=${PER_PAGE}`);
+      nextPage = data.has_more ? data.next_page : null;
+      if (append) data.items = items.concat(data.items || []);
+      render(data);
+    } catch (err) {
+      console.error(err);
+      if (dropdown.style.display === 'block') listEl.innerHTML = '<div class="notif-empty">Couldn\'t load notifications.</div>';
+    }
+  }
+
+  // Click a notification → mark it read, then go to the related page.
+  listEl.addEventListener('click', async (e) => {
+    if (e.target.closest('#notifLoadMore')) { load(true); return; }
+    const row = e.target.closest('.notif-item');
+    if (!row) return;
+    const n = items.find(x => String(x.id) === row.dataset.id);
+    if (!n) return;
+    try { if (!n.is_read) await api(URLS.read.replace('__ID__', n.id), 'PUT'); } catch (err) { console.error(err); }
+    // Stock notifications open the stocks table pre-filtered to that status.
+    const stockStatus = STOCK_STATUS[n.type];
+    if (stockStatus) { openStocks(stockStatus); return; }
+    if (n.link) window.location.href = n.link; else load();
+  });
+
+  readAllEl.addEventListener('click', async () => {
+    try { await api(URLS.readAll, 'PUT'); } catch (err) { console.error(err); }
+    load();
+  });
+
+  // "View all notifications" ⇄ "Show recent only": staff have no Settings page,
+  // so the full paginated list is shown right inside the bell.
+  moreEl.addEventListener('click', () => {
+    expanded = !expanded;
+    nextPage = null;
+    listEl.scrollTop = 0;
+    load();
+  });
+
+  // Open / close
+  function openDropdown() { dropdown.style.display = 'block'; load(); }
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (dropdown.style.display === 'block') dropdown.style.display = 'none';
+    else openDropdown();
+  });
+  document.addEventListener('click', (e) => {
+    if (dropdown.style.display === 'block' && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+      dropdown.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') dropdown.style.display = 'none'; });
+
+  // Initial load + keep the badge fresh (the expanded list is not auto-refreshed).
+  load();
+  setInterval(() => { if (!document.hidden && !expanded) load(); }, POLL_MS);
+
+  // /staff/notifications/view → dashboard?open=notifications → bell opens on the full list.
+  if (new URLSearchParams(window.location.search).get('open') === 'notifications') {
+    expanded = true;
+    openDropdown();
+  }
+})();
 </script>
 </body>
 </html>

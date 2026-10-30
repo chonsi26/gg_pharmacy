@@ -1337,6 +1337,7 @@ tbody tr:last-child td { border-bottom: none; }
           <option value="Inactive">Unavailable</option>
           <option value="Low Stock">Low Stock</option>
           <option value="Out of Stock">Out of Stock</option>
+          <option value="Expiring Soon">Expiring Soon</option>
           <option value="Expired">Expired</option>
           <option value="">All Stocks</option>
         </select>
@@ -1419,6 +1420,17 @@ let batches = @json($stocks);
 // Batches with this many units or fewer count as "Low Stock" in the status filter.
 const LOW_STOCK_THRESHOLD = 10;
 
+// Batches expiring within this many days count as "Expiring Soon" in the status
+// filter. Keep in sync with AdminNotificationsController::EXPIRING_DAYS.
+const EXPIRING_DAYS = 10;
+
+function isExpiringSoon(b) {
+  if (!b.expiry_date || b.quantity <= 0 || b.status === "Expired") return false;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((new Date(b.expiry_date + "T00:00:00") - today) / 86400000);
+  return days >= 0 && days <= EXPIRING_DAYS;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function statusPill(s) {
   const cls = { "Active": "ok", "Inactive": "blue", "Out of Stock": "warning", "Expired": "danger" };
@@ -1470,7 +1482,9 @@ function renderTable() {
     const matchF = !filter
       || (filter === "Low Stock"
             ? b.quantity > 0 && b.quantity <= LOW_STOCK_THRESHOLD && b.status !== "Expired"
-            : b.status === filter);
+            : filter === "Expiring Soon"
+              ? isExpiringSoon(b)
+              : b.status === filter);
     return matchS && matchF;
   });
 
@@ -1732,6 +1746,7 @@ document.getElementById("backToProducts").addEventListener("click", () => {
     "low-stock": "Low Stock",
     "out-of-stock": "Out of Stock",
     "expired": "Expired",
+    "expiring-soon": "Expiring Soon",
     "active": "Active",
     "inactive": "Inactive",
     "all": ""
