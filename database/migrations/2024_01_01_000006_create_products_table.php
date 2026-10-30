@@ -10,6 +10,8 @@ return new class extends Migration {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            // Auto-generated from category/brand/name/generic/form (see Product::generateCodeName()).
+            $table->string('code_name', 100)->nullable()->unique();
             $table->string('generic_name')->nullable();
             // Product type / dosage form, e.g. "Medicine", "Vitamins", "Tablet", "Syrup".
             $table->string('form', 100)->nullable();

@@ -20,7 +20,7 @@ use Illuminate\View\View;
  *  - index():   the full search results page, reached when the person presses
  *    Enter (or "See all results") instead of picking a suggestion.
  *
- * Products match on name, generic name, form, category and brand (same fields
+ * Products match on name, code name, generic name, form, category and brand (same fields
  * as the inventory screen's own search box). Staffs match on first/last/full
  * name, email, contact number and staff code (e.g. STF-0007).
  */
@@ -138,6 +138,7 @@ class AdminSearchController extends Controller
             ->with(['category:id,name,icon_color,bg_color', 'brand:id,name'])
             ->where(function (Builder $sub) use ($like) {
                 $sub->where('products.name', 'like', $like)
+                    ->orWhere('products.code_name', 'like', $like)
                     ->orWhere('products.generic_name', 'like', $like)
                     ->orWhere('products.form', 'like', $like)
                     ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $like))
@@ -145,8 +146,8 @@ class AdminSearchController extends Controller
             })
             // Names that start with the search text come first, then generic names.
             ->orderByRaw(
-                'CASE WHEN products.name LIKE ? THEN 0 WHEN products.generic_name LIKE ? THEN 1 ELSE 2 END',
-                [$starts, $starts]
+                'CASE WHEN products.name LIKE ? THEN 0 WHEN products.code_name LIKE ? THEN 1 WHEN products.generic_name LIKE ? THEN 2 ELSE 3 END',
+                [$starts, $starts, $starts]
             )
             ->orderBy('products.name');
     }
@@ -210,7 +211,7 @@ class AdminSearchController extends Controller
 
     private function productMeta(Product $p): string
     {
-        return collect([$p->generic_name, $p->form, $p->brand->name ?? null])
+        return collect([$p->code_name, $p->generic_name, $p->form, $p->brand->name ?? null])
             ->filter()
             ->implode(' · ') ?: ($p->category->name ?? 'Product');
     }

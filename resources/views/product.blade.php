@@ -446,6 +446,7 @@
     .modal-box.wide .modal-subtitle { margin-bottom: 16px; }
     .modal-field { margin-bottom: 10px; }
   }
+  .code-name { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--gray, #777); }
 </style>
 </head>
 <body>
@@ -722,6 +723,9 @@
         <div class="med-brand"><i class="fas fa-building" style="margin-right:5px;"></i>{{ $product->brand->name }}</div>
       @endif
       <h1 class="med-name">{{ $product->name }}</h1>
+      @if($product->code_name)
+        <p class="med-generic">Code Name: <span class="code-name" style="font-size:13px;color:var(--text);">{{ $product->code_name }}</span></p>
+      @endif
       @if($product->generic_name)
         <p class="med-generic">{{ $formLabels['generic'] }}: <span>{{ $product->generic_name }}</span></p>
       @endif
@@ -846,6 +850,7 @@
           <h3 style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--text);margin-bottom:12px;">Product Details</h3>
           <table class="info-table">
             <tr><td>{{ $formLabels['name'] }}</td><td>{{ $product->name }}</td></tr>
+            @if($product->code_name)<tr><td>Code Name</td><td><span class="code-name" style="font-size:13px;color:var(--text);">{{ $product->code_name }}</span></td></tr>@endif
             @if($product->form)<tr><td>Form</td><td>{{ $product->form }}</td></tr>@endif
             @if($product->generic_name)<tr><td>{{ $formLabels['generic'] }}</td><td>{{ $product->generic_name }}</td></tr>@endif
             @if($product->brand)<tr><td>Brand</td><td>{{ $product->brand->name }}</td></tr>@endif

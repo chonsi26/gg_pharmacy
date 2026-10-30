@@ -525,6 +525,7 @@
     .t-step.current .t-step-icon { animation: tPulse 2.2s ease-in-out infinite; }
   }
   @keyframes tPulse { 0%, 100% { box-shadow: 0 0 0 5px rgba(46,125,50,.18); } 50% { box-shadow: 0 0 0 10px rgba(46,125,50,.04); } }
+  .code-name { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--gray, #777); }
 </style>
 </head>
 
@@ -534,7 +535,7 @@
 <div class="top-bar">
   <a href="{{ route('store.info') }}" class="store-finder"><i class="fas fa-map-marker-alt"></i> STORE INFO</a>
   <span class="sep">|</span>
-  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY YOUR ORDERS</a>
+  <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
   @guest
     <a href="#" id="loginBtn"><i class="fas fa-user"></i> LOG IN</a>
@@ -890,7 +891,10 @@
         @if($product)
           <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
         @endif
-        <div class="t-item-name">{{ $product->name ?? 'Product no longer available' }}</div>
+        <div class="t-item-name">
+          {{ $product->name ?? 'Product no longer available' }}
+          @if($product && $product->code_name)<div class="code-name">{{ $product->code_name }}</div>@endif
+        </div>
         <div class="t-item-qty">× {{ $item->quantity }}</div>
       </div>
     @endforeach

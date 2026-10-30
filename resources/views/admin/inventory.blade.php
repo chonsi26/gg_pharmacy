@@ -767,6 +767,7 @@ tbody tr:last-child td { border-bottom: none; }
 .view-aside .view-img-wrap { width: 100%; height: 200px; border-radius: 10px; }
 .view-aside-name { font-size: 16.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
 .view-aside-generic { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.view-aside-code { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin-top: 3px; }
 .view-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .view-price-block { padding-top: 4px; border-top: 1px solid var(--border); }
 .view-price { font-size: 21px; font-weight: 800; color: var(--text); }
@@ -1569,13 +1570,14 @@ tbody tr:last-child td { border-bottom: none; }
           $catColor   = $category->icon_color ?? '#6b7280';
           $catBg      = $category->bg_color ?? '#f3f4f6';
           $catName    = $category->name ?? 'Uncategorized';
-          $searchKey  = strtolower($product->name.' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
+          $searchKey  = strtolower($product->name.' '.($product->code_name ?? '').' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
           $barColor   = $qty <= 10 ? 'var(--red)' : ($qty <= 50 ? 'var(--orange)' : 'var(--green)');
           $barWidth   = min($qty, 100);
           $badgeClass = $product->badge_type === 'sale-badge' ? 'warning' : 'ok';
         @endphp
         <div class="med-card" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
              data-id="{{ $product->id }}"
+             data-code-name="{{ $product->code_name }}"
              data-generic-name="{{ $product->generic_name }}"
              data-form="{{ $product->form }}"
              data-brand-name="{{ $brand->name ?? '' }}"
@@ -2632,6 +2634,7 @@ function renderViewModal(p) {
 
         <div class="view-aside-text">
           <div class="view-aside-name">${esc(p.name)}</div>
+          ${p.code_name ? `<div class="view-aside-code">Code: ${esc(p.code_name)}</div>` : ''}
           ${p.generic_name ? `<div class="view-aside-generic">${esc(p.generic_name)}</div>` : ''}
           <div class="view-badges" style="margin-top:8px;">
             <span class="pill" style="background:${p.category_bg};color:${p.category_color};">${esc(p.category_name)}</span>
@@ -3251,6 +3254,7 @@ function applyProductToCard(card, p) {
 
   card.dataset.id          = p.id;
   card.dataset.medicine    = p.name;
+  card.dataset.codeName    = p.code_name || '';
   card.dataset.genericName = p.generic_name || '';
   card.dataset.form        = p.form || '';
   card.dataset.brandId     = p.brand_id || '';

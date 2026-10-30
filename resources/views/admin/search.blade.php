@@ -647,7 +647,7 @@ mark { background: transparent; color: var(--red); font-weight: 700; }
             $qty   = (int) ($product->available_qty ?? 0);
             $cat   = $product->category;
             $color = $cat->icon_color ?? '#6b7280';
-            $meta  = collect([$product->generic_name, $product->form])->filter()->implode(' · ');
+            $meta  = collect([$product->code_name, $product->generic_name, $product->form])->filter()->implode(' · ');
           @endphp
           <a class="p-card" href="{{ route('admin.inventory', ['open' => $product->id]) }}">
             <div class="p-img">

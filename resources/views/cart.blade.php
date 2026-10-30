@@ -548,6 +548,7 @@
     .cart-summary-total .amount { font-size: 17px; }
     .cart-checkout-btn { padding: 0 20px; height: 40px; font-size: 13px; }
   }
+  .code-name { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--gray, #777); }
 </style>
 </head>
 <body>
@@ -770,6 +771,7 @@
                   </a>
                   <div class="cart-item-details">
                     <a href="{{ route('product.show', $product) }}" class="cart-item-name">{{ $product->name }}</a>
+                    @if($product->code_name)<div class="code-name">{{ $product->code_name }}</div>@endif
                     <div class="cart-item-meta">
                       @if($product->brand)<span>{{ $product->brand->name }}</span>@endif
                       @if($product->requires_prescription)

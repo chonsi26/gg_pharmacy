@@ -673,6 +673,7 @@
     .review-line-sub, .order-item-sub { grid-area: sub; text-align: right; padding-top: 4px; border-top: 1px solid #e5e7eb; }
     .order-card .otable-head { display: none; }
   }
+  .code-name { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--gray, #777); }
 </style>
 </head>
 <body>
@@ -888,6 +889,7 @@
               <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}">
               <div class="review-line-info">
                 <div class="review-line-name">{{ $product->name }}</div>
+                @if($product->code_name)<div class="code-name">{{ $product->code_name }}</div>@endif
                 @if($product->requires_prescription)
                   <div class="review-line-meta"><span class="review-line-rx"><i class="fas fa-prescription"></i> Rx Required</span></div>
                 @endif
@@ -1044,6 +1046,7 @@
                 @endif
                 <div class="order-item-info">
                   <div class="order-item-name">{{ $product->name ?? 'Product no longer available' }}</div>
+                  @if($product && $product->code_name)<div class="code-name">{{ $product->code_name }}</div>@endif
 
                   @if($item->requiresPrescription())
                     @if($item->prescription_file)
@@ -1534,6 +1537,7 @@
           'proof'       => $o->hasProofOfPayment() ? asset($o->proof_of_payment) : null,
           'items'       => $o->items->map(fn ($i) => [
               'name'  => $i->product->name ?? 'Product no longer available',
+              'code'  => $i->product->code_name ?? null,
               'qty'   => (int) $i->quantity,
               'price' => (float) $i->unit_price,
               'sub'   => (float) $i->subtotal,
@@ -1603,9 +1607,15 @@
     tbody.innerHTML = '';
     r.items.forEach(item => {
       const tr = document.createElement('tr');
-      [item.name, item.qty, peso(item.price), peso(item.sub)].forEach(val => {
+      [item.name, item.qty, peso(item.price), peso(item.sub)].forEach((val, idx) => {
         const td = document.createElement('td');
         td.textContent = val;
+        if (idx === 0 && item.code) {
+          const code = document.createElement('div');
+          code.className = 'code-name';
+          code.textContent = item.code;
+          td.appendChild(code);
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);

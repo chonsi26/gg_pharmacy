@@ -159,6 +159,8 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::get('/orders', [AdminController::class, 'orders'])->name('orders');
         // ── Orders (AdminOrdersController) ───────────────────────────────
         Route::get('/orders/data', [AdminOrdersController::class, 'data'])->name('orders.data');
+        Route::get('/orders/products', [AdminOrdersController::class, 'products'])->name('orders.products');
+        Route::post('/orders', [AdminOrdersController::class, 'store'])->name('orders.store');
         Route::put('/orders/{order}/confirm', [AdminOrdersController::class, 'confirm'])->name('orders.confirm');
         Route::put('/orders/{order}/ready', [AdminOrdersController::class, 'ready'])->name('orders.ready');
         Route::put('/orders/{order}/complete', [AdminOrdersController::class, 'complete'])->name('orders.complete');

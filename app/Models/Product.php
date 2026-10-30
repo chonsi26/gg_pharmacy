@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -30,6 +31,61 @@ class Product extends Model
         'height'    => 'float',
         'depth'     => 'float',
     ];
+
+    // ── Code name ───────────────────────────────────────────────────────────
+
+    /**
+     * Every product gets a generated code name built from its own information:
+     *
+     *     CATEGORY-BRAND-NAME-GENERIC-FORM   →   HEA-BIO-PARACE-PARA-TAB
+     *
+     * It is (re)generated automatically on save whenever the product has no
+     * code name yet, or one of the fields it is built from changes. It is not
+     * mass-assignable, so it can only come from this generator.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product) {
+            $inputsChanged = $product->isDirty(['name', 'generic_name', 'form', 'category_id', 'brand_id']);
+
+            if (blank($product->code_name) || $inputsChanged) {
+                $product->code_name = $product->generateCodeName();
+            }
+        });
+    }
+
+    /** Build the code name from this product's current information (unique across products). */
+    public function generateCodeName(): string
+    {
+        $segment = fn (?string $value, int $length): string => substr(
+            preg_replace('/[^A-Z0-9]/', '', strtoupper(Str::ascii((string) $value))),
+            0,
+            $length
+        );
+
+        $category = $this->category_id ? Category::whereKey($this->category_id)->value('name') : null;
+        $brand    = $this->brand_id    ? Brand::whereKey($this->brand_id)->value('name')       : null;
+
+        $base = collect([
+            $segment($category, 3),
+            $segment($brand, 3),
+            $segment($this->name, 6),
+            $segment($this->generic_name, 4),
+            $segment($this->form, 3),
+        ])->filter()->implode('-') ?: 'PRODUCT';
+
+        // Two products with identical info get -2, -3 ... so the code stays unique.
+        $candidate = $base;
+        $n         = 1;
+
+        while (static::where('code_name', $candidate)
+                ->when($this->exists, fn ($q) => $q->whereKeyNot($this->getKey()))
+                ->exists()) {
+            $candidate = $base . '-' . (++$n);
+        }
+
+        return $candidate;
+    }
 
     // ── Relationships ───────────────────────────────────────────────────────
 

@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\Stock;
+use App\Models\User;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class AdminOrdersController extends Controller
 {
@@ -57,6 +64,194 @@ class AdminOrdersController extends Controller
         return response()->json([
             'orders'        => $orders,
             'expired_count' => $expired,
+        ]);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Manual order entry ("Add Order" button)
+    // ─────────────────────────────────────────────────────────────────────
+
+    /** Product picker feed for the Add Order modal. */
+    public function products(): JsonResponse
+    {
+        $products = Product::active()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Product $p) => [
+                'id'                   => $p->id,
+                'name'                 => $p->name,
+                'code'                 => $p->code_name,
+                'price'                => $p->price,
+                'stock'                => $p->availableStock(),
+                'requiresPrescription' => (bool) $p->requires_prescription,
+            ])
+            ->values();
+
+        return response()->json(['products' => $products]);
+    }
+
+    /**
+     * Record an already-finished sale (e.g. a walk-in customer) as a
+     * COMPLETED order. The customer is matched by email, or created in the
+     * users table when new, and each item's quantity is deducted from an
+     * active, unexpired stock batch — all in one transaction, so a stock
+     * problem leaves no half-created order or customer behind.
+     *
+     * Multipart request: app-paid orders need a proof_of_payment image, and
+     * every prescription-only product needs its own prescription_file image.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'customer.first_name'      => ['required', 'string', 'max:255'],
+            'customer.last_name'       => ['required', 'string', 'max:255'],
+            'customer.email'           => ['nullable', 'email', 'max:255'],
+            'customer.contact_number'  => ['nullable', 'string', 'max:20'],
+            'customer.address'         => ['nullable', 'string', 'max:500'],
+            'customer.password'        => ['nullable', 'string', 'min:6', 'max:255'],
+            'customer.profile_picture' => ['nullable', 'image', 'max:5120'],
+            'payment_method'           => ['required', 'in:cash,app'],
+            'proof_of_payment'         => ['nullable', 'image', 'max:5120'],
+            'order_date'               => ['nullable', 'date', 'before_or_equal:now'],
+            'items'                    => ['required', 'array', 'min:1'],
+            'items.*.product_id'       => ['required', 'integer', 'distinct', 'exists:products,id'],
+            'items.*.quantity'         => ['required', 'integer', 'min:1', 'max:10000'],
+            'items.*.prescription_file'=> ['nullable', 'image', 'max:5120'],
+        ], [
+            'customer.first_name.required' => 'Please enter the customer\'s first name.',
+            'customer.last_name.required'  => 'Please enter the customer\'s last name.',
+            'customer.email.email'         => 'Please enter a valid email address.',
+            'customer.password.min'        => 'The password must be at least 6 characters.',
+            'items.required'               => 'Add at least one product.',
+            'items.*.product_id.distinct'  => 'The same product is listed more than once.',
+            '*.image'                      => 'Uploaded files must be images.',
+            '*.max'                        => 'Uploaded images may not be larger than 5 MB.',
+        ]);
+
+        if ($data['payment_method'] === 'app' && ! $request->hasFile('proof_of_payment')) {
+            throw ValidationException::withMessages(['proof_of_payment' => 'Please upload the proof of payment for this app payment.']);
+        }
+
+        $when = ! empty($data['order_date']) ? Carbon::parse($data['order_date']) : now();
+
+        $order = DB::transaction(function () use ($request, $data, $when) {
+            $products = Product::whereIn('id', collect($data['items'])->pluck('product_id'))
+                ->get()
+                ->keyBy('id');
+
+            $lines    = [];
+            $subtotal = 0.0;
+
+            // 1) Validate everything (stock + required uploads) before touching any data.
+            foreach (array_values($data['items']) as $i => $line) {
+                $product = $products[$line['product_id']];
+                $qty     = (int) $line['quantity'];
+
+                if ($product->requires_prescription && ! $request->hasFile("items.$i.prescription_file")) {
+                    throw ValidationException::withMessages([
+                        'items' => "Please upload the prescription for \"{$product->name}\".",
+                    ]);
+                }
+
+                // One batch must cover the whole line (order_items.stock_id is a single batch).
+                $stock = Stock::where('product_id', $product->id)
+                    ->where('is_active', true)
+                    ->where('quantity', '>=', $qty)
+                    ->where(fn ($q) => $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now()))
+                    ->orderByRaw('expiry_date is null')
+                    ->orderBy('expiry_date')
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $stock) {
+                    throw ValidationException::withMessages([
+                        'items' => "Not enough available stock for \"{$product->name}\" (requested {$qty}).",
+                    ]);
+                }
+
+                $lineSubtotal = round($product->price * $qty, 2);
+                $subtotal    += $lineSubtotal;
+
+                $lines[] = compact('i', 'product', 'stock', 'qty', 'lineSubtotal');
+            }
+
+            // 2) Customer + uploads + order.
+            $customer = $this->resolveCustomer($data['customer'], $request->file('customer.profile_picture'));
+
+            $order = new Order([
+                'user_id'          => $customer->id,
+                'order_number'     => Order::generateOrderNumber(),
+                'status'           => 'picked_up',
+                'subtotal'         => round($subtotal, 2),
+                'total'            => round($subtotal, 2),
+                'payment_method'   => $data['payment_method'],
+                'proof_of_payment' => $this->storePublic($request->file('proof_of_payment'), 'payment-proofs'),
+                'confirmed_at'     => $when,
+                'ready_at'         => $when,
+                'picked_up_at'     => $when,
+            ]);
+            $order->created_at = $when;
+            $order->save();
+
+            foreach ($lines as $l) {
+                OrderItem::create([
+                    'order_id'          => $order->id,
+                    'product_id'        => $l['product']->id,
+                    'stock_id'          => $l['stock']->id,
+                    'quantity'          => $l['qty'],
+                    'unit_price'        => $l['product']->price,
+                    'unit_old_price'    => $l['product']->old_price,
+                    'subtotal'          => $l['lineSubtotal'],
+                    'prescription_file' => $this->storePublic($request->file("items.{$l['i']}.prescription_file"), 'prescriptions'),
+                ]);
+
+                $l['stock']->decrement('quantity', $l['qty']);
+            }
+
+            return $order;
+        });
+
+        // The quoted order number is picked up by LogAdminActivity as the log label.
+        return $this->ok("Order \"{$order->order_number}\" recorded as completed.", $order);
+    }
+
+    /**
+     * Stores an upload on the public disk and returns the public-relative
+     * path ("storage/…") so asset() can serve it — same convention as
+     * proof_of_refund. Returns null when nothing was uploaded.
+     */
+    private function storePublic($file, string $dir): ?string
+    {
+        return $file ? 'storage/' . $file->store($dir, 'public') : null;
+    }
+
+    /**
+     * Find the customer by email, or create a new users row for them.
+     * Walk-ins without an email get a unique placeholder (users.email is
+     * required + unique). An existing account is reused untouched — the
+     * password / photo typed in the modal only apply to a NEW customer.
+     */
+    private function resolveCustomer(array $input, $profilePicture = null): User
+    {
+        $email = Str::lower(trim((string) ($input['email'] ?? '')));
+
+        if ($email !== '') {
+            $existing = User::withTrashed()->where('email', $email)->first();
+
+            if ($existing) {
+                return $existing;
+            }
+        }
+
+        return User::create([
+            'first_name'      => trim($input['first_name']),
+            'last_name'       => trim($input['last_name']),
+            'email'           => $email !== '' ? $email : 'walkin-' . Str::lower(Str::random(12)) . '@walkin.local',
+            'contact_number'  => ($input['contact_number'] ?? null) ?: null,
+            'address'         => ($input['address'] ?? null) ?: null,
+            'profile_picture' => $this->storePublic($profilePicture, 'profile-pictures'),
+            'password'        => ($input['password'] ?? null) ?: 'admin123', // hashed by the User cast
+            'is_active'       => true,
         ]);
     }
 

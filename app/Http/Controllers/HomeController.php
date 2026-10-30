@@ -45,7 +45,8 @@ class HomeController extends Controller
                     ->where(function ($q) use ($searchQuery) {
                         $q->where('name', 'LIKE', "%{$searchQuery}%")
                           ->orWhere('description', 'LIKE', "%{$searchQuery}%")
-                          ->orWhere('ingredients', 'LIKE', "%{$searchQuery}%");
+                          ->orWhere('ingredients', 'LIKE', "%{$searchQuery}%")
+                          ->orWhere('code_name', 'LIKE', "%{$searchQuery}%");
                     })
                     ->with(['category', 'brand'])
                     ->get();

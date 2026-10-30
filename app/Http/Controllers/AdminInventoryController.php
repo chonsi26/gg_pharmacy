@@ -68,6 +68,7 @@ class AdminInventoryController extends Controller
             ->when($query !== '', function ($builder) use ($query) {
                 $builder->where(function ($sub) use ($query) {
                     $sub->where('name', 'like', "%{$query}%")
+                        ->orWhere('code_name', 'like', "%{$query}%")
                         ->orWhere('generic_name', 'like', "%{$query}%")
                         ->orWhere('form', 'like', "%{$query}%")
                         ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$query}%"))
@@ -727,6 +728,7 @@ class AdminInventoryController extends Controller
         return [
             'id'                    => $product->id,
             'name'                  => $product->name,
+            'code_name'             => $product->code_name,
             'generic_name'          => $product->generic_name,
             'form'                  => $product->form,
             'brand_id'              => $product->brand_id,
