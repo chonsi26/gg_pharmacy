@@ -1686,6 +1686,17 @@ tbody tr:last-child td { border-bottom: none; }
       <button class="ao-add-btn" type="button" onclick="addOrderRow()">Add product</button>
       <div class="ao-total"><span>Total</span><span id="aoTotal">₱0.00</span></div>
 
+      <!-- Cash only: money received from the customer (app payments are paid in full online) -->
+      <div id="aoCashWrap" style="margin-top:14px;">
+        <div class="field" style="margin-bottom:8px;">
+          <label for="aoPaymentAmount">Payment amount *</label>
+          <input type="number" id="aoPaymentAmount" min="0" step="0.01" placeholder="Enter amount received" oninput="aoUpdateChange()">
+        </div>
+        <div class="ao-total" style="border-top:none;margin-top:0;padding-top:0;font-weight:500;">
+          <span>Change</span><span id="aoChange">—</span>
+        </div>
+      </div>
+
       <div class="ao-divider"></div>
 
       <!-- ── CUSTOMER ── -->
@@ -1822,7 +1833,7 @@ tbody tr:last-child td { border-bottom: none; }
 
       <div class="payment-input-group" id="paymentInputGroup">
         <label for="paymentAmountInput">Payment Amount</label>
-        <input type="number" id="paymentAmountInput" min="0" step="0.01" placeholder="Enter amount">
+        <input type="number" id="paymentAmountInput" min="0" step="0.01" placeholder="Enter amount" oninput="updateChangePreview()">
       </div>
 
       <div class="receipt-status" id="receiptStatus" style="display:none;">Transaction completed.</div>
@@ -2641,13 +2652,22 @@ function openReceipt(id) {
   const paymentInput = document.getElementById('paymentAmountInput');
   paymentInput.value = '';
   if (order.status === 'completed') {
+    // Saved values come from the server (orders.payment; change = payment − total)
     paymentInputGroup.style.display = 'none';
     receiptStatus.style.display = '';
     receiptStatus.textContent = 'Transaction completed.';
-    document.getElementById('rPayment').textContent = fmt(order.paymentAmount || 0);
+    document.getElementById('rPayment').textContent = order.paymentAmount == null ? '—' : fmt(order.paymentAmount);
     document.getElementById('rChangeRow').style.display = order.change > 0 ? '' : 'none';
     document.getElementById('rChange').textContent = fmt(order.change || 0);
+  } else if (order.payment === 'online') {
+    // Already paid through the app — nothing to collect at the counter
+    paymentInputGroup.style.display = 'none';
+    receiptStatus.style.display = 'none';
+    document.getElementById('rPayment').textContent = fmt(orderTotal(order));
+    document.getElementById('rChangeRow').style.display = 'none';
+    document.getElementById('rChange').textContent = '—';
   } else {
+    // Cash order waiting for pick up: staff enters the money received
     paymentInputGroup.style.display = '';
     receiptStatus.style.display = 'none';
     document.getElementById('rPayment').textContent = '—';
@@ -2659,18 +2679,48 @@ function openReceipt(id) {
   openModal('receiptModal');
 }
 
+/* Live "Payment" / "Change" preview while the amount is being typed (cash orders) */
+function updateChangePreview() {
+  const order = ORDERS.find(o => o.id === currentReceiptId);
+  if (!order) return;
+  const value = parseFloat(document.getElementById('paymentAmountInput').value);
+  const rPayment   = document.getElementById('rPayment');
+  const rChangeRow = document.getElementById('rChangeRow');
+  const rChange    = document.getElementById('rChange');
+
+  if (Number.isNaN(value) || value < 0) {
+    rPayment.textContent = '—';
+    rChangeRow.style.display = 'none';
+    return;
+  }
+  const change = Math.round((value - orderTotal(order)) * 100) / 100;
+  rPayment.textContent = fmt(value);
+  rChangeRow.style.display = '';
+  rChange.textContent = change >= 0 ? fmt(change) : 'Short by ' + fmt(-change);
+}
+
 async function submitReceipt() {
   const order = ORDERS.find(o => o.id === currentReceiptId);
   if (!order) return;
-  const paymentValue = parseFloat(document.getElementById('paymentAmountInput').value);
-  if (Number.isNaN(paymentValue) || paymentValue < 0) {
-    showToast('Enter a valid payment amount.');
-    return;
+  const total = orderTotal(order);
+  let body = null;
+
+  // Cash orders must record the money received; app orders were paid online.
+  if (order.payment !== 'online') {
+    const paymentValue = parseFloat(document.getElementById('paymentAmountInput').value);
+    if (Number.isNaN(paymentValue) || paymentValue < 0) {
+      showToast('Enter a valid payment amount.');
+      return;
+    }
+    if (Math.round(paymentValue * 100) < Math.round(total * 100)) {
+      showToast('Payment is less than the order total (' + fmt(total) + ').');
+      return;
+    }
+    body = { payment: paymentValue };
   }
 
-  const total = orderTotal(order);
   try {
-    await orderApi('PUT', `/${order.dbId}/complete`);
+    await orderApi('PUT', `/${order.dbId}/complete`, body);
     await loadOrders(true);
   } catch (e) {
     // e.g. the order expired while the receipt was open
@@ -2680,18 +2730,17 @@ async function submitReceipt() {
     return;
   }
 
+  // paymentAmount / change now come back from the server with the reloaded order
   const done = ORDERS.find(o => o.id === currentReceiptId);
   if (!done) return;
-  done.paymentAmount = paymentValue;
-  done.change = Math.max(0, paymentValue - total);
 
   document.getElementById('paymentInputGroup').style.display = 'none';
   const receiptStatus = document.getElementById('receiptStatus');
   receiptStatus.style.display = '';
   receiptStatus.textContent = 'Transaction completed.';
-  document.getElementById('rPayment').textContent = fmt(done.paymentAmount);
+  document.getElementById('rPayment').textContent = done.paymentAmount == null ? '—' : fmt(done.paymentAmount);
   document.getElementById('rChangeRow').style.display = done.change > 0 ? '' : 'none';
-  document.getElementById('rChange').textContent = fmt(done.change);
+  document.getElementById('rChange').textContent = fmt(done.change || 0);
 
   updateReceiptFooter(done);
   renderTable('completed');
@@ -2723,6 +2772,7 @@ async function openAddOrderModal() {
   document.getElementById('aoPassword').value = 'admin123';
   document.getElementById('aoProfile').value = '';
   document.getElementById('aoProof').value = '';
+  document.getElementById('aoPaymentAmount').value = '';
   document.getElementById('aoPayment').value = 'cash';
   aoPaymentChanged();
   const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
@@ -2747,6 +2797,20 @@ function aoPaymentChanged() {
   const isApp = document.getElementById('aoPayment').value === 'app';
   document.getElementById('aoProofWrap').style.display = isApp ? '' : 'none';
   if (!isApp) document.getElementById('aoProof').value = '';
+  // Payment amount / change only apply to cash sales
+  document.getElementById('aoCashWrap').style.display = isApp ? 'none' : '';
+  if (isApp) document.getElementById('aoPaymentAmount').value = '';
+  aoUpdateChange();
+}
+
+/* Live change = payment amount − total (cash only) */
+let aoTotalValue = 0;
+function aoUpdateChange() {
+  const el = document.getElementById('aoChange');
+  const paid = parseFloat(document.getElementById('aoPaymentAmount').value);
+  if (Number.isNaN(paid) || paid < 0) { el.textContent = '—'; return; }
+  const change = Math.round((paid - aoTotalValue) * 100) / 100;
+  el.textContent = change >= 0 ? fmt(change) : 'Short by ' + fmt(-change);
 }
 
 /* Reject non-images / oversize files as soon as they are picked. */
@@ -2804,6 +2868,8 @@ function aoRecalc() {
     total += line;
   });
   document.getElementById('aoTotal').textContent = fmt(total);
+  aoTotalValue = total;
+  aoUpdateChange();
 }
 
 function showAoError(msg) {
@@ -2829,6 +2895,12 @@ async function submitAddOrder() {
   const proof   = document.getElementById('aoProof').files[0];
   if (payment === 'app' && !proof) { showAoError('Please upload the proof of payment.'); return; }
 
+  // Cash sales must record the money received (checked against the total below)
+  const paidAmount = parseFloat(document.getElementById('aoPaymentAmount').value);
+  if (payment === 'cash' && (Number.isNaN(paidAmount) || paidAmount < 0)) {
+    showAoError('Please enter the payment amount received.'); return;
+  }
+
   const form = new FormData();
   const seen = new Set();
   let n = 0;
@@ -2852,6 +2924,9 @@ async function submitAddOrder() {
     n++;
   }
   if (!n) { showAoError('Add at least one product.'); return; }
+  if (payment === 'cash' && Math.round(paidAmount * 100) < Math.round(aoTotalValue * 100)) {
+    showAoError('Payment is less than the order total (' + fmt(aoTotalValue) + ').'); return;
+  }
 
   form.append('customer[first_name]', val('aoFirst'));
   form.append('customer[last_name]',  val('aoLast'));
@@ -2863,6 +2938,7 @@ async function submitAddOrder() {
   if (photo) form.append('customer[profile_picture]', photo);
 
   form.append('payment_method', payment);
+  if (payment === 'cash') form.append('payment', paidAmount);
   if (payment === 'app' && proof) form.append('proof_of_payment', proof);
   if (document.getElementById('aoDate').value) form.append('order_date', document.getElementById('aoDate').value);
 

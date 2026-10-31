@@ -13,7 +13,7 @@ class Order extends Model
 
     protected $fillable = [
         'user_id', 'order_number', 'status',
-        'subtotal', 'total', 'payment_method', 'proof_of_payment',
+        'subtotal', 'total', 'payment', 'payment_method', 'proof_of_payment',
         'proof_of_refund',
         'note', 'prescription_file',
         'cancellation_reason',
@@ -23,6 +23,7 @@ class Order extends Model
     protected $casts = [
         'subtotal'     => 'float',
         'total'        => 'float',
+        'payment'      => 'float',
         'confirmed_at' => 'datetime',
         'ready_at'     => 'datetime',
         'picked_up_at' => 'datetime',
@@ -125,6 +126,23 @@ class Order extends Model
         return ! empty($this->proof_of_refund);
     }
 
+    /** Whether a payment amount has been recorded (set when the order is completed). */
+    public function hasPayment(): bool
+    {
+        return $this->payment !== null;
+    }
+
+    /**
+     * Change owed back to the customer: the money paid minus the order total.
+     * Derived rather than stored, so it can never drift out of sync.
+     */
+    public function change(): float
+    {
+        return $this->hasPayment()
+            ? round(max(0, $this->payment - $this->total), 2)
+            : 0.0;
+    }
+
     public function markConfirmed(): void
     {
         $this->update(['status' => 'confirmed', 'confirmed_at' => now()]);
@@ -135,9 +153,14 @@ class Order extends Model
         $this->update(['status' => 'ready', 'ready_at' => now()]);
     }
 
-    public function markPickedUp(): void
+    /** Completes the order, recording the money the customer handed over. */
+    public function markPickedUp(?float $payment = null): void
     {
-        $this->update(['status' => 'picked_up', 'picked_up_at' => now()]);
+        $this->update([
+            'status'       => 'picked_up',
+            'picked_up_at' => now(),
+            'payment'      => $payment,
+        ]);
     }
 
     public function markCancelled(?string $reason = null): void

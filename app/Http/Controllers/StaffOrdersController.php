@@ -13,7 +13,7 @@ use Illuminate\View\View;
  *
  * This is the same page the admin sees. Every order action delegates to
  * AdminOrdersController so the staff and admin screens always share one set
- * of business rules (status transitions, 5-hour pickup expiry, stock release,
+ * of business rules (manual order entry, payment/change, status transitions, 5-hour pickup expiry, stock release,
  * refund proof handling) and can never drift apart. Only the route/guard
  * (auth:staff) and the view (staffs.orders) differ.
  *
@@ -51,6 +51,23 @@ class StaffOrdersController extends Controller
         return $this->admin()->data();
     }
 
+    // ── Manual order entry ("Add Order" button) ──────────────────────────────
+
+    /** Product picker feed for the Add Order modal. */
+    public function products(): JsonResponse
+    {
+        return $this->admin()->products();
+    }
+
+    /**
+     * Record an already-finished walk-in sale as a COMPLETED order (matches
+     * customer by email or creates them, deducts stock, stores uploads).
+     */
+    public function store(Request $request): JsonResponse
+    {
+        return $this->admin()->store($request);
+    }
+
     // ── Status transitions ───────────────────────────────────────────────────
 
     /** Pending → Confirmed ("Approve" button). */
@@ -65,10 +82,14 @@ class StaffOrdersController extends Controller
         return $this->admin()->ready($order);
     }
 
-    /** Ready → Picked up / Completed (receipt "Submit"). */
-    public function complete(Order $order): JsonResponse
+    /**
+     * Ready → Picked up / Completed (receipt "Submit").
+     * Cash orders send the `payment` handed over by the customer; the change
+     * is derived from it. App-paid orders are recorded at the exact total.
+     */
+    public function complete(Request $request, Order $order): JsonResponse
     {
-        return $this->admin()->complete($order);
+        return $this->admin()->complete($request, $order);
     }
 
     /** Cancel from any non-terminal state; restocks the reserved quantity. */

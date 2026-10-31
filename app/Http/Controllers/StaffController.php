@@ -151,7 +151,7 @@ class StaffController extends Controller
             'password.confirmed' => 'The passwords do not match.',
         ]);
 
-        if (!Hash::check($data['current_password'], $staff->password)) {
+        if (!$this->passwordMatches($data['current_password'], $staff->password)) {
             $errors = ['current_password' => ['The current password is incorrect.']];
 
             if ($request->wantsJson()) {
@@ -164,8 +164,9 @@ class StaffController extends Controller
             return back()->withErrors($errors);
         }
 
-        // The Staff model's "hashed" cast hashes the password on save.
-        $staff->update(['password' => $data['password']]);
+        // Hash explicitly with bcrypt. If the model also has a "hashed" cast,
+        // Laravel sees the value is already hashed and won't hash it twice.
+        $staff->update(['password' => Hash::driver('bcrypt')->make($data['password'])]);
 
         if ($request->wantsJson()) {
             return response()->json(['message' => 'Security settings updated.']);
@@ -209,9 +210,18 @@ class StaffController extends Controller
 
         // Tell a correctly-authenticated but still-pending applicant why they can't get in.
         $pending = Staff::where('email', $credentials['email'])->first();
+
+        // Upgrade accounts whose password was stored as plain text (or any
+        // non-bcrypt value) the first time the correct password is entered.
+        if ($pending && $this->isLegacyPassword($pending->password)
+            && hash_equals((string) $pending->password, $credentials['password'])) {
+            $pending->forceFill(['password' => Hash::driver('bcrypt')->make($credentials['password'])])->save();
+            $pending->refresh();
+        }
+
         if ($pending
             && $pending->status === Staff::STATUS_PENDING
-            && Hash::check($credentials['password'], $pending->password)) {
+            && $this->passwordMatches($credentials['password'], $pending->password)) {
             return back()
                 ->withErrors(['email' => 'Your account is still waiting for admin approval. Please try again once it has been accepted.'])
                 ->withInput($request->only('email'));
@@ -266,7 +276,9 @@ class StaffController extends Controller
         // New sign-ups wait for an admin to accept them (Admin → Staffs → Requests).
         $data['status'] = Staff::STATUS_PENDING;
 
-        // The Staff model's "hashed" cast hashes the password on save.
+        // Hash explicitly with bcrypt (safe even if the model has a "hashed" cast).
+        $data['password'] = Hash::driver('bcrypt')->make($data['password']);
+
         Staff::create($data);
 
         // Not logged in: the account can only be used once it is accepted.
@@ -287,6 +299,34 @@ class StaffController extends Controller
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /**
+     * True when the stored value is not a recognised password hash
+     * (e.g. plain text).
+     */
+    private function isLegacyPassword(?string $stored): bool
+    {
+        return $stored !== null
+            && $stored !== ''
+            && password_get_info($stored)['algoName'] === 'unknown';
+    }
+
+    /**
+     * Hash::check() that returns false instead of throwing when the stored
+     * value isn't a bcrypt hash ("This password does not use the Bcrypt algorithm").
+     */
+    private function passwordMatches(string $plain, ?string $hash): bool
+    {
+        if (!$hash) {
+            return false;
+        }
+
+        try {
+            return Hash::check($plain, $hash);
+        } catch (\RuntimeException $e) {
+            return false;
+        }
+    }
 
     /**
      * Site branding shared by every staff screen (same Settings the admin

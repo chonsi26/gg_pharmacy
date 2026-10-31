@@ -1397,7 +1397,10 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- Orders Table -->
   <div class="card">
     <div class="card-head">
-      <h3>Incoming Orders</h3>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <h3>Incoming Orders</h3>
+        <button class="btn-sm primary" type="button" onclick="openAddOrderModal()">+ Add Order</button>
+      </div>
       <div style="display:flex;gap:8px;align-items:center;">
         <span style="font-size:12px;color:var(--muted);" id="tabPending" class="tab-link active-tab" onclick="filterTable('pending')" style="cursor:pointer;">Pending</span>
         <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabConfirmed" class="tab-link" onclick="filterTable('confirmed')">Confirmed</span>
@@ -1615,6 +1618,115 @@ tbody tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- ═══════════════ ADD ORDER (MANUAL) MODAL ═══════════════ -->
+<style>
+  #addOrderModal .modal { max-width:640px; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,.18); animation:none; }
+  #addOrderModal .modal-header { padding:16px 24px; }
+  #addOrderModal .modal-header h3 { font-size:15px; font-weight:600; }
+  #addOrderModal .modal-body { padding:20px 24px; }
+  #addOrderModal .modal-footer { padding:14px 24px; background:var(--surface2); }
+  #addOrderModal .field { margin-bottom:14px; }
+  #addOrderModal .field label { font-size:12.5px; font-weight:500; text-transform:none; letter-spacing:0; color:var(--text); margin-bottom:5px; }
+  #addOrderModal .field input, #addOrderModal .field select { height:38px; border:1px solid var(--border); border-radius:6px; font-size:13.5px; }
+  #addOrderModal .field input:focus, #addOrderModal .field select:focus { border-color:#6b7280; box-shadow:0 0 0 3px rgba(107,114,128,.15); }
+  #addOrderModal .field input[type=file] { height:auto; padding:7px 10px; font-size:12.5px; }
+
+  .ao-intro { font-size:13px; color:var(--muted); margin:0 0 18px; line-height:1.5; }
+  .ao-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+  .ao-grid .full { grid-column:1 / -1; }
+  .ao-section { font-size:13px; font-weight:600; color:var(--text); padding-bottom:8px; margin:0 0 14px; border-bottom:1px solid var(--border); }
+  .ao-divider { height:0; margin:22px 0 18px; }
+  .ao-item { margin-bottom:8px; }
+  .ao-row { display:grid; grid-template-columns:1fr 76px 96px 30px; gap:8px; align-items:center; }
+  .ao-row select, .ao-row input { width:100%; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:6px; background:var(--input-bg); color:var(--text); font-size:13px; font-family:inherit; outline:none; }
+  .ao-row select:focus, .ao-row input:focus { border-color:#6b7280; box-shadow:0 0 0 3px rgba(107,114,128,.15); }
+  .ao-line-total { font-size:13px; font-weight:500; text-align:right; }
+  .ao-remove { width:30px; height:30px; border:none; border-radius:6px; background:transparent; color:var(--muted); cursor:pointer; font-size:18px; line-height:1; }
+  .ao-remove:hover { background:var(--surface2); color:var(--text); }
+  .ao-upload { margin-top:6px; padding:10px 12px; border:1px solid var(--border); border-radius:6px; background:var(--surface2); }
+  .ao-upload label { display:block; font-size:12.5px; font-weight:500; color:var(--text); margin-bottom:5px; }
+  .ao-upload input[type=file] { width:100%; font-size:12.5px; color:var(--text); }
+  .ao-add-btn { margin-top:4px; padding:6px 12px; font-size:12.5px; font-weight:500; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; }
+  .ao-add-btn:hover { background:var(--surface2); border-color:#9ca3af; }
+  .ao-total { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); margin-top:14px; padding-top:12px; font-size:14px; font-weight:600; }
+  .ao-hint { font-size:12px; color:var(--muted); margin:2px 0 0; line-height:1.5; }
+  .ao-error { display:none; font-size:12.5px; color:var(--green); background:var(--green-light); border:1px solid var(--green); border-radius:6px; padding:8px 12px; margin-top:14px; }
+  .ao-btn { padding:8px 16px; font-size:13px; font-weight:500; font-family:inherit; border-radius:6px; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  .ao-btn:hover { background:var(--surface2); border-color:#9ca3af; }
+  .ao-btn.primary { background:#1f2937; border-color:#1f2937; color:#fff; }
+  .ao-btn.primary:hover { background:#111827; border-color:#111827; }
+  .ao-btn:disabled { opacity:.55; cursor:not-allowed; }
+  [data-theme="dark"] .ao-btn.primary { background:#e5e7eb; border-color:#e5e7eb; color:#111827; }
+  [data-theme="dark"] .ao-btn.primary:hover { background:#fff; border-color:#fff; }
+  @media (max-width:560px) { .ao-grid { grid-template-columns:1fr; } .ao-row { grid-template-columns:1fr 70px 30px; } .ao-line-total { display:none; } }
+</style>
+<div class="modal-backdrop" id="addOrderModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Order (Manual)</h3>
+      <button class="modal-close" onclick="closeModal('addOrderModal')" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="ao-intro">Records an already-paid, picked-up sale. It is saved as <strong>Completed</strong> and the stock is deducted.</p>
+
+      <!-- ── ORDER ── -->
+      <div class="ao-section">Order details</div>
+      <div class="ao-grid">
+        <div class="field">
+          <label for="aoPayment">Payment method</label>
+          <select id="aoPayment" onchange="aoPaymentChanged()"><option value="cash">Cash</option><option value="app">App (online)</option></select>
+        </div>
+        <div class="field"><label for="aoDate">Order date &amp; time</label><input type="datetime-local" id="aoDate"></div>
+      </div>
+      <div class="ao-upload" id="aoProofWrap" style="display:none;margin:-2px 0 4px;">
+        <label for="aoProof">Proof of payment * (image, max 5 MB)</label>
+        <input type="file" id="aoProof" accept="image/*" onchange="aoCheckFile(this)">
+      </div>
+
+      <div class="ao-divider"></div>
+
+      <div class="ao-section">Products</div>
+      <div id="aoRows"></div>
+      <button class="ao-add-btn" type="button" onclick="addOrderRow()">Add product</button>
+      <div class="ao-total"><span>Total</span><span id="aoTotal">₱0.00</span></div>
+
+      <!-- Cash only: money received from the customer (app payments are paid in full online) -->
+      <div id="aoCashWrap" style="margin-top:14px;">
+        <div class="field" style="margin-bottom:8px;">
+          <label for="aoPaymentAmount">Payment amount *</label>
+          <input type="number" id="aoPaymentAmount" min="0" step="0.01" placeholder="Enter amount received" oninput="aoUpdateChange()">
+        </div>
+        <div class="ao-total" style="border-top:none;margin-top:0;padding-top:0;font-weight:500;">
+          <span>Change</span><span id="aoChange">—</span>
+        </div>
+      </div>
+
+      <div class="ao-divider"></div>
+
+      <!-- ── CUSTOMER ── -->
+      <div class="ao-section">Customer information</div>
+      <div class="ao-grid">
+        <div class="field"><label for="aoFirst">First name *</label><input type="text" id="aoFirst" maxlength="255" autocomplete="off"></div>
+        <div class="field"><label for="aoLast">Last name *</label><input type="text" id="aoLast" maxlength="255" autocomplete="off"></div>
+        <div class="field"><label for="aoEmail">Email</label><input type="email" id="aoEmail" maxlength="255" autocomplete="off" placeholder="Optional"></div>
+        <div class="field"><label for="aoPhone">Contact number</label><input type="text" id="aoPhone" maxlength="20" autocomplete="off" placeholder="Optional"></div>
+        <div class="field full"><label for="aoAddress">Address</label><input type="text" id="aoAddress" maxlength="500" autocomplete="off" placeholder="Optional"></div>
+        <div class="field"><label for="aoPassword">Password</label><input type="password" id="aoPassword" maxlength="255" autocomplete="new-password" value="admin123"></div>
+        <div class="field"><label for="aoProfile">Profile picture</label><input type="file" id="aoProfile" accept="image/*" onchange="aoCheckFile(this)"></div>
+      </div>
+      <p class="ao-hint">New customers are added to the customers list automatically. If the email already belongs to a customer, that account is used as-is (its password and photo are not changed).</p>
+
+      <p id="aoError" class="ao-error"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="ao-btn" type="button" onclick="closeModal('addOrderModal')">Cancel</button>
+      <button class="ao-btn primary" type="button" id="aoSubmit" onclick="submitAddOrder()">Add Order</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ PRESCRIPTIONS MODAL ═══════════════ -->
 <div class="modal-backdrop" id="prescriptionModal">
   <div class="modal detail-modal">
@@ -1727,7 +1839,7 @@ tbody tr:last-child td { border-bottom: none; }
 
       <div class="payment-input-group" id="paymentInputGroup">
         <label for="paymentAmountInput">Payment Amount</label>
-        <input type="number" id="paymentAmountInput" min="0" step="0.01" placeholder="Enter amount">
+        <input type="number" id="paymentAmountInput" min="0" step="0.01" placeholder="Enter amount" oninput="updateChangePreview()">
       </div>
 
       <div class="receipt-status" id="receiptStatus" style="display:none;">Transaction completed.</div>
@@ -1776,6 +1888,8 @@ const CSRF   = document.querySelector('meta[name="csrf-token"]').content;
 const ROUTES = {
   data: @json(route('staff.orders.data')),
   base: @json(url('/staff/orders')),
+  products: @json(route('staff.orders.products')),
+  store: @json(route('staff.orders.store')),
 };
 
 // Orders sit in "For Pick Up" for 5 hours; the server auto-cancels them after
@@ -2396,13 +2510,22 @@ function openReceipt(id) {
   const paymentInput = document.getElementById('paymentAmountInput');
   paymentInput.value = '';
   if (order.status === 'completed') {
+    // Saved values come from the server (orders.payment; change = payment − total)
     paymentInputGroup.style.display = 'none';
     receiptStatus.style.display = '';
     receiptStatus.textContent = 'Transaction completed.';
-    document.getElementById('rPayment').textContent = fmt(order.paymentAmount || 0);
+    document.getElementById('rPayment').textContent = order.paymentAmount == null ? '—' : fmt(order.paymentAmount);
     document.getElementById('rChangeRow').style.display = order.change > 0 ? '' : 'none';
     document.getElementById('rChange').textContent = fmt(order.change || 0);
+  } else if (order.payment === 'online') {
+    // Already paid through the app — nothing to collect at the counter
+    paymentInputGroup.style.display = 'none';
+    receiptStatus.style.display = 'none';
+    document.getElementById('rPayment').textContent = fmt(orderTotal(order));
+    document.getElementById('rChangeRow').style.display = 'none';
+    document.getElementById('rChange').textContent = '—';
   } else {
+    // Cash order waiting for pick up: staff enters the money received
     paymentInputGroup.style.display = '';
     receiptStatus.style.display = 'none';
     document.getElementById('rPayment').textContent = '—';
@@ -2414,18 +2537,48 @@ function openReceipt(id) {
   openModal('receiptModal');
 }
 
+/* Live "Payment" / "Change" preview while the amount is being typed (cash orders) */
+function updateChangePreview() {
+  const order = ORDERS.find(o => o.id === currentReceiptId);
+  if (!order) return;
+  const value = parseFloat(document.getElementById('paymentAmountInput').value);
+  const rPayment   = document.getElementById('rPayment');
+  const rChangeRow = document.getElementById('rChangeRow');
+  const rChange    = document.getElementById('rChange');
+
+  if (Number.isNaN(value) || value < 0) {
+    rPayment.textContent = '—';
+    rChangeRow.style.display = 'none';
+    return;
+  }
+  const change = Math.round((value - orderTotal(order)) * 100) / 100;
+  rPayment.textContent = fmt(value);
+  rChangeRow.style.display = '';
+  rChange.textContent = change >= 0 ? fmt(change) : 'Short by ' + fmt(-change);
+}
+
 async function submitReceipt() {
   const order = ORDERS.find(o => o.id === currentReceiptId);
   if (!order) return;
-  const paymentValue = parseFloat(document.getElementById('paymentAmountInput').value);
-  if (Number.isNaN(paymentValue) || paymentValue < 0) {
-    showToast('Enter a valid payment amount.');
-    return;
+  const total = orderTotal(order);
+  let body = null;
+
+  // Cash orders must record the money received; app orders were paid online.
+  if (order.payment !== 'online') {
+    const paymentValue = parseFloat(document.getElementById('paymentAmountInput').value);
+    if (Number.isNaN(paymentValue) || paymentValue < 0) {
+      showToast('Enter a valid payment amount.');
+      return;
+    }
+    if (Math.round(paymentValue * 100) < Math.round(total * 100)) {
+      showToast('Payment is less than the order total (' + fmt(total) + ').');
+      return;
+    }
+    body = { payment: paymentValue };
   }
 
-  const total = orderTotal(order);
   try {
-    await orderApi('PUT', `/${order.dbId}/complete`);
+    await orderApi('PUT', `/${order.dbId}/complete`, body);
     await loadOrders(true);
   } catch (e) {
     // e.g. the order expired while the receipt was open
@@ -2435,18 +2588,17 @@ async function submitReceipt() {
     return;
   }
 
+  // paymentAmount / change now come back from the server with the reloaded order
   const done = ORDERS.find(o => o.id === currentReceiptId);
   if (!done) return;
-  done.paymentAmount = paymentValue;
-  done.change = Math.max(0, paymentValue - total);
 
   document.getElementById('paymentInputGroup').style.display = 'none';
   const receiptStatus = document.getElementById('receiptStatus');
   receiptStatus.style.display = '';
   receiptStatus.textContent = 'Transaction completed.';
-  document.getElementById('rPayment').textContent = fmt(done.paymentAmount);
+  document.getElementById('rPayment').textContent = done.paymentAmount == null ? '—' : fmt(done.paymentAmount);
   document.getElementById('rChangeRow').style.display = done.change > 0 ? '' : 'none';
-  document.getElementById('rChange').textContent = fmt(done.change);
+  document.getElementById('rChange').textContent = fmt(done.change || 0);
 
   updateReceiptFooter(done);
   renderTable('completed');
@@ -2466,6 +2618,200 @@ async function deleteCurrentReceiptOrder(id = currentReceiptId) {
 
 function printReceipt() {
   window.print();
+}
+
+/* ─── Add Order (manual, completed) ─── */
+let AO_PRODUCTS = [];
+let aoSubmitting = false;
+const AO_MAX_BYTES = 5 * 1024 * 1024; // keep in sync with StaffOrdersController@store
+
+async function openAddOrderModal() {
+  ['aoFirst','aoLast','aoEmail','aoPhone','aoAddress'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aoPassword').value = 'admin123';
+  document.getElementById('aoProfile').value = '';
+  document.getElementById('aoProof').value = '';
+  document.getElementById('aoPaymentAmount').value = '';
+  document.getElementById('aoPayment').value = 'cash';
+  aoPaymentChanged();
+  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const nowLocal = now.toISOString().slice(0, 16);
+  const dt = document.getElementById('aoDate');
+  dt.value = nowLocal; dt.max = nowLocal;
+  document.getElementById('aoRows').innerHTML = '';
+  document.getElementById('aoError').style.display = 'none';
+  aoSubmitting = false; setAoBusy(false);
+  openModal('addOrderModal');
+
+  try {
+    const res = await fetch(ROUTES.products, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error('Failed to load products.');
+    AO_PRODUCTS = (await res.json()).products;
+  } catch (e) { AO_PRODUCTS = []; showAoError(e.message); }
+  addOrderRow();
+}
+
+/* Proof of payment only appears for app payments. */
+function aoPaymentChanged() {
+  const isApp = document.getElementById('aoPayment').value === 'app';
+  document.getElementById('aoProofWrap').style.display = isApp ? '' : 'none';
+  if (!isApp) document.getElementById('aoProof').value = '';
+  // Payment amount / change only apply to cash sales
+  document.getElementById('aoCashWrap').style.display = isApp ? 'none' : '';
+  if (isApp) document.getElementById('aoPaymentAmount').value = '';
+  aoUpdateChange();
+}
+
+/* Live change = payment amount − total (cash only) */
+let aoTotalValue = 0;
+function aoUpdateChange() {
+  const el = document.getElementById('aoChange');
+  const paid = parseFloat(document.getElementById('aoPaymentAmount').value);
+  if (Number.isNaN(paid) || paid < 0) { el.textContent = '—'; return; }
+  const change = Math.round((paid - aoTotalValue) * 100) / 100;
+  el.textContent = change >= 0 ? fmt(change) : 'Short by ' + fmt(-change);
+}
+
+/* Reject non-images / oversize files as soon as they are picked. */
+function aoCheckFile(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  if (!f.type.startsWith('image/')) { input.value = ''; showAoError('Please choose an image file.'); return; }
+  if (f.size > AO_MAX_BYTES)        { input.value = ''; showAoError('Image is too large (max 5 MB).'); return; }
+  document.getElementById('aoError').style.display = 'none';
+}
+
+function aoOptions(selected) {
+  return '<option value="">Select product…</option>' + AO_PRODUCTS.map(p => {
+    const out = p.stock <= 0;
+    return `<option value="${p.id}" ${String(p.id) === String(selected) ? 'selected' : ''} ${out ? 'disabled' : ''}>`
+      + `${esc(p.name)}${p.code ? ' (' + esc(p.code) + ')' : ''} — ${fmt(p.price)} · ${out ? 'out of stock' : p.stock + ' in stock'}${p.requiresPrescription ? ' · Rx' : ''}</option>`;
+  }).join('');
+}
+
+function addOrderRow() {
+  const item = document.createElement('div');
+  item.className = 'ao-item';
+  item.innerHTML = `
+    <div class="ao-row">
+      <select onchange="aoRowChanged(this)">${aoOptions('')}</select>
+      <input type="number" min="1" step="1" value="1" oninput="aoRecalc()">
+      <div class="ao-line-total">₱0.00</div>
+      <button type="button" class="ao-remove" title="Remove" onclick="this.closest('.ao-item').remove(); aoRecalc();">×</button>
+    </div>
+    <div class="ao-upload ao-rx" style="display:none;">
+      <label>Prescription * (required for this product — image, max 5 MB)</label>
+      <input type="file" accept="image/*" onchange="aoCheckFile(this)">
+    </div>`;
+  document.getElementById('aoRows').appendChild(item);
+  aoRecalc();
+}
+
+/* Show the prescription upload only when the chosen product needs one. */
+function aoRowChanged(select) {
+  const item = select.closest('.ao-item');
+  const p = AO_PRODUCTS.find(x => String(x.id) === select.value);
+  const rx = item.querySelector('.ao-rx');
+  rx.style.display = p && p.requiresPrescription ? '' : 'none';
+  if (!(p && p.requiresPrescription)) rx.querySelector('input').value = '';
+  aoRecalc();
+}
+
+function aoRecalc() {
+  let total = 0;
+  document.querySelectorAll('#aoRows .ao-item').forEach(item => {
+    const p   = AO_PRODUCTS.find(x => String(x.id) === item.querySelector('select').value);
+    const qty = parseInt(item.querySelector('.ao-row input').value, 10) || 0;
+    const line = p ? p.price * qty : 0;
+    item.querySelector('.ao-line-total').textContent = fmt(line);
+    total += line;
+  });
+  document.getElementById('aoTotal').textContent = fmt(total);
+  aoTotalValue = total;
+  aoUpdateChange();
+}
+
+function showAoError(msg) {
+  const el = document.getElementById('aoError');
+  el.textContent = msg; el.style.display = 'block';
+  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function setAoBusy(busy) {
+  const btn = document.getElementById('aoSubmit');
+  btn.disabled = busy;
+  btn.textContent = busy ? 'Saving…' : 'Add Order';
+}
+
+async function submitAddOrder() {
+  if (aoSubmitting) return;
+  document.getElementById('aoError').style.display = 'none';
+
+  const val = id => document.getElementById(id).value.trim();
+  if (!val('aoFirst') || !val('aoLast')) { showAoError("Please enter the customer's first and last name."); return; }
+
+  const payment = document.getElementById('aoPayment').value;
+  const proof   = document.getElementById('aoProof').files[0];
+  if (payment === 'app' && !proof) { showAoError('Please upload the proof of payment.'); return; }
+
+  // Cash sales must record the money received (checked against the total below)
+  const paidAmount = parseFloat(document.getElementById('aoPaymentAmount').value);
+  if (payment === 'cash' && (Number.isNaN(paidAmount) || paidAmount < 0)) {
+    showAoError('Please enter the payment amount received.'); return;
+  }
+
+  const form = new FormData();
+  const seen = new Set();
+  let n = 0;
+
+  for (const item of document.querySelectorAll('#aoRows .ao-item')) {
+    const pid = item.querySelector('select').value;
+    if (!pid) continue;
+    const qty = parseInt(item.querySelector('.ao-row input').value, 10);
+    const p   = AO_PRODUCTS.find(x => String(x.id) === pid);
+    if (!qty || qty < 1)  { showAoError('Quantities must be at least 1.'); return; }
+    if (seen.has(pid))    { showAoError('The same product is listed more than once.'); return; }
+    if (p && qty > p.stock) { showAoError(`Only ${p.stock} of "${p.name}" in stock.`); return; }
+
+    const rxFile = item.querySelector('.ao-rx input').files[0];
+    if (p && p.requiresPrescription && !rxFile) { showAoError(`Please upload the prescription for "${p.name}".`); return; }
+
+    seen.add(pid);
+    form.append(`items[${n}][product_id]`, pid);
+    form.append(`items[${n}][quantity]`, qty);
+    if (rxFile) form.append(`items[${n}][prescription_file]`, rxFile);
+    n++;
+  }
+  if (!n) { showAoError('Add at least one product.'); return; }
+  if (payment === 'cash' && Math.round(paidAmount * 100) < Math.round(aoTotalValue * 100)) {
+    showAoError('Payment is less than the order total (' + fmt(aoTotalValue) + ').'); return;
+  }
+
+  form.append('customer[first_name]', val('aoFirst'));
+  form.append('customer[last_name]',  val('aoLast'));
+  if (val('aoEmail'))   form.append('customer[email]', val('aoEmail'));
+  if (val('aoPhone'))   form.append('customer[contact_number]', val('aoPhone'));
+  if (val('aoAddress')) form.append('customer[address]', val('aoAddress'));
+  form.append('customer[password]', document.getElementById('aoPassword').value || 'admin123');
+  const photo = document.getElementById('aoProfile').files[0];
+  if (photo) form.append('customer[profile_picture]', photo);
+
+  form.append('payment_method', payment);
+  if (payment === 'cash') form.append('payment', paidAmount);
+  if (payment === 'app' && proof) form.append('proof_of_payment', proof);
+  if (document.getElementById('aoDate').value) form.append('order_date', document.getElementById('aoDate').value);
+
+  aoSubmitting = true; setAoBusy(true);
+  try {
+    // POST (not PUT) so PHP parses the multipart body.
+    const data = await orderApi('POST', '', form);
+    closeModal('addOrderModal');
+    await loadOrders(true);
+    filterTable('completed');
+    showToast(data.message);
+  } catch (e) {
+    aoSubmitting = false; setAoBusy(false);
+    showAoError(e.message);
+  }
 }
 
 /* ─── Modal helpers ─── */

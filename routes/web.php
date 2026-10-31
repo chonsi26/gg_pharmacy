@@ -314,6 +314,8 @@ Route::prefix('staff')->name('staff.')->middleware(LogStaffActivity::class)->gro
         // 'data' is registered before the {order} wildcard routes.
         Route::get('/orders', [StaffOrdersController::class, 'index'])->name('orders');
         Route::get('/orders/data', [StaffOrdersController::class, 'data'])->name('orders.data');
+        Route::get('/orders/products', [StaffOrdersController::class, 'products'])->name('orders.products');
+        Route::post('/orders', [StaffOrdersController::class, 'store'])->name('orders.store');
         Route::put('/orders/{order}/confirm', [StaffOrdersController::class, 'confirm'])->name('orders.confirm');
         Route::put('/orders/{order}/ready', [StaffOrdersController::class, 'ready'])->name('orders.ready');
         Route::put('/orders/{order}/complete', [StaffOrdersController::class, 'complete'])->name('orders.complete');

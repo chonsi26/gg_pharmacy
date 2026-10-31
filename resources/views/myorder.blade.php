@@ -619,6 +619,8 @@
   .rcpt-proof-label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
   .rcpt-proof img { max-width: 100%; max-height: 220px; border: 1px solid var(--border); border-radius: 8px; display: block; }
   .rcpt-proof-note { font-size: 12px; color: var(--gray); margin-top: 6px; }
+  .rcpt-summary { margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .rcpt-summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--gray); }
   .rcpt-status { padding: 10px 12px; border-radius: 10px; background: #f0fdf4; color: #166534; font-size: 13px; font-weight: 600; }
   .rcpt-foot { padding: 12px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
   .rcpt-btn { background: var(--gray-light); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px 18px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 12px; cursor: pointer; }
@@ -1534,6 +1536,8 @@
           'method'      => $o->isOnlinePayment() ? 'App' : 'Cash',
           'online'      => $o->isOnlinePayment(),
           'total'       => (float) $o->total,
+          'payment'     => $o->hasPayment() ? (float) $o->payment : null,
+          'change'      => $o->change(),
           'proof'       => $o->hasProofOfPayment() ? asset($o->proof_of_payment) : null,
           'items'       => $o->items->map(fn ($i) => [
               'name'  => $i->product->name ?? 'Product no longer available',
@@ -1574,6 +1578,16 @@
         <div id="rcptProofMedia"></div>
         <div class="rcpt-proof-note" id="rcptProofNote"></div>
       </div>
+      <div class="rcpt-summary">
+        <div class="rcpt-summary-row">
+          <span>Payment</span>
+          <span id="rcptPayment">—</span>
+        </div>
+        <div class="rcpt-summary-row" id="rcptChangeRow" style="display:none;">
+          <span>Change</span>
+          <span id="rcptChange">—</span>
+        </div>
+      </div>
       <div class="rcpt-status">Transaction completed.</div>
     </div>
     <div class="rcpt-foot">
@@ -1602,6 +1616,11 @@
     $('rcptPickedUp').textContent = r.pickedUp || '—';
     $('rcptMethod').textContent   = r.method;
     $('rcptTotal').textContent    = peso(r.total);
+
+    // Saved values from the server (orders.payment; change = payment − total)
+    $('rcptPayment').textContent       = r.payment == null ? '—' : peso(r.payment);
+    $('rcptChangeRow').style.display   = r.change > 0 ? '' : 'none';
+    $('rcptChange').textContent        = peso(r.change || 0);
 
     const tbody = $('rcptItems');
     tbody.innerHTML = '';

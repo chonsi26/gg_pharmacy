@@ -111,6 +111,7 @@ class AdminOrdersController extends Controller
             'customer.password'        => ['nullable', 'string', 'min:6', 'max:255'],
             'customer.profile_picture' => ['nullable', 'image', 'max:5120'],
             'payment_method'           => ['required', 'in:cash,app'],
+            'payment'                  => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'proof_of_payment'         => ['nullable', 'image', 'max:5120'],
             'order_date'               => ['nullable', 'date', 'before_or_equal:now'],
             'items'                    => ['required', 'array', 'min:1'],
@@ -122,6 +123,8 @@ class AdminOrdersController extends Controller
             'customer.last_name.required'  => 'Please enter the customer\'s last name.',
             'customer.email.email'         => 'Please enter a valid email address.',
             'customer.password.min'        => 'The password must be at least 6 characters.',
+            'payment.numeric'              => 'Enter a valid payment amount.',
+            'payment.min'                  => 'Enter a valid payment amount.',
             'items.required'               => 'Add at least one product.',
             'items.*.product_id.distinct'  => 'The same product is listed more than once.',
             '*.image'                      => 'Uploaded files must be images.',
@@ -130,6 +133,13 @@ class AdminOrdersController extends Controller
 
         if ($data['payment_method'] === 'app' && ! $request->hasFile('proof_of_payment')) {
             throw ValidationException::withMessages(['proof_of_payment' => 'Please upload the proof of payment for this app payment.']);
+        }
+
+        // Cash sales record the money received (must cover the total, checked
+        // once the total is known, inside the transaction). App sales were
+        // paid online, so payment is recorded as the exact total.
+        if ($data['payment_method'] === 'cash' && ! $request->filled('payment')) {
+            throw ValidationException::withMessages(['payment' => 'Please enter the payment amount received.']);
         }
 
         $when = ! empty($data['order_date']) ? Carbon::parse($data['order_date']) : now();
@@ -175,6 +185,15 @@ class AdminOrdersController extends Controller
                 $lines[] = compact('i', 'product', 'stock', 'qty', 'lineSubtotal');
             }
 
+            // Cash must cover the total; app orders are paid in full.
+            $payment = $data['payment_method'] === 'cash'
+                ? round((float) $data['payment'], 2)
+                : round($subtotal, 2);
+
+            if ($payment < round($subtotal, 2)) {
+                throw ValidationException::withMessages(['payment' => 'The payment is less than the order total.']);
+            }
+
             // 2) Customer + uploads + order.
             $customer = $this->resolveCustomer($data['customer'], $request->file('customer.profile_picture'));
 
@@ -184,6 +203,7 @@ class AdminOrdersController extends Controller
                 'status'           => 'picked_up',
                 'subtotal'         => round($subtotal, 2),
                 'total'            => round($subtotal, 2),
+                'payment'          => $payment,
                 'payment_method'   => $data['payment_method'],
                 'proof_of_payment' => $this->storePublic($request->file('proof_of_payment'), 'payment-proofs'),
                 'confirmed_at'     => $when,
@@ -341,9 +361,23 @@ class AdminOrdersController extends Controller
         return $this->ok("Order {$order->order_number} is now ready for pick up.", $order);
     }
 
-    /** Ready → Picked up / Completed (receipt "Submit"). */
-    public function complete(Order $order): JsonResponse
+    /**
+     * Ready → Picked up / Completed (receipt "Submit").
+     *
+     * Cash orders must send the `payment` the customer handed over, and it
+     * must cover the total. App-paid orders were already paid online, so
+     * their payment is recorded as the exact total (no change).
+     */
+    public function complete(Request $request, Order $order): JsonResponse
     {
+        $request->validate([
+            'payment' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+        ], [
+            'payment.numeric' => 'Enter a valid payment amount.',
+            'payment.min'     => 'Enter a valid payment amount.',
+            'payment.max'     => 'The payment amount is too large.',
+        ]);
+
         // Sweep first: an order past its window must not be completable.
         $this->autoExpireReadyOrders();
         $order->refresh();
@@ -356,7 +390,21 @@ class AdminOrdersController extends Controller
             return $this->fail('Only orders that are ready for pick up can be completed.');
         }
 
-        $order->markPickedUp();
+        if ($order->isOnlinePayment()) {
+            $payment = (float) $order->total;
+        } else {
+            if (! $request->filled('payment')) {
+                return $this->fail('Enter the payment amount received from the customer.');
+            }
+
+            $payment = round((float) $request->input('payment'), 2);
+
+            if ($payment < (float) $order->total) {
+                return $this->fail('The payment is less than the order total.');
+            }
+        }
+
+        $order->markPickedUp($payment);
 
         return $this->ok("Order {$order->order_number} completed.", $order);
     }
@@ -453,6 +501,9 @@ class AdminOrdersController extends Controller
             'date'         => $order->created_at->format('M j · g:i A'),
             'payment'      => $order->isOnlinePayment() ? 'online' : 'cash',
             'status'       => self::UI_STATUS[$order->status] ?? $order->status,
+            'total'        => $order->total,
+            'paymentAmount'=> $order->payment,
+            'change'       => $order->change(),
             'paidOnline'   => $order->isOnlinePayment() && $order->hasProofOfPayment(),
             'proofImage'   => $order->hasProofOfPayment() ? asset($order->proof_of_payment) : null,
             'cancelReason' => $order->cancellation_reason,
