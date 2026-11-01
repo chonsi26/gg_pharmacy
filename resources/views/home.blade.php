@@ -722,15 +722,7 @@ showSlide(currentIndex); autoplay();
       <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $section1?->label ?? 'Section 1' }}</h2>
       <p style="color:var(--gray);font-size:12px;">{{ $section1?->description ?? '' }}</p>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <span style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;">End in:</span>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <div><div class="count-block">00</div><div class="count-label">Days</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Hours</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Minutes</div></div>
-        <div><div class="count-block">00</div><div class="count-label">Seconds</div></div>
-      </div>
-    </div>
+
   </div>
   <div class="product-carousel">
     @forelse(($section1?->products ?? []) as $product)

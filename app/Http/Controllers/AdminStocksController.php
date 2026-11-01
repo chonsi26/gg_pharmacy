@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AdminStocksController extends Controller
 {
@@ -219,13 +220,35 @@ class AdminStocksController extends Controller
                 return [
                     'id'         => $product->id,
                     'name'       => $product->name,
-                    'image'      => $product->image ? asset($product->image) : null,
+                    'image'      => $this->productImageUrl($product->image),
                     'status'     => $activeStock ? 'In Stock' : 'Out of Stock',
                     'quantity'   => $activeStock->quantity ?? 0,
                     'batch_count'=> $product->stocks->count(),
                 ];
             })
             ->values();
+    }
+
+    /**
+     * Resolve a product's `image` column into a browser-usable URL.
+     * Handles full URLs, "storage/..." paths, and bare paths on the
+     * public disk (e.g. "products/abc.jpg").
+     */
+    private function productImageUrl(?string $image): ?string
+    {
+        if (! $image) {
+            return null;
+        }
+
+        if (Str::startsWith($image, ['http://', 'https://'])) {
+            return $image;
+        }
+
+        if (Str::startsWith($image, 'storage/')) {
+            return asset($image);
+        }
+
+        return asset('storage/' . ltrim($image, '/'));
     }
 
     /**

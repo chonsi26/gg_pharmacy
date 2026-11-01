@@ -20,6 +20,10 @@ class HomeController extends Controller
 {
     public function index(Request $request): View
     {
+        // Max products shown per section on the homepage (unfiltered view only).
+        // Filtered views (search / category / brand / "See all products") are NOT limited.
+        $sectionLimit = 8;
+
         // ── Site-wide ────────────────────────────────────────────────────────
         $settings = Setting::allAsArray();
 
@@ -48,7 +52,7 @@ class HomeController extends Controller
                           ->orWhere('ingredients', 'LIKE', "%{$searchQuery}%")
                           ->orWhere('code_name', 'LIKE', "%{$searchQuery}%");
                     })
-                    ->with(['category', 'brand'])
+                    ->with(['category', 'brand'])->withAvailableStock()
                     ->get();
             } elseif ($request->filled('category_id')) {
                 // Handle navigation category filtering
@@ -56,7 +60,7 @@ class HomeController extends Controller
                 if ($selectedCategory) {
                     $searchResults = Product::active()
                         ->where('category_id', $categoryId)
-                        ->with(['category', 'brand'])
+                        ->with(['category', 'brand'])->withAvailableStock()
                         ->get();
                 }
             } elseif ($request->filled('section_id')) {
@@ -65,7 +69,7 @@ class HomeController extends Controller
                 if ($selectedSection) {
                     $searchResults = Product::active()
                         ->where('section_id', $sectionId)
-                        ->with(['category', 'brand'])
+                        ->with(['category', 'brand'])->withAvailableStock()
                         ->orderBy('sort_order')
                         ->get();
                 }
@@ -75,7 +79,7 @@ class HomeController extends Controller
                 if ($selectedBrand) {
                     $searchResults = Product::active()
                         ->where('brand_id', $brandId)
-                        ->with(['category', 'brand'])
+                        ->with(['category', 'brand'])->withAvailableStock()
                         ->orderBy('sort_order')
                         ->get();
                 }
@@ -118,22 +122,28 @@ class HomeController extends Controller
             $cardImage_1 = CardImage::forSection('card_image_1');
             $cardImage_2 = CardImage::forSection('card_image_2');
 
-            $productWith = ['products' => fn ($q) => $q->with(['category', 'brand'])];
+            // Homepage only: hide products with no sellable stock.
+            // Capped at $sectionLimit per section. Each section is loaded on its own
+            // below, so the limit applies per section (not across all of them).
+            $productWith = ['products' => fn ($q) => $q->with(['category', 'brand'])->withAvailableStock()->hasAvailableStock()->limit($sectionLimit)];
 
             $section1  = Section::byKey('section_1');
             $section2      = Section::byKey('section_2');
             $section3 = Section::byKey('section_3');
             $section4 = Section::byKey('section_4');
             $section5  = Section::byKey('section_5');
-            $section5_top     = $section5?->products()->with(['category', 'brand'])->where('sort_order', '<=', 4)->get() ?? collect();
-            $section5_bottom  = $section5?->products()->with(['category', 'brand'])->where('sort_order', '>', 4)->get() ?? collect();
+            // Sections 5 & 6 are split into a top and bottom row: first 4 on top, next 4 below (8 max).
+            $section5_products = $section5?->products()->with(['category', 'brand'])->withAvailableStock()->hasAvailableStock()->limit($sectionLimit)->get() ?? collect();
+            $section5_top     = $section5_products->take(4)->values();
+            $section5_bottom  = $section5_products->slice(4)->values();
             $section6  = Section::byKey('section_6');
 
             $section7 = Section::byKey('section_7');
-            $section6_top     = $section6?->products()->with(['category', 'brand'])->where('sort_order', '<=', 4)->get() ?? collect();
-            $section6_bottom  = $section6?->products()->with(['category', 'brand'])->where('sort_order', '>', 4)->get() ?? collect();
+            $section6_products = $section6?->products()->with(['category', 'brand'])->withAvailableStock()->hasAvailableStock()->limit($sectionLimit)->get() ?? collect();
+            $section6_top     = $section6_products->take(4)->values();
+            $section6_bottom  = $section6_products->slice(4)->values();
 
-            foreach ([$section1, $section2, $section3, $section4, $section5, $section6, $section7] as $sec) {
+            foreach ([$section1, $section2, $section3, $section4, $section7] as $sec) {
                 $sec?->load($productWith);
             }
 

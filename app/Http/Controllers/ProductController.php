@@ -26,6 +26,7 @@ class ProductController extends Controller
             ->where('section_id', $product->section_id)
             ->where('id', '!=', $product->id)
             ->with(['category', 'brand'])
+            ->withAvailableStock()
             ->orderBy('sort_order')
             ->limit(10)
             ->get();
@@ -34,6 +35,10 @@ class ProductController extends Controller
         $inWishlist = Auth::check()
             && Auth::user()->wishlists()->where('product_id', $product->id)->exists();
 
-        return view('product', compact('product', 'settings', 'categories', 'relatedProducts', 'inWishlist'));
+        // ── Availability (active, unexpired stock only) ───────────────────────
+        $availableStock = $product->availableStock();
+        $inStock        = $availableStock > 0;
+
+        return view('product', compact('product', 'settings', 'categories', 'relatedProducts', 'inWishlist', 'inStock', 'availableStock'));
     }
 }

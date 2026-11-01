@@ -94,6 +94,14 @@
   .notif-footer { padding: 11px 16px; border-top: 1px solid var(--border); text-align: center; }
   .notif-footer a { font-size: 12px; font-weight: 700; color: var(--red); font-family: 'Montserrat', sans-serif; }
   .notif-footer a:hover { text-decoration: underline; }
+  /* Priority / action-required notifications (pinned to the top) */
+  .notif-icon-wrap.alert { background: #ffebee; color: #c62828; }
+  .notif-item.pinned { background: #fff5f5; border-left: 3px solid var(--red); padding-left: 13px; }
+  .notif-item.pinned:hover { background: #ffecec; }
+  .notif-pin-tag { display: inline-flex; align-items: center; gap: 4px; font-family: 'Montserrat', sans-serif; font-size: 9px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: #fff; background: var(--red); border-radius: 3px; padding: 1px 6px; margin-bottom: 4px; }
+  .notif-done-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--green); margin-bottom: 3px; }
+  .notif-deadline { display: block; font-size: 10px; font-weight: 700; color: #e65100; margin-bottom: 3px; }
+  .notif-deadline.overdue { color: var(--red); }
 
   /* NAV */
   nav { background: var(--red); border-bottom: 2px solid var(--dark-red); }
@@ -581,58 +589,25 @@
     <a href="#" id="userIconLoginBtn" title="Log In" style="display:flex;align-items:center;"><i class="fas fa-user icon-btn"></i></a>
     @endauth
 
-    {{-- NOTIFICATION HEART — dropdown only for logged-in users --}}
+    {{-- NOTIFICATION HEART — dropdown only for logged-in users.
+         Content is loaded from UserNotificationsController (JSON). --}}
     @auth
-    <div class="notif-wrapper" id="notifWrapper">
+    <div class="notif-wrapper" id="notifWrapper"
+         data-index-url="{{ route('notifications.index') }}"
+         data-read-all-url="{{ route('notifications.readAll') }}"
+         data-read-url="{{ route('notifications.read', ['notification' => '__ID__']) }}">
       <i class="far fa-heart icon-btn" id="notifToggle" title="Notifications" style="cursor:pointer;"></i>
-      <span class="notif-badge" id="notifBadge">3</span>
+      <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
       <div class="notif-dropdown" id="notifDropdown">
         <div class="notif-header">
           <span><i class="far fa-heart" style="color:var(--red);margin-right:6px;"></i> Notifications</span>
           <button class="notif-mark-all" id="notifMarkAll">Mark all as read</button>
         </div>
         <div class="notif-list" id="notifList">
-          <div class="notif-item unread" data-id="1">
-            <div class="notif-icon-wrap order"><i class="fas fa-box"></i></div>
-            <div class="notif-body">
-              <p><strong>Order #10245</strong> has been shipped and is on its way!</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>2 minutes ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item unread" data-id="2">
-            <div class="notif-icon-wrap promo"><i class="fas fa-tag"></i></div>
-            <div class="notif-body">
-              <p><strong>Flash Sale!</strong> Up to 30% off on vitamins &amp; supplements today only.</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>1 hour ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item unread" data-id="3">
-            <div class="notif-icon-wrap wishlist"><i class="fas fa-heart"></i></div>
-            <div class="notif-body">
-              <p><strong>Biogesic 500mg</strong> from your wishlist is back in stock.</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>3 hours ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item" data-id="4">
-            <div class="notif-icon-wrap system"><i class="fas fa-check-circle"></i></div>
-            <div class="notif-body">
-              <p><strong>Order #10201</strong> was delivered successfully. Enjoy your purchase!</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>Yesterday</span>
-            </div>
-          </div>
-          <div class="notif-item" data-id="5">
-            <div class="notif-icon-wrap promo"><i class="fas fa-percent"></i></div>
-            <div class="notif-body">
-              <p>Earn <strong>double points</strong> on all branded medicines this weekend.</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>2 days ago</span>
-            </div>
-          </div>
+          <div class="notif-empty"><i class="fas fa-spinner fa-spin"></i>Loading…</div>
         </div>
-        <div class="notif-footer">
-          <a href="#">View all notifications</a>
+        <div class="notif-footer" id="notifFooter" style="display:none;">
+          <a href="#" id="notifViewAll">View all notifications</a>
         </div>
       </div>
     </div>
@@ -966,34 +941,137 @@
 </footer>
 
 <script>
-  // Header: notification dropdown + cart badge (same behaviour as My Orders)
+  // ── Notification dropdown (auth-only) ─────────────────────────────────────
+  // Data comes from UserNotificationsController. Priority ("Action needed")
+  // items are returned first and stay pinned until the customer handles them.
   (function () {
-    var toggle = document.getElementById('notifToggle');
-    var dropdown = document.getElementById('notifDropdown');
-    var badge = document.getElementById('notifBadge');
-    var markAll = document.getElementById('notifMarkAll');
-    if (toggle && dropdown) {
-      function refreshBadge() {
-        var n = document.querySelectorAll('#notifList .notif-item.unread').length;
-        if (badge) { badge.textContent = n; badge.style.display = n > 0 ? 'flex' : 'none'; }
-      }
-      toggle.addEventListener('click', function (e) { e.stopPropagation(); dropdown.classList.toggle('open'); });
-      document.addEventListener('click', function (e) { if (!dropdown.contains(e.target)) dropdown.classList.remove('open'); });
-      document.querySelectorAll('#notifList .notif-item').forEach(function (item) {
-        item.addEventListener('click', function () {
-          this.classList.remove('unread');
-          var dot = this.querySelector('.notif-dot'); if (dot) dot.remove();
-          refreshBadge();
-        });
-      });
-      if (markAll) markAll.addEventListener('click', function () {
-        document.querySelectorAll('#notifList .notif-item.unread').forEach(function (i) {
-          i.classList.remove('unread'); var d = i.querySelector('.notif-dot'); if (d) d.remove();
-        });
-        refreshBadge();
-      });
-      refreshBadge();
+    const wrapper  = document.getElementById('notifWrapper');
+    const toggle   = document.getElementById('notifToggle');
+    const dropdown = document.getElementById('notifDropdown');
+    const badge    = document.getElementById('notifBadge');
+    const markAll  = document.getElementById('notifMarkAll');
+    const list     = document.getElementById('notifList');
+    const footer   = document.getElementById('notifFooter');
+    const viewAll  = document.getElementById('notifViewAll');
+
+    if (!wrapper || !toggle || !dropdown) return; // guest: elements don't exist
+
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+    const urls = wrapper.dataset;
+    let showAll = false;
+    let items = [];
+
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+
+    function request(url, method) {
+      return fetch(url, {
+        method: method || 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': csrf
+        }
+      }).then(r => r.ok ? r.json() : Promise.reject(r));
     }
+
+    function setBadge(n) {
+      badge.textContent = n > 99 ? '99+' : n;
+      badge.style.display = n > 0 ? 'flex' : 'none';
+    }
+
+    function itemHtml(n) {
+      const tag = n.is_pinned
+        ? '<span class="notif-pin-tag"><i class="fas fa-thumbtack"></i> Action needed</span>'
+        : (n.is_resolved ? '<span class="notif-done-tag"><i class="fas fa-check"></i> Resolved</span>' : '');
+      const deadline = n.deadline
+        ? '<span class="notif-deadline' + (n.overdue ? ' overdue' : '') + '"><i class="fas fa-hourglass-half" style="margin-right:3px;"></i>' + esc(n.deadline) + '</span>'
+        : '';
+
+      return '<div class="notif-item' + (n.is_read ? '' : ' unread') + (n.is_pinned ? ' pinned' : '') + '" data-id="' + n.id + '">'
+        + '<div class="notif-icon-wrap ' + esc(n.tone) + '"><i class="fas ' + esc(n.icon) + '"></i></div>'
+        + '<div class="notif-body">'
+        +   tag
+        +   '<p><strong>' + esc(n.title) + '</strong> ' + esc(n.message) + '</p>'
+        +   deadline
+        +   '<span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>' + esc(n.time) + '</span>'
+        + '</div>'
+        + (n.is_read ? '' : '<div class="notif-dot"></div>')
+        + '</div>';
+    }
+
+    function render(data) {
+      items = data.notifications || [];
+      setBadge(data.badge_count || 0);
+
+      if (!items.length) {
+        list.innerHTML = '<div class="notif-empty"><i class="far fa-bell-slash"></i>No notifications yet</div>';
+      } else {
+        list.innerHTML = items.map(itemHtml).join('');
+      }
+
+      footer.style.display = (data.total > items.length || showAll) ? '' : 'none';
+      viewAll.textContent = showAll ? 'Show less' : 'View all notifications';
+    }
+
+    function load() {
+      return request(urls.indexUrl + (showAll ? '?all=1' : '')).then(render).catch(() => {});
+    }
+
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+      if (dropdown.classList.contains('open')) load();
+    });
+
+    // Click on a notification → mark it read, then follow its link (if any)
+    list.addEventListener('click', function (e) {
+      const el = e.target.closest('.notif-item');
+      if (!el) return;
+      const n = items.find(x => String(x.id) === el.dataset.id);
+      if (!n) return;
+
+      const go = () => { if (n.url) window.location.href = n.url; };
+
+      if (n.is_read) { go(); return; }
+
+      request(urls.readUrl.replace('__ID__', n.id), 'PUT')
+        .then(render)
+        .catch(() => {})
+        .then(go);
+    });
+
+    // Mark all as read (pinned items stay pinned until they're handled)
+    if (markAll) {
+      markAll.addEventListener('click', function () {
+        request(urls.readAllUrl, 'PUT').then(render).catch(() => {});
+      });
+    }
+
+    viewAll.addEventListener('click', function (e) {
+      e.preventDefault();
+      showAll = !showAll;
+      load();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!dropdown.contains(e.target) && e.target !== toggle) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') dropdown.classList.remove('open');
+    });
+
+    // Initial load + refresh every minute (keeps deadlines & new alerts current)
+    load();
+    setInterval(function () { if (!document.hidden) load(); }, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
   })();
 
   document.addEventListener('DOMContentLoaded', function () {

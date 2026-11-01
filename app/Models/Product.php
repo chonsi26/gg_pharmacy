@@ -168,19 +168,42 @@ class Product extends Model
     }
 
     /**
+     * Eager-load each product's sellable quantity in the same query
+     * (exposed as `available_stock_sum`). Use on any listing of product
+     * cards so isInStock() doesn't fire one extra query per card.
+     */
+    public function scopeWithAvailableStock($query)
+    {
+        return $query->withSum(
+            ['stocks as available_stock_sum' => fn ($q) => $q->sellable()],
+            'quantity'
+        );
+    }
+
+    /**
+     * Scope: only products that currently have at least one sellable stock
+     * batch (active, quantity > 0, not expired). Used on the homepage to
+     * hide out-of-stock products. Search / category / brand / section
+     * filters deliberately do NOT use this, so those still show them.
+     */
+    public function scopeHasAvailableStock($query)
+    {
+        return $query->whereHas('stocks', fn ($q) => $q->sellable());
+    }
+
+    /**
      * Total sellable quantity across this product's active, unexpired stock
      * batches. This is what's actually available to order — not just the
      * raw sum of every stock row regardless of status.
      */
     public function availableStock(): int
     {
-        return (int) $this->stocks()
-            ->where('is_active', true)
-            ->where('quantity', '>', 0)
-            ->where(function ($q) {
-                $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now());
-            })
-            ->sum('quantity');
+        // Preloaded by scopeWithAvailableStock() — no extra query.
+        if (array_key_exists('available_stock_sum', $this->attributes)) {
+            return (int) $this->attributes['available_stock_sum'];
+        }
+
+        return (int) $this->stocks()->sellable()->sum('quantity');
     }
 
     public function isInStock(): bool

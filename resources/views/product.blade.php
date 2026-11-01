@@ -94,6 +94,14 @@
   .notif-footer { padding: 11px 16px; border-top: 1px solid var(--border); text-align: center; }
   .notif-footer a { font-size: 12px; font-weight: 700; color: var(--red); font-family: 'Montserrat', sans-serif; }
   .notif-footer a:hover { text-decoration: underline; }
+  /* Priority / action-required notifications (pinned to the top) */
+  .notif-icon-wrap.alert { background: #ffebee; color: #c62828; }
+  .notif-item.pinned { background: #fff5f5; border-left: 3px solid var(--red); padding-left: 13px; }
+  .notif-item.pinned:hover { background: #ffecec; }
+  .notif-pin-tag { display: inline-flex; align-items: center; gap: 4px; font-family: 'Montserrat', sans-serif; font-size: 9px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; color: #fff; background: var(--red); border-radius: 3px; padding: 1px 6px; margin-bottom: 4px; }
+  .notif-done-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 800; text-transform: uppercase; color: var(--green); margin-bottom: 3px; }
+  .notif-deadline { display: block; font-size: 10px; font-weight: 700; color: #e65100; margin-bottom: 3px; }
+  .notif-deadline.overdue { color: var(--red); }
 
   /* ── NAV ─────────────────────────────────────────────────────────────────── */
   nav { background: var(--red); border-bottom: 2px solid var(--dark-red); }
@@ -244,6 +252,7 @@
   .avail-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .avail-badge { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; border-radius: 4px; padding: 3px 10px; }
   .avail-badge.instock { background: #e8f5e9; color: var(--green); border: 1px solid #a5d6a7; }
+  .avail-badge.outofstock { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
   .avail-badge.rx { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
   .avail-badge.otc { background: #e8f5e9; color: var(--green); border: 1px solid #a5d6a7; }
 
@@ -269,6 +278,12 @@
   @keyframes heartPop { 0% { transform: scale(1); } 45% { transform: scale(1.35); } 100% { transform: scale(1); } }
   .buy-now-btn { width: 100%; height: 46px; background: var(--green); color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
   .buy-now-btn:hover { background: var(--dark-green); }
+  .qty-cart-row .add-cart-main:disabled, .buy-now-btn:disabled { background: #bdbdbd; color: #fff; cursor: not-allowed; }
+  .qty-control.is-disabled { opacity: 0.5; pointer-events: none; }
+  .oos-note { background: #ffebee; color: #c62828; border-radius: 8px; padding: 10px 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .rel-card.is-oos .rel-img img { opacity: 0.45; filter: grayscale(1); }
+  .rel-img { position: relative; }
+  .rel-oos { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); background: rgba(34,34,34,0.88); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 4px; white-space: nowrap; text-transform: uppercase; }
 
   /* ── GUARANTEES ── */
   .guarantees { display: flex; gap: 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
@@ -505,49 +520,26 @@
     <a href="#" id="userIconLoginBtn" title="Log In" style="display:flex;align-items:center;"><i class="fas fa-user icon-btn"></i></a>
     @endauth
 
+    {{-- NOTIFICATION HEART — dropdown only for logged-in users.
+         Content is loaded from UserNotificationsController (JSON). --}}
     @auth
-    <div class="notif-wrapper" id="notifWrapper">
+    <div class="notif-wrapper" id="notifWrapper"
+         data-index-url="{{ route('notifications.index') }}"
+         data-read-all-url="{{ route('notifications.readAll') }}"
+         data-read-url="{{ route('notifications.read', ['notification' => '__ID__']) }}">
       <i class="far fa-heart icon-btn" id="notifToggle" title="Notifications" style="cursor:pointer;"></i>
-      <span class="notif-badge" id="notifBadge">3</span>
+      <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
       <div class="notif-dropdown" id="notifDropdown">
         <div class="notif-header">
           <span><i class="far fa-heart" style="color:var(--red);margin-right:6px;"></i> Notifications</span>
           <button class="notif-mark-all" id="notifMarkAll">Mark all as read</button>
         </div>
         <div class="notif-list" id="notifList">
-          <div class="notif-item unread" data-id="1">
-            <div class="notif-icon-wrap order"><i class="fas fa-box"></i></div>
-            <div class="notif-body">
-              <p><strong>Order #10245</strong> has been shipped and is on its way!</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>2 minutes ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item unread" data-id="2">
-            <div class="notif-icon-wrap promo"><i class="fas fa-tag"></i></div>
-            <div class="notif-body">
-              <p><strong>Flash Sale!</strong> Up to 30% off on vitamins &amp; supplements today only.</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>1 hour ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item unread" data-id="3">
-            <div class="notif-icon-wrap wishlist"><i class="fas fa-heart"></i></div>
-            <div class="notif-body">
-              <p><strong>Biogesic 500mg</strong> from your wishlist is back in stock.</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>3 hours ago</span>
-            </div>
-            <div class="notif-dot"></div>
-          </div>
-          <div class="notif-item" data-id="4">
-            <div class="notif-icon-wrap system"><i class="fas fa-check-circle"></i></div>
-            <div class="notif-body">
-              <p><strong>Order #10201</strong> was delivered successfully. Enjoy your purchase!</p>
-              <span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>Yesterday</span>
-            </div>
-          </div>
+          <div class="notif-empty"><i class="fas fa-spinner fa-spin"></i>Loading…</div>
         </div>
-        <div class="notif-footer"><a href="#">View all notifications</a></div>
+        <div class="notif-footer" id="notifFooter" style="display:none;">
+          <a href="#" id="notifViewAll">View all notifications</a>
+        </div>
       </div>
     </div>
     @else
@@ -734,7 +726,11 @@
 
       <!-- AVAILABILITY BADGES -->
       <div class="avail-row">
-        <span class="avail-badge instock"><i class="fas fa-check-circle"></i> In Stock</span>
+        @if($inStock)
+          <span class="avail-badge instock"><i class="fas fa-check-circle"></i> In Stock</span>
+        @else
+          <span class="avail-badge outofstock"><i class="fas fa-times-circle"></i> Out of Stock</span>
+        @endif
         @if($product->requires_prescription)
           <span class="avail-badge rx"><i class="fas fa-prescription"></i> Prescription Required</span>
         @elseif($showRxInfo)
@@ -756,19 +752,28 @@
         @endif
       </div>
 
+      @unless($inStock)
+        <div class="oos-note"><i class="fas fa-exclamation-circle"></i> This product is currently unavailable. Save it to your wishlist and check back soon.</div>
+      @endunless
+
       <!-- QTY + CART -->
       <div class="qty-cart-row">
-        <div class="qty-control">
-          <button type="button" id="qtyMinus" aria-label="Decrease quantity">−</button>
-          <input type="number" id="qtyInput" value="1" min="1" max="99" readonly>
-          <button type="button" id="qtyPlus" aria-label="Increase quantity">+</button>
+        <div class="qty-control {{ $inStock ? '' : 'is-disabled' }}">
+          <button type="button" id="qtyMinus" aria-label="Decrease quantity" @disabled(! $inStock)>−</button>
+          <input type="number" id="qtyInput" value="{{ $inStock ? 1 : 0 }}" min="1" max="{{ min(99, max($availableStock, 1)) }}" data-max="{{ min(99, max($availableStock, 1)) }}" readonly>
+          <button type="button" id="qtyPlus" aria-label="Increase quantity" @disabled(! $inStock)>+</button>
         </div>
+        @if($inStock)
         <button
           class="add-cart-main js-add-to-cart"
           type="button"
           data-product-id="{{ $product->id }}"
           data-qty-target="#qtyInput"
         ><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
+        @else
+        {{-- No js-add-to-cart class, so cart.js never binds to it. --}}
+        <button class="add-cart-main" type="button" disabled><i class="fas fa-ban"></i> OUT OF STOCK</button>
+        @endif
         <button class="wishlist-btn {{ ($inWishlist ?? false) ? 'active' : '' }}" id="wishlistBtn" type="button"
           data-url="{{ route('wishlists.toggle', $product) }}"
           title="{{ ($inWishlist ?? false) ? 'Remove from wishlist' : 'Add to wishlist' }}"
@@ -776,7 +781,11 @@
           aria-pressed="{{ ($inWishlist ?? false) ? 'true' : 'false' }}"><i class="{{ ($inWishlist ?? false) ? 'fas' : 'far' }} fa-heart"></i></button>
       </div>
 
-      <button class="buy-now-btn js-buy-now" type="button" data-product-id="{{ $product->id }}" data-qty-target="#qtyInput"><i class="fas fa-bolt"></i> BUY NOW</button>
+      @if($inStock)
+        <button class="buy-now-btn js-buy-now" type="button" data-product-id="{{ $product->id }}" data-qty-target="#qtyInput"><i class="fas fa-bolt"></i> BUY NOW</button>
+      @else
+        <button class="buy-now-btn" type="button" disabled><i class="fas fa-ban"></i> OUT OF STOCK</button>
+      @endif
 
       {{-- Posts straight to the order-review page (myorder.blade.php). Nothing
            is saved to orders/order_items until "Place Order" is clicked there. --}}
@@ -927,8 +936,11 @@
     </div>
     <div class="related-grid">
       @foreach($relatedProducts as $related)
-        <a href="{{ route('product.show', $related) }}" class="rel-card">
+        <a href="{{ route('product.show', $related) }}" class="rel-card {{ $related->isInStock() ? '' : 'is-oos' }}">
           <div class="rel-img">
+            @unless($related->isInStock())
+              <span class="rel-oos">Out of Stock</span>
+            @endunless
             @if($related->isMostSold())
               <span class="rel-badge most-sold">{{ $related->badge }}</span>
             @elseif($related->badge)
@@ -1163,7 +1175,8 @@
     if (parseInt(qtyInput.value) > 1) qtyInput.value = parseInt(qtyInput.value) - 1;
   });
   document.getElementById('qtyPlus').addEventListener('click', () => {
-    if (parseInt(qtyInput.value) < 99) qtyInput.value = parseInt(qtyInput.value) + 1;
+    const maxQty = parseInt(qtyInput.dataset.max, 10) || 99;   // capped at available stock
+    if (parseInt(qtyInput.value) < maxQty) qtyInput.value = parseInt(qtyInput.value) + 1;
   });
 
   // ── Wishlist toggle ─────────────────────────────────────────────────────────
@@ -1469,35 +1482,137 @@
     e.preventDefault(); e.target.closest('.shipping-bar').style.display = 'none';
   });
 
-  // ── Notification dropdown ───────────────────────────────────────────────────
+  // ── Notification dropdown (auth-only) ─────────────────────────────────────
+  // Data comes from UserNotificationsController. Priority ("Action needed")
+  // items are returned first and stay pinned until the customer handles them.
   (function () {
+    const wrapper  = document.getElementById('notifWrapper');
     const toggle   = document.getElementById('notifToggle');
     const dropdown = document.getElementById('notifDropdown');
     const badge    = document.getElementById('notifBadge');
     const markAll  = document.getElementById('notifMarkAll');
-    if (!toggle || !dropdown) return;
-    function countUnread() { return document.querySelectorAll('#notifList .notif-item.unread').length; }
-    function refreshBadge() { const n = countUnread(); badge.textContent = n; badge.style.display = n > 0 ? 'flex' : 'none'; }
-    toggle.addEventListener('click', e => { e.stopPropagation(); dropdown.classList.toggle('open'); });
-    document.querySelectorAll('#notifList .notif-item').forEach(item => {
-      item.addEventListener('click', function() {
-        this.classList.remove('unread');
-        const dot = this.querySelector('.notif-dot'); if (dot) dot.remove();
-        refreshBadge();
-      });
+    const list     = document.getElementById('notifList');
+    const footer   = document.getElementById('notifFooter');
+    const viewAll  = document.getElementById('notifViewAll');
+
+    if (!wrapper || !toggle || !dropdown) return; // guest: elements don't exist
+
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+    const urls = wrapper.dataset;
+    let showAll = false;
+    let items = [];
+
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+
+    function request(url, method) {
+      return fetch(url, {
+        method: method || 'GET',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': csrf
+        }
+      }).then(r => r.ok ? r.json() : Promise.reject(r));
+    }
+
+    function setBadge(n) {
+      badge.textContent = n > 99 ? '99+' : n;
+      badge.style.display = n > 0 ? 'flex' : 'none';
+    }
+
+    function itemHtml(n) {
+      const tag = n.is_pinned
+        ? '<span class="notif-pin-tag"><i class="fas fa-thumbtack"></i> Action needed</span>'
+        : (n.is_resolved ? '<span class="notif-done-tag"><i class="fas fa-check"></i> Resolved</span>' : '');
+      const deadline = n.deadline
+        ? '<span class="notif-deadline' + (n.overdue ? ' overdue' : '') + '"><i class="fas fa-hourglass-half" style="margin-right:3px;"></i>' + esc(n.deadline) + '</span>'
+        : '';
+
+      return '<div class="notif-item' + (n.is_read ? '' : ' unread') + (n.is_pinned ? ' pinned' : '') + '" data-id="' + n.id + '">'
+        + '<div class="notif-icon-wrap ' + esc(n.tone) + '"><i class="fas ' + esc(n.icon) + '"></i></div>'
+        + '<div class="notif-body">'
+        +   tag
+        +   '<p><strong>' + esc(n.title) + '</strong> ' + esc(n.message) + '</p>'
+        +   deadline
+        +   '<span class="notif-time"><i class="fas fa-clock" style="margin-right:3px;"></i>' + esc(n.time) + '</span>'
+        + '</div>'
+        + (n.is_read ? '' : '<div class="notif-dot"></div>')
+        + '</div>';
+    }
+
+    function render(data) {
+      items = data.notifications || [];
+      setBadge(data.badge_count || 0);
+
+      if (!items.length) {
+        list.innerHTML = '<div class="notif-empty"><i class="far fa-bell-slash"></i>No notifications yet</div>';
+      } else {
+        list.innerHTML = items.map(itemHtml).join('');
+      }
+
+      footer.style.display = (data.total > items.length || showAll) ? '' : 'none';
+      viewAll.textContent = showAll ? 'Show less' : 'View all notifications';
+    }
+
+    function load() {
+      return request(urls.indexUrl + (showAll ? '?all=1' : '')).then(render).catch(() => {});
+    }
+
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+      if (dropdown.classList.contains('open')) load();
     });
+
+    // Click on a notification → mark it read, then follow its link (if any)
+    list.addEventListener('click', function (e) {
+      const el = e.target.closest('.notif-item');
+      if (!el) return;
+      const n = items.find(x => String(x.id) === el.dataset.id);
+      if (!n) return;
+
+      const go = () => { if (n.url) window.location.href = n.url; };
+
+      if (n.is_read) { go(); return; }
+
+      request(urls.readUrl.replace('__ID__', n.id), 'PUT')
+        .then(render)
+        .catch(() => {})
+        .then(go);
+    });
+
+    // Mark all as read (pinned items stay pinned until they're handled)
     if (markAll) {
-      markAll.addEventListener('click', () => {
-        document.querySelectorAll('#notifList .notif-item.unread').forEach(item => {
-          item.classList.remove('unread');
-          const dot = item.querySelector('.notif-dot'); if (dot) dot.remove();
-        });
-        refreshBadge();
+      markAll.addEventListener('click', function () {
+        request(urls.readAllUrl, 'PUT').then(render).catch(() => {});
       });
     }
-    document.addEventListener('click', e => { if (!dropdown.contains(e.target) && e.target !== toggle) dropdown.classList.remove('open'); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') dropdown.classList.remove('open'); });
-    refreshBadge();
+
+    viewAll.addEventListener('click', function (e) {
+      e.preventDefault();
+      showAll = !showAll;
+      load();
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', function (e) {
+      if (!dropdown.contains(e.target) && e.target !== toggle) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') dropdown.classList.remove('open');
+    });
+
+    // Initial load + refresh every minute (keeps deadlines & new alerts current)
+    load();
+    setInterval(function () { if (!document.hidden) load(); }, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
   })();
 </script>
 

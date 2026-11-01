@@ -101,6 +101,21 @@ class Stock extends Model
     }
 
     /**
+     * Scope: batches a customer can actually buy from — active, has
+     * quantity, and not expired. Single source of truth for storefront
+     * availability (used by Product::availableStock() and the
+     * Product::withAvailableStock() scope).
+     */
+    public function scopeSellable($query)
+    {
+        return $query->where('is_active', true)
+            ->where('quantity', '>', 0)
+            ->where(function ($q) {
+                $q->whereNull('expiry_date')->orWhere('expiry_date', '>=', now());
+            });
+    }
+
+    /**
      * Scope: only stock with quantity remaining.
      */
     public function scopeInStock($query)
