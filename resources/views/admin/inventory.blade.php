@@ -2844,8 +2844,8 @@ async function saveMedicine() {
    Picking a Form re-labels (and re-hints) the shared inputs so
    each product type asks for what actually matters to it. The
    input IDs never change, so saving works exactly as before.
-   Each profile: [label, placeholder] per field; `rx` toggles the
-   "Requires Prescription" checkbox. Missing keys use BASE.     */
+   Each profile: [label, placeholder] per field. Missing keys use BASE.
+   (The "Requires Prescription" checkbox is always visible.)     */
 const FORM_BASE = {
   name:    ['Product Name',          'e.g. Product name and size'],
   generic: ['Generic Name',          'e.g. Generic / variant name'],
@@ -3023,12 +3023,9 @@ function applyFormProfile(p) {
     input.placeholder = placeholder;
   });
 
-  // "Requires Prescription" only applies to Medicine (and its dosage forms).
+  // "Requires Prescription" is always visible, regardless of the selected Form.
   const rxWrap = document.getElementById(p + 'RxWrap');
-  if (rxWrap) {
-    rxWrap.style.display = profile.rx ? '' : 'none';
-    if (!profile.rx) document.getElementById(p + 'RequiresPrescription').checked = false;
-  }
+  if (rxWrap) rxWrap.style.display = '';
 }
 
 /* ── Reset the add-medicine form ─────────────────────── */
