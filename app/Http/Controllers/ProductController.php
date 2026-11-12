@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function show(Product $product): View
     {
         // Eager-load relationships needed on the detail page
-        $product->load(['category', 'brand', 'section']);
+        $product->load(['category', 'brand']);
 
         // ── Site-wide ────────────────────────────────────────────────────────
         $settings = Setting::allAsArray();

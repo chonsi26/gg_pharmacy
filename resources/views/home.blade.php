@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+@include('partials.pwa-head')
 <title>{{ $settings['site_name'] ?? 'No Pharmacy Name' }} - {{ $settings['tagline'] ?? 'Search for Generic and Branded Medicine' }}</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -453,7 +454,7 @@
 <div class="header">
   <div class="logo">
     <a href="{{ route('home') }}">
-    <img src="{{ asset($settings['logo'] ?? 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png') }}" alt="{{ $settings['site_name'] ?? 'No Pharmacy Name' }}">
+    <img src="{{ asset($settings['logo'] ?? 'images/logo.png') }}" alt="{{ $settings['site_name'] ?? 'No Pharmacy Name' }}">
 </a>
   </div>
   
@@ -1128,6 +1129,7 @@ showSlide(currentIndex); autoplay();
       <p class="footer-note">{{ $settings['newsletter_note'] ?? '' }}</p>
     </div>
   </div>
+  @include('partials.pwa-install')
   <div class="footer-bottom">
     <p>{{ $settings['copyright'] ?? '' }}</p>
     <div class="payment-icons">

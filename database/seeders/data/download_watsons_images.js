@@ -94,7 +94,26 @@ const urls = [
   "https://medias.watsons.com.ph/publishing/WTCPH-50037974-front-zoom.jpg?version=1734328240",
   "https://medias.watsons.com.ph/publishing/WTCPH-10100952-front-zoom.jpg?version=1734021229",
   "https://medias.watsons.com.ph/publishing/WTCPH-10038431-front-zoom.jpg?version=1734053835",
-  "https://medias.watsons.com.ph/publishing/WTCPH-10096685-front-zoom.jpg?version=1734051453"
+  "https://medias.watsons.com.ph/publishing/WTCPH-10096685-front-zoom.jpg?version=1734051453",
+  "https://medias.watsons.com.ph/publishing/SLEEPASIL%20CAP%20X60_01_10050618-fCmhWfbz-zoom.png?version=1762586172",
+  "https://medias.watsons.com.ph/publishing/50037308-SzTSeqfi-zoom.png?version=1762679219",
+  "https://medias.watsons.com.ph/publishing/WTCPH-10100939-front-zoom.jpg?version=1734020276",
+  "https://medias.watsons.com.ph/publishing/WTCPH-10098273-front-zoom.jpg?version=1734009963",
+  "https://medias.watsons.com.ph/publishing/50027774-OMEm009F-zoom.jpg?version=1734356425",
+  "https://medias.watsons.com.ph/publishing/50006628-1KOZEMnM-zoom.png?version=1762576461",
+  "https://medias.watsons.com.ph/publishing/WTCPH-50025798-front-yoi4Ekch-zoom.png?version=1791515164",
+  "https://medias.watsons.com.ph/publishing/watsons_50021902_01-ngjwAsAc-gqbRc7Mx-zoom.png?version=1792425704",
+  "https://medias.watsons.com.ph/publishing/WTCPH-10096718-front-zoom.jpg?version=1734019578",
+  "https://medias.watsons.com.ph/publishing/10002745-rOgbCmqW-zoom.png?version=1762598555",
+  "https://medias.watsons.com.ph/publishing/50004779-llj8d7It-zoom.png?version=1762682456",
+  "https://medias.watsons.com.ph/publishing/10098252-7y1vF7iQ-i6NtP3dg-zoom.png?version=1794391019",
+  "https://medias.watsons.com.ph/publishing/WTCPH-50019168-front-cTktqJqy-zoom.png?version=1791515155",
+  "https://medias.watsons.com.ph/publishing/10094557-ncOGsYlW-zoom.png?version=1762513214",
+  "https://medias.watsons.com.ph/publishing/WTCPH-10086593-front-zoom.jpg?version=1734070728",
+  "https://medias.watsons.com.ph/publishing/WTCPH-10087860-front-zoom.jpg?version=1734068693",
+  "https://medias.watsons.com.ph/publishing/nutrabliss_50030196_01-j77cVtk3-Bcytw2ja-zoom.png?version=1792425632",
+  "https://medias.watsons.com.ph/publishing/50012023-DIMSxx4M-zoom.png?version=1762486773",
+  "https://medias.watsons.com.ph/publishing/50008218-gN0sPnNo-zoom.png?version=1762577527"
 ];
 
 (async () => {

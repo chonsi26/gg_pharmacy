@@ -78,7 +78,7 @@ class DatabaseSeeder extends Seeder
             'location_strip'   => '📍 Zone 2, Sogod, Southern Leyte',
             'facebook_url'     => '#',
             'instagram_url'    => '#',
-            'logo'             => 'images/logo.png',
+            'logo'             => 'images/logo1.png',
             'logo2'             => 'images/logo2.png',
             'shipping_message' => 'Welcome to GG Pharmacy. If you need help, just ask Tabby',
             'copyright'        => '© 2024 GG Pharmacy. All Rights Reserved. | Zone 2, Sogod, Southern Leyte',

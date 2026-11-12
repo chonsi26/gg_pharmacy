@@ -349,9 +349,10 @@
           <p class="err-msg {{ $errors->has('password') ? 'on' : '' }}" id="passErr">{{ $errors->first('password') ?: 'Password is required.' }}</p>
         </div>
 
+        <!--
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin:-4px 0 10px;">
           <input type="checkbox" name="remember" style="width:auto;height:auto;" value="1" {{ old('remember') ? 'checked' : '' }}> Remember me
-        </label>
+        </label> -->
 
         <button class="btn-signin" type="submit" id="btn">
           <span id="btnLabel">Log In</span>

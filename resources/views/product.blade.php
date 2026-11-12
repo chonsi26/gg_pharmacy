@@ -680,10 +680,6 @@
 <!-- BREADCRUMB -->
 <div class="breadcrumb">
   <a href="{{ route('home') }}"><i class="fas fa-home" style="font-size:11px;"></i> Home</a>
-  @if($product->section)
-    <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
-    <a href="{{ $product->section->see_all_url ?? '#' }}">{{ $product->section->label }}</a>
-  @endif
   @if($product->category)
     <span class="sep"><i class="fas fa-chevron-right" style="font-size:9px;"></i></span>
     <a href="{{ route('home', ['category_id' => $product->category->id]) }}">{{ $product->category->name }}</a>
@@ -822,11 +818,10 @@
       </div>
 
       <!-- MED TAGS -->
-      @if($product->category || $product->brand || $product->section)
+      @if($product->category || $product->brand)
       <div class="med-tags">
         @if($product->category)<span class="med-tag"><i class="fas fa-tag"></i> {{ $product->category->name }}</span>@endif
         @if($product->brand)<span class="med-tag"><i class="fas fa-building"></i> {{ $product->brand->name }}</span>@endif
-        @if($product->section)<span class="med-tag"><i class="fas fa-layer-group"></i> {{ $product->section->label }}</span>@endif
       </div>
       @endif
 
