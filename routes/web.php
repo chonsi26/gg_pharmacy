@@ -145,6 +145,8 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::get('/inventory/sort', [AdminInventoryController::class, 'sort'])->name('inventory.sort');
         Route::get('/inventory/{product}', [AdminInventoryController::class, 'show'])->name('inventory.show');
         Route::post('/inventory', [AdminInventoryController::class, 'store'])->name('inventory.store');
+        // Wipes products + stocks + orders + order items + carts + wishlists + sliders.
+        Route::post('/inventory/reset', [AdminInventoryController::class, 'reset'])->name('inventory.reset');
         Route::put('/inventory/{product}', [AdminInventoryController::class, 'update'])->name('inventory.update');
         Route::put('/inventory/{product}/badge', [AdminInventoryController::class, 'updateBadge'])->name('inventory.badge');
         Route::delete('/inventory/{product}', [AdminInventoryController::class, 'destroy'])->name('inventory.destroy');
@@ -166,6 +168,9 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::put('/orders/{order}/complete', [AdminOrdersController::class, 'complete'])->name('orders.complete');
         Route::put('/orders/{order}/cancel', [AdminOrdersController::class, 'cancel'])->name('orders.cancel');
         Route::post('/orders/{order}/refund', [AdminOrdersController::class, 'refund'])->name('orders.refund');
+        // Wipes the orders + order_items tables (database rows only). Must be registered
+        // before the {order} wildcard so "reset" isn't swallowed by route-model binding.
+        Route::delete('/orders/reset', [AdminOrdersController::class, 'reset'])->name('orders.reset');
         Route::delete('/orders/{order}', [AdminOrdersController::class, 'destroy'])->name('orders.destroy');
         Route::get('/staffs', [AdminController::class, 'staffs'])->name('staffs');
         Route::get('/staffs/search', [AdminController::class, 'searchStaffs'])->name('staffs.search');
@@ -181,6 +186,8 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::post('/stocks', [AdminStocksController::class, 'store'])->name('stocks.store');
         Route::put('/stocks/{stock}', [AdminStocksController::class, 'update'])->name('stocks.update');
         Route::delete('/stocks/{stock}', [AdminStocksController::class, 'destroy'])->name('stocks.destroy');
+        // Wipes every row in the stocks table (database only, no files).
+        Route::post('/stocks/reset', [AdminStocksController::class, 'reset'])->name('stocks.reset');
         Route::put('/stocks/{stock}/activate', [AdminStocksController::class, 'activate'])->name('stocks.activate');
         Route::get('/stocks/products', [AdminStocksController::class, 'products'])->name('stocks.products');
         Route::get('/stocks/products/{product}/available', [AdminStocksController::class, 'availableStocks'])->name('stocks.products.available');

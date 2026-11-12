@@ -324,7 +324,7 @@ class AdminController extends Controller
 
     /**
      * Shape a Stock model into the flat array the expiry.blade.php grid
-     * expects. Buckets each batch into a level (danger/warning/ok) based on
+     * expects. Buckets each batch into a level (danger = expired, warning = expiring within 10 days, ok) based on
      * days remaining until expiry, and includes the is_active flag with a
      * human-readable label so the frontend can show a status badge without
      * re-deriving it from a boolean.
@@ -340,11 +340,12 @@ class AdminController extends Controller
         if ($daysLeft < 0) {
             $level = 'danger';
             $pill  = 'Expired';
-        } elseif ($daysLeft <= 30) {
-            $level = 'danger';
+        } elseif ($daysLeft <= 10) {
+            // Expiring: 10 days or fewer before the expiry date.
+            $level = 'warning';
             $pill  = $daysLeft . ' Days';
         } elseif ($daysLeft <= 90) {
-            $level = 'warning';
+            $level = 'ok';
             $pill  = round($daysLeft / 30) . ' Months';
         } else {
             $level = 'ok';
@@ -353,6 +354,7 @@ class AdminController extends Controller
 
         return [
             'id'           => $stock->id,
+            'product_id'   => $stock->product_id,
             'name'         => $stock->product->name ?? 'Unknown Product',
             'image'        => $this->productImageUrl($stock->product->image ?? null),
             'batch'        => $stock->stockNo(),
@@ -1410,7 +1412,8 @@ class AdminController extends Controller
     $siteName = Setting::get('site_name', 'Pharmacy');
     $sliders = $this->allSlidersFormatted();
     $media = $this->allMediaFormatted();
-    return view('admin.pharmacy_sliders', compact('logo2', 'siteName', 'sliders', 'media'));
+    $products = Product::orderBy('name')->get(['id', 'name', 'code_name']);
+    return view('admin.pharmacy_sliders', compact('logo2', 'siteName', 'sliders', 'media', 'products'));
 }
 
     /**
@@ -1467,6 +1470,7 @@ class AdminController extends Controller
         $data['is_active'] = $request->boolean('is_active', $slider->is_active);
 
         $slider->update($data);
+        $slider->unsetRelation('product');
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -1509,12 +1513,15 @@ class AdminController extends Controller
     private function validatedSliderData(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([
+            'product_id' => ['required', 'integer', 'exists:products,id'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'image'      => [$ignoreId ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'alt'        => ['nullable', 'string', 'max:255'],
             'is_active'  => ['nullable', 'boolean'],
         ], [
-            'image.required' => 'Please choose a slide image.',
+            'image.required'      => 'Please choose a slide image.',
+            'product_id.required' => 'Please select the product this slide is about.',
+            'product_id.exists'   => 'The selected product no longer exists.',
         ]);
     }
 
@@ -1548,12 +1555,16 @@ class AdminController extends Controller
      */
     private function formatSlider(Slider $slider): array
     {
+        $slider->loadMissing('product:id,name,code_name');
+
         return [
-            'id'         => $slider->id,
-            'image'      => $this->fullWidthBannerImageUrl($slider->image),
-            'alt'        => $slider->alt,
-            'sort_order' => $slider->sort_order,
-            'is_active'  => $slider->is_active,
+            'id'           => $slider->id,
+            'product_id'   => $slider->product_id,
+            'product_name' => $slider->product?->name,
+            'image'        => $this->fullWidthBannerImageUrl($slider->image),
+            'alt'          => $slider->alt,
+            'sort_order'   => $slider->sort_order,
+            'is_active'    => $slider->is_active,
         ];
     }
 
@@ -1564,8 +1575,9 @@ class AdminController extends Controller
      */
     private function allSlidersFormatted()
     {
-        return Slider::orderBy('sort_order')
-            ->get(['id', 'image', 'alt', 'sort_order', 'is_active'])
+        return Slider::with('product:id,name,code_name')
+            ->orderBy('sort_order')
+            ->get(['id', 'product_id', 'image', 'alt', 'sort_order', 'is_active'])
             ->map(fn (Slider $slider) => $this->formatSlider($slider))
             ->values();
     }

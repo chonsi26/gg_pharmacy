@@ -32,29 +32,49 @@ class StaffController extends Controller
 
     // ── Dashboard (same screen as the admin dashboard) ───────────────────────
 
+    /**
+     * Mirrors AdminController::index() — same variables, same definitions —
+     * so the staff and admin dashboards always show identical numbers.
+     * Charts, notifications and search are fed by their own JSON endpoints
+     * (see the routes below and the staff.* routes in web.php).
+     */
     public function dashboard(): View
     {
-        // Same definitions as AdminController::index() so both dashboards agree.
+        return view('staffs.dashboard', $this->brandingData() + $this->dashboardStats() + [
+            'staff'    => Auth::guard('staff')->user(),
+            'map_link' => Setting::get('map_link'),
+        ]);
+    }
+
+    /**
+     * Stat-card figures shown at the top of the dashboard.
+     *
+     *  - totalMedicines: every product.
+     *  - lowStockItems:  active batches with 1–10 units left.
+     *  - expiringStocks: active batches with stock left that expire within the
+     *                    next 10 days (today through today + 10). Already-expired
+     *                    batches are excluded.
+     *
+     * Keep these in step with AdminController::index().
+     */
+    private function dashboardStats(): array
+    {
         $lowStockItems = Stock::where('is_active', 1)
             ->where('quantity', '>', 0)
             ->where('quantity', '<=', 10)
             ->count();
 
-        // Active batches with stock left that expire within the next 10 days
-        // (today through today + 10). Already-expired batches are excluded.
         $expiringStocks = Stock::where('is_active', 1)
             ->where('quantity', '>', 0)
             ->whereNotNull('expiry_date')
             ->whereBetween('expiry_date', [now()->startOfDay(), now()->addDays(10)->endOfDay()])
             ->count();
 
-        return view('staffs.dashboard', $this->brandingData() + [
-            'staff'          => Auth::guard('staff')->user(),
-            'map_link'       => Setting::get('map_link'),
+        return [
             'totalMedicines' => Product::count(),
             'lowStockItems'  => $lowStockItems,
             'expiringStocks' => $expiringStocks,
-        ]);
+        ];
     }
 
     // ── Profile ───────────────────────────────────────────────────────────────
@@ -177,7 +197,9 @@ class StaffController extends Controller
 
     // ── Dashboard charts (JSON) ───────────────────────────────────────────────
     // These reuse AdminChartController so the staff and admin dashboards always
-    // show identical numbers. Only the route/guard differs (auth:staff).
+    // show identical numbers: Weekly Sales (+ Today's Sales card), Order Status,
+    // Revenue by Product and Recent Transactions. Only the route/guard differs
+    // (auth:staff).
 
     public function weeklySales(Request $request): JsonResponse
     {
@@ -336,7 +358,7 @@ class StaffController extends Controller
     {
         return [
             'logo'          => Setting::get('logo'),
-            'logo2'          => Setting::get('logo2'),
+            'logo2'         => Setting::get('logo2'),
             'siteName'      => Setting::get('site_name', 'Pharmacy'),
             'address_line1' => Setting::get('address_line1'),
             'address_line2' => Setting::get('address_line2'),

@@ -44,9 +44,6 @@ return new class extends Migration {
                   ->nullable()
                   ->constrained('brands')
                   ->nullOnDelete();
-            $table->foreignId('section_id')
-                  ->constrained('sections')
-                  ->cascadeOnDelete();
             // ──────────────────────────────────────────────────────────────
 
             $table->integer('sort_order')->default(0);

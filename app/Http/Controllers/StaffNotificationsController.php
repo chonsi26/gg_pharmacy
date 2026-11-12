@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
  * Staff notification bell (same alerts as the admin bell, stored in `staff_notifications`).
  *
  * Notifications are DERIVED from live data (stocks, orders, customers) every
- * time the bell is loaded, then stored in the `notifications` table so they
+ * time the bell is loaded, then stored in the `staff_notifications` table so they
  * keep a read/unread state and a timestamp.
  * Staff have their own table, so what staff mark as read never affects the admin bell.
  *
@@ -313,6 +313,31 @@ class StaffNotificationsController extends Controller
             ->havingRaw('COALESCE(SUM(stocks.quantity), 0) <= ?', [self::LOW_STOCK_THRESHOLD])
             ->get();
 
+        // Which batch should the notification open in the stocks page's details modal?
+        //  • low stock    → the product's sellable batch that is running low
+        //  • out of stock → the product's most recently added batch
+        $productIds = $rows->pluck('id')->all();
+
+        $sellableBatch = DB::table('stocks')
+            ->whereIn('product_id', $productIds)
+            ->where('is_active', true)
+            ->where('quantity', '>', 0)
+            ->where(function ($q) use ($today) {
+                $q->whereNull('expiry_date')->orWhereDate('expiry_date', '>=', $today);
+            })
+            ->orderByDesc('quantity')
+            ->orderBy('id')
+            ->get(['id', 'product_id'])
+            ->unique('product_id')
+            ->pluck('id', 'product_id');
+
+        $latestBatch = DB::table('stocks')
+            ->whereIn('product_id', $productIds)
+            ->orderByDesc('id')
+            ->get(['id', 'product_id'])
+            ->unique('product_id')
+            ->pluck('id', 'product_id');
+
         $alerts = [];
 
         foreach ($rows as $r) {
@@ -323,14 +348,14 @@ class StaffNotificationsController extends Controller
                     'out_of_stock', "out_of_stock:product:{$r->id}",
                     'Out of stock',
                     "{$r->name} is out of stock.",
-                    route('staff.stocks')
+                    route('staff.stocks', array_filter(['status' => 'out-of-stock', 'open' => $latestBatch[$r->id] ?? null]))
                 );
             } else {
                 $alerts[] = $this->alert(
                     'low_stock', "low_stock:product:{$r->id}",
                     'Low stock',
                     "{$r->name} has only {$qty} " . Str::plural('unit', $qty) . ' left.',
-                    route('staff.stocks', ['status' => 'low-stock'])
+                    route('staff.stocks', array_filter(['status' => 'low-stock', 'open' => $sellableBatch[$r->id] ?? null]))
                 );
             }
         }
@@ -365,7 +390,7 @@ class StaffNotificationsController extends Controller
                     'expired_stock', "expired_stock:stock:{$r->id}",
                     'Expired stock',
                     "{$r->name} expired {$ago} " . Str::plural('day', $ago) . " ago — {$units} still on record.",
-                    route('staff.expiry')
+                    route('staff.stocks', ['status' => 'expired', 'open' => $r->id])
                 );
             } else {
                 $when = $days === 0 ? 'expires today' : "expires in {$days} " . Str::plural('day', $days);
@@ -373,7 +398,7 @@ class StaffNotificationsController extends Controller
                     'expiring_stock', "expiring_stock:stock:{$r->id}",
                     'Stock expiring soon',
                     "{$r->name} {$when} ({$units}).",
-                    route('staff.expiry')
+                    route('staff.stocks', ['status' => 'expiring-soon', 'open' => $r->id])
                 );
             }
         }

@@ -9,6 +9,10 @@ return new class extends Migration {
     {
         Schema::create('sliders', function (Blueprint $table) {
             $table->id();
+            // Every slide is about a product (products table is created in migration 000006).
+            $table->foreignId('product_id')
+                  ->constrained('products')
+                  ->cascadeOnDelete();
             $table->string('image');
             $table->string('alt')->nullable();
             $table->integer('sort_order')->default(0);

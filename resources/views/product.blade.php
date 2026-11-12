@@ -421,9 +421,10 @@
     .footer-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -438,7 +439,10 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     .breadcrumb-bar { padding: 10px 16px; }
     .product-detail-wrap { grid-template-columns: 1fr; gap: 24px; padding: 20px 16px 0; }
     .product-image-panel { position: static; }
@@ -462,6 +466,13 @@
     .modal-field { margin-bottom: 10px; }
   }
   .code-name { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .4px; color: var(--gray, #777); }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
+  @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -489,10 +500,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -605,9 +613,11 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}</span>
 </div>
 
 {{-- ═══════════════════════════════════════════════════════════════════════════
@@ -929,10 +939,7 @@
   @if($relatedProducts->isNotEmpty())
   <div class="related-section">
     <div class="related-header">
-      <h2>{{ $product->section ? 'More from ' . $product->section->label : 'Related Products' }}</h2>
-      @if($product->section && $product->section->see_all_url)
-        <a href="{{ $product->section->see_all_url }}" class="see-all-link">See All <i class="fas fa-arrow-right"></i></a>
-      @endif
+      <h2>{{ $product->brand ? 'More from ' . $product->brand->name : 'Related Products' }}</h2>
     </div>
     <div class="related-grid">
       @foreach($relatedProducts as $related)
@@ -1616,10 +1623,6 @@
   })();
 </script>
 
-@if(!empty($settings['chatbase_id']))
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
-@endif
+
 </body>
 </html>

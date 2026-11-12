@@ -17,11 +17,18 @@ use Illuminate\View\View;
  * and the view (staffs.reports) differ.
  *
  * Everything is computed from the live database:
- *  - Sales      = order_items of orders with status "picked_up" (completed),
- *                 dated by orders.picked_up_at (falls back to updated_at).
- *  - Purchases  = units customers ordered: order_items of every non-cancelled,
- *                 non-deleted order (pending, confirmed, ready, picked_up),
+ *  - Stocks Purchased (JSON key "purchases") = total NUMBER of stock records
+ *                 (rows in `stocks`) of the product. With a period filter, only
+ *                 records created (stocks.created_at) in the period are counted.
+ *  - Total Products Orders (JSON key "unitsSold") = total NUMBER of orders containing the
+ *                 product: every non-cancelled, non-deleted order (pending,
+ *                 confirmed, ready, picked_up), dated by orders.created_at.
+ *  - Total Purchases (JSON key "totalPurchases") = units customers purchased: the sum
+ *                 of order_items.quantity of every non-cancelled, non-deleted order,
  *                 dated by orders.created_at.
+ *  - Sales      = revenue (order_items.subtotal) of completed orders only
+ *                 (status "picked_up"), dated by orders.picked_up_at
+ *                 (falls back to updated_at).
  *  - Stock on hand (Total Stocks / Total Stock Quantity) = ALL stock batches of
  *                 the product (count / sum of stocks.quantity) right now; it is a
  *                 snapshot and is NOT affected by the period filter.
@@ -59,6 +66,7 @@ class StaffReportsController extends Controller
             'brand'         => $g['name'],
             'totalProducts' => $g['totalProducts'],
             'purchases'     => $g['purchases'],
+            'totalPurchases' => $g['totalPurchases'],
             'mostSold'      => $g['mostSold'],
             'sales'         => $g['sales'],
         ])->sortByDesc('sales')->values();
@@ -68,6 +76,7 @@ class StaffReportsController extends Controller
             'totalProducts' => $g['totalProducts'],
             'totalBrands'   => $g['totalBrands'],
             'purchases'     => $g['purchases'],
+            'totalPurchases' => $g['totalPurchases'],
             'sales'         => $g['sales'],
             'mostSold'      => $g['mostSold'],
         ])->sortByDesc('sales')->values();
@@ -78,6 +87,7 @@ class StaffReportsController extends Controller
             'totals' => [
                 'products'  => $products->count(),
                 'purchases' => $products->sum('purchases'),
+                'totalPurchases' => $products->sum('totalPurchases'),
                 'unitsSold' => $products->sum('unitsSold'),
                 'sales'     => round($products->sum('sales'), 2),
             ],
@@ -94,16 +104,18 @@ class StaffReportsController extends Controller
      */
     private function productRows(?Carbon $start)
     {
-        $stockStats    = $this->stockStatsByProduct();
-        $purchaseStats = $this->purchasesByProduct($start);
-        $salesStats    = $this->salesByProduct($start);
+        $stockStats     = $this->stockStatsByProduct();
+        $purchaseStats  = $this->purchasesByProduct($start);
+        $unitsSoldStats = $this->ordersByProduct($start);
+        $totalPurchaseStats = $this->totalPurchasesByProduct($start);
+        $salesStats     = $this->salesByProduct($start);
 
         return DB::table('products as p')
             ->leftJoin('categories as c', 'c.id', '=', 'p.category_id')
             ->leftJoin('brands as b', 'b.id', '=', 'p.brand_id')
             ->orderBy('p.name')
             ->get(['p.id', 'p.name', 'c.name as category', 'b.name as brand'])
-            ->map(function ($p) use ($stockStats, $purchaseStats, $salesStats) {
+            ->map(function ($p) use ($stockStats, $purchaseStats, $unitsSoldStats, $totalPurchaseStats, $salesStats) {
                 $stock = $stockStats[$p->id] ?? ['batches' => 0, 'onHand' => 0];
                 $sale  = $salesStats[$p->id] ?? null;
 
@@ -115,7 +127,8 @@ class StaffReportsController extends Controller
                     'stocks'    => $stock['batches'],
                     'qty'       => $stock['onHand'],
                     'purchases' => (int) ($purchaseStats[$p->id] ?? 0),
-                    'unitsSold' => (int) ($sale->units ?? 0),
+                    'totalPurchases' => (int) ($totalPurchaseStats[$p->id] ?? 0),
+                    'unitsSold' => (int) ($unitsSoldStats[$p->id] ?? 0),
                     'sales'     => round((float) ($sale->amount ?? 0), 2),
                 ];
             });
@@ -140,9 +153,40 @@ class StaffReportsController extends Controller
     }
 
     /**
-     * Per product: units customers ordered (all non-cancelled orders) in the period.
+     * Stocks Purchased — per product: total number of stock records in the
+     * 'stocks' table (limited to records created in the period when selected).
      */
     private function purchasesByProduct(?Carbon $start)
+    {
+        return DB::table('stocks')
+            ->when($start, fn ($q) => $q->where('created_at', '>=', $start))
+            ->groupBy('product_id')
+            ->selectRaw('product_id, COUNT(*) as units')
+            ->pluck('units', 'product_id');
+    }
+
+    /**
+     * Total Products Orders — per product: total number of orders in the 'orders' table
+     * that contain the product (non-cancelled, non-deleted) created in the period.
+     */
+    private function ordersByProduct(?Carbon $start)
+    {
+        return DB::table('order_items as oi')
+            ->join('orders as o', 'o.id', '=', 'oi.order_id')
+            ->whereNull('o.deleted_at')
+            ->where('o.status', '!=', 'cancelled')
+            ->when($start, fn ($q) => $q->where('o.created_at', '>=', $start))
+            ->groupBy('oi.product_id')
+            ->selectRaw('oi.product_id, COUNT(DISTINCT oi.order_id) as units')
+            ->pluck('units', 'product_id');
+    }
+
+    /**
+     * Total Purchases — per product: units purchased by customers, i.e. the sum of
+     * order_items.quantity over the 'orders' + 'order_items' tables
+     * (non-cancelled, non-deleted orders created in the period).
+     */
+    private function totalPurchasesByProduct(?Carbon $start)
     {
         return DB::table('order_items as oi')
             ->join('orders as o', 'o.id', '=', 'oi.order_id')
@@ -155,7 +199,7 @@ class StaffReportsController extends Controller
     }
 
     /**
-     * Per product: units sold and revenue from completed (picked_up) orders.
+     * Per product: revenue from completed (picked_up) orders.
      */
     private function salesByProduct(?Carbon $start)
     {
@@ -192,9 +236,10 @@ class StaffReportsController extends Controller
                 'totalProducts' => $list->count(),
                 'totalBrands'   => $list->pluck('brand')->unique()->count(),
                 'purchases'     => (int) $list->sum('purchases'),
+                'totalPurchases' => (int) $list->sum('totalPurchases'),
                 'sales'         => round($list->sum('sales'), 2),
                 'mostSold'      => $top && $top['unitsSold'] > 0
-                    ? "{$top['name']} (" . number_format($top['unitsSold']) . ' sold)'
+                    ? "{$top['name']} (" . number_format($top['unitsSold']) . ($top['unitsSold'] === 1 ? ' order)' : ' orders)')
                     : '—',
             ];
         })->values();

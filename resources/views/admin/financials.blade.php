@@ -337,7 +337,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 /* ── STAT CARDS ── */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -757,7 +757,14 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Mobile header: title + compact search + notification/theme buttons, all visible */
+  .header { padding: 0 12px; gap: 8px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header > .header-search { flex: 0 1 130px; min-width: 0; height: 34px; padding: 0 9px; gap: 6px; }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header-actions { gap: 6px; flex-shrink: 0; }
+  /* suggestions panel: span the screen width instead of hanging off the small search box */
+  .header > .header-search .search-panel { position: fixed; top: calc(var(--header-h) + 6px); left: 12px; right: 12px; width: auto; max-width: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -781,6 +788,16 @@ tbody tr:last-child td { border-bottom: none; }
   .fin-add-btn{display:flex;align-items:center;gap:6px;background:#CC1F1F;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s;}
   .fin-add-btn:hover{opacity:.88;}
   .fin-add-btn svg{width:15px;height:15px;stroke:#fff;}
+
+  /* ── Mobile toolbar layout: search / type + category / date / add ── */
+  @media (max-width:768px){
+    .fin-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px;}
+    .fin-search{grid-column:1 / -1;min-width:0;}
+    .fin-search input{font-size:14px;}
+    .fin-toolbar .fin-select{width:100%;min-width:0;box-sizing:border-box;height:40px;font-size:14px;}
+    .fin-toolbar #dateFilter{grid-column:1 / -1;-webkit-appearance:none;appearance:none;}
+    .fin-add-btn{grid-column:1 / -1;width:100%;justify-content:center;height:42px;box-sizing:border-box;}
+  }
 
   .fin-table-wrap{overflow-x:auto;}
   table.fin-table{width:100%;border-collapse:collapse;font-size:13px;}
@@ -864,7 +881,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -886,7 +903,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
   <a class="nav-item" href="{{ route('admin.pharmacy') }}">
@@ -992,14 +1009,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="stat-value" id="statNet">₱0.00</div>
     <div class="stat-label">Net Balance</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-top">
-      <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-      <div class="stat-trend up">Records</div>
-    </div>
-    <div class="stat-value" id="statCount">0</div>
-    <div class="stat-label">Total Transactions</div>
   </div>
 </div>
 
@@ -1322,7 +1331,6 @@ function renderStats(stats) {
   document.getElementById('statIncome').textContent = peso(stats.income);
   document.getElementById('statExpense').textContent = peso(stats.expense);
   document.getElementById('statNet').textContent = peso(stats.net);
-  document.getElementById('statCount').textContent = stats.count;
 }
 
 function renderRows() {
@@ -1676,7 +1684,3 @@ loadRecords();
 
 </body>
 </html>
-
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="eDdta8JbEpQawG9yqfKqb";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>

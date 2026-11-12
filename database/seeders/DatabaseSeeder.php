@@ -9,13 +9,15 @@ use App\Models\FullWidthBanner;
 use App\Models\NavItem;
 use App\Models\Product;
 use App\Models\PromoBanner;
-use App\Models\Section;
 use App\Models\Setting;
 use App\Models\Slider;
 use App\Models\Staff;
 use App\Models\Stock;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -78,7 +80,7 @@ class DatabaseSeeder extends Seeder
             'instagram_url'    => '#',
             'logo'             => 'images/logo.png',
             'logo2'             => 'images/logo2.png',
-            'shipping_message' => 'Free shipping for orders over ₱1499 (For Sogod, Southern Leyte Only)',
+            'shipping_message' => 'Welcome to GG Pharmacy. If you need help, just ask Tabby',
             'copyright'        => '© 2024 GG Pharmacy. All Rights Reserved. | Zone 2, Sogod, Southern Leyte',
             'newsletter_intro' => 'Get all the latest information on events, sales and offers. Sign up for newsletter:',
             'newsletter_note'  => 'By subscribing, you agree to receive our newsletter and accept our privacy policy.',
@@ -167,683 +169,57 @@ class DatabaseSeeder extends Seeder
         $bAbbott        = Brand::create(['name'=>'Abbott',            'show_in_ticker'=>false, 'show_in_featured'=>false, 'sort_order'=>20]);
         $bBayer         = Brand::create(['name'=>'Bayer',             'show_in_ticker'=>false, 'show_in_featured'=>false, 'sort_order'=>21]);
 
-        // ── 5. Sections ───────────────────────────────────────────────────────
-        Section::truncate();
-        $secHotDeals  = Section::create(['key'=>'section_1',   'label'=>'Hot Deals of the Month',    'description'=>'View Our Hot Deals Products of the Month',                 'heading_color'=>'red',  'sort_order'=>1]);
-        $secSale      = Section::create(['key'=>'section_2',        'label'=>'SALE',                      'description'=>'Great Deals, Healthy Savings – Shop & Save at GG Pharmacy!','heading_color'=>'red',  'sort_order'=>2]);
-        $secPromoPack = Section::create(['key'=>'section_3', 'label'=>'PROMO PACKS',               'description'=>'Exclusive Value Packs – Bundled Savings on Customer Favorites','heading_color'=>'text','sort_order'=>3]);
-        $secBestSellers = Section::create(['key'=>'section_4', 'label'=>'Best Sellers',           'description'=>'Discover our best-selling products, loved and trusted by our customers',       'heading_color'=>'text', 'sort_order'=>4]);
-        $secGuardian  = Section::create(['key'=>'section_5',    'label'=>'Guardian Special Deals',    'description'=>'All our new arrivals in an exclusive brand selection',       'heading_color'=>'red',  'sort_order'=>5]);
-        $secGenerics  = Section::create(['key'=>'section_6',    'label'=>'Pharmacy Generics',      'description'=>'All our new arrivals in a exclusive brand selection',        'heading_color'=>'red',  'sort_order'=>6]);
-        $secFeatured  = Section::create(['key'=>'section_7',    'label'=>'FEATURED PRODUCTS',         'description'=>'',                                                           'heading_color'=>'red',  'sort_order'=>7]);
-
-        // ── 6. Products ───────────────────────────────────────────────────────
-        Product::truncate();
-        $ph = 'https://via.placeholder.com/140x140/eee/999?text=';
-        $ps = 'https://via.placeholder.com/120x120/eee/999?text=';
-        $pi = 'https://via.placeholder.com/110x110/eee/999?text=';
-
-        // ── Hot Deals ─────────────────────────────────────────────────────────
-        $secHotDeals->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Casino Alcohol 500Ml',
-                'generic_name'  => 'Ethyl Alcohol',
-                'price'         => 98.00,
-                'image'         => $ph.'Casino+Alcohol',
-                'category_id'   => $catOTC->id,
-                'description'   => 'Casino Ethyl Alcohol 70% solution is an effective antiseptic for everyday use. Kills 99.9% of germs and bacteria on contact, keeping you protected throughout the day.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Apply directly to skin or affected area. For hand sanitizing, pour a small amount onto palms and rub together until dry. For wound cleaning, apply with a cotton ball.',
-                'ingredients'   => 'Ethyl Alcohol 70%, Purified Water, Glycerin',
-                'warnings'      => 'For external use only. Keep away from fire or flame. Avoid contact with eyes. Keep out of reach of children.',
-                'width'         => 6.50,
-                'height'        => 22.00,
-                'depth'         => 6.50,
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'KOOLFEVER GEL CHILDREN 2 Pcs',
-                'price'         => 52.00,
-                'image'         => $ph.'Koolfever',
-                'category_id'   => $catHealthcare->id,
-                'description'   => 'Koolfever Cooling Gel Sheets for children provide gentle, soothing relief from fever. Each sheet provides up to 8 hours of cooling comfort without the need for medication.',
-                'origin'        => 'Japan',
-                'product_usage' => 'Peel off the protective film and apply directly to the forehead. Replace with a new sheet every 8 hours or when the sheet is no longer cool.',
-                'ingredients'   => 'Water, Polyacrylic Acid, Sodium Polyacrylate, Glycerin, Menthol',
-                'warnings'      => 'Do not apply to broken or irritated skin. Keep out of reach of children. Consult a doctor if fever persists beyond 3 days.',
-                'width'         => 14.00,
-                'height'        => 9.00,
-                'depth'         => 1.00,
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => "Dr. Wong's Sulfur Soap W/ Moisturizer",
-                'price'         => 67.50,
-                'image'         => $ph.'Sulfur+Soap',
-                'category_id'   => $catPersonalCare->id,
-                'description'   => "Dr. Wong's Sulfur Soap is a dermatologist-recommended soap formulated with sulfur for the treatment of acne, pimples, and other skin blemishes. Enhanced with moisturizers to prevent skin dryness.",
-                'origin'        => 'Philippines',
-                'product_usage' => 'Wet face and body. Lather soap and apply gently to affected areas. Leave on for 1-2 minutes then rinse thoroughly. Use twice daily for best results.',
-                'ingredients'   => 'Sulfur 3%, Sodium Lauryl Sulfate, Glycerin, Coconut Oil, Shea Butter, Fragrance',
-                'warnings'      => 'Avoid contact with eyes. Discontinue use if irritation develops. Keep out of reach of children.',
-                'width'         => 8.00,
-                'height'        => 5.50,
-                'depth'         => 3.00,
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'White Flower No. 3 5Ml',
-                'price'         => 96.75,
-                'image'         => $ph.'White+Flower',
-                'category_id'   => $catOTC->id,
-                'description'   => 'White Flower Embrocation is a multi-purpose analgesic oil used to relieve headaches, dizziness, insect bites, and minor muscle aches. A trusted household remedy for generations.',
-                'origin'        => 'Hong Kong',
-                'product_usage' => 'For headache: apply a small amount to temples and gently massage. For muscle pain: massage onto affected area. For insect bites: apply directly to the bite. Use as needed.',
-                'ingredients'   => 'Lavender Oil, Eucalyptus Oil, Peppermint Oil, Methyl Salicylate, Menthol',
-                'warnings'      => 'For external use only. Avoid contact with eyes and mucous membranes. Keep away from children. Do not apply to broken skin.',
-                'width'         => 3.00,
-                'height'        => 8.00,
-                'depth'         => 3.00,
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'KOOLFEVER ADULT EXTRA Cooling',
-                'price'         => 55.75,
-                'image'         => $ph.'Koolfever+Extra',
-                'category_id'   => $catHealthcare->id,
-                'description'   => 'Koolfever Extra Strength Cooling Gel Sheets for adults deliver an enhanced cooling effect for fast fever relief. Each sheet provides up to 8 hours of cooling comfort without medication.',
-                'origin'        => 'Japan',
-                'product_usage' => 'Peel off the protective film and apply directly to the forehead. Replace with a new sheet every 8 hours or when the cooling effect diminishes.',
-                'ingredients'   => 'Water, Polyacrylic Acid, Sodium Polyacrylate, Glycerin, Menthol (Enhanced Formula)',
-                'warnings'      => 'Do not apply to broken or irritated skin. Consult a doctor if fever exceeds 39°C or persists beyond 3 days.',
-                'width'         => 14.00,
-                'height'        => 9.50,
-                'depth'         => 1.00,
-                'sort_order'    => 5,
-            ],
-        ]));
-
-        // ── Sale ──────────────────────────────────────────────────────────────
-        $secSale->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Livity Prime',
-                'generic_name'  => 'Multivitamins + Minerals',
-                'price'         => 885.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Livity',
-                'description'   => 'Livity Prime is a premium multivitamin supplement formulated to support overall health, boost energy levels, and strengthen the immune system. Ideal for active adults seeking daily nutritional support.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take one capsule daily after a meal, or as directed by your physician. Best taken in the morning.',
-                'ingredients'   => 'Vitamin A, Vitamin C, Vitamin D3, Vitamin E, Vitamin B Complex, Zinc, Selenium, Folic Acid',
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Livity Prime 2',
-                'generic_name'  => 'Multivitamins + Minerals + Antioxidants',
-                'price'         => 1850.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Livity+2',
-                'description'   => 'Livity Prime 2 is an advanced formula multivitamin with added antioxidants and minerals for comprehensive health support. Double the potency for maximum benefit.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take one to two capsules daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'Vitamin A, Vitamin C, Vitamin D3, Vitamin E, Vitamin B Complex, Zinc, Selenium, CoQ10, Alpha Lipoic Acid, Folic Acid',
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'Arthricin 9+1 Tipid Pack',
-                'generic_name'  => 'Mefenamic Acid',
-                'price'         => 333.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Arthricin+9%2B1',
-                'category_id'   => $catOTC->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Arthricin is a trusted pain reliever specifically formulated for joint pain and arthritis relief. This 9+1 Tipid Pack offers 10 tablets at the price of 9, giving you more savings on every purchase.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults and children 12 years and above: Take 1 tablet every 6 to 8 hours as needed. Do not exceed 3 tablets in 24 hours.',
-                'ingredients'   => 'Mefenamic Acid 500mg per tablet',
-                'warnings'      => 'Not recommended for patients with peptic ulcer, kidney disease, or those taking blood thinners. Consult a doctor before use.',
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'Liveraide 9+1 Tipid Pack',
-                'generic_name'  => 'Silymarin',
-                'price'         => 189.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Liveraide+9%2B1',
-                'category_id'   => $catSupplement->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Liveraide is a liver health supplement that supports detoxification, protects liver cells from damage, and promotes overall liver function. The 9+1 Tipid Pack gives you bonus savings.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 capsule 3 times daily after meals, or as directed by your physician.',
-                'ingredients'   => 'Silymarin 140mg (from Milk Thistle Extract), Microcrystalline Cellulose, Magnesium Stearate',
-                'warnings'      => 'Consult a physician before use if pregnant, lactating, or taking other medications.',
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'Optein 9+1 Tipid Pack',
-                'generic_name'  => 'Lutein + Zeaxanthin',
-                'price'         => 281.25,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Optein+9%2B1',
-                'category_id'   => $catSupplement->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Optein is an eye health supplement enriched with Lutein and Zeaxanthin to protect against macular degeneration, reduce eye strain, and support clear vision. The 9+1 Tipid Pack offers exceptional value.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 softgel capsule daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'Lutein 20mg, Zeaxanthin 4mg, Vitamin C, Vitamin E, Zinc, Omega-3 Fatty Acids',
-                'sort_order'    => 5,
-            ],
-            [
-                'name'          => 'Dermplus Sunscreen',
-                'price'         => 445.50,
-                'old_price'     => 495.00,
-                'badge'         => '-10%',
-                'badge_type'    => 'sale-badge',
-                'image'         => $ph.'Dermplus',
-                'category_id'   => $catPersonalCare->id,
-                'description'   => 'Dermplus Sunscreen SPF 50 PA+++ provides broad-spectrum UVA and UVB protection. Its lightweight, non-greasy formula absorbs quickly and is suitable for all skin types, including sensitive skin.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Apply generously to all exposed skin 15 minutes before sun exposure. Reapply every 2 hours or after swimming, sweating, or towel drying.',
-                'ingredients'   => 'Avobenzone, Homosalate, Octinoxate, Octocrylene, Titanium Dioxide, Niacinamide, Hyaluronic Acid, Aloe Vera Extract',
-                'warnings'      => 'For external use only. Avoid contact with eyes. Discontinue use if rash or irritation occurs.',
-                'width'         => 5.00,
-                'height'        => 15.00,
-                'depth'         => 3.50,
-                'sort_order'    => 6,
-            ],
-        ]));
-
-        // ── Promo Packs ───────────────────────────────────────────────────────
-        $secPromoPack->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Claritin Tablet 10Mg (4+1 Pack)',
-                'generic_name'  => 'Loratadine',
-                'price'         => 152.00,
-                'image'         => $ph.'Claritin+4%2B1',
-                'category_id'   => $catAllergy->id,
-                'brand_id'      => $bBayer->id,
-                'description'   => 'Claritin (Loratadine 10mg) is a non-drowsy antihistamine that provides 24-hour relief from allergy symptoms including sneezing, runny nose, and itchy eyes. This 4+1 promo pack offers extra savings.',
-                'origin'        => 'Belgium',
-                'product_usage' => 'Adults and children 12 years and above: Take 1 tablet once daily. Children 6–11 years: half a tablet once daily. Take with or without food.',
-                'ingredients'   => 'Loratadine 10mg, Lactose Monohydrate, Corn Starch, Magnesium Stearate',
-                'warnings'      => 'Consult a doctor before use if you have liver or kidney disease. Not recommended for children under 6 years.',
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Rogin-E Soft Gel Capsule (Promo Pack)',
-                'generic_name'  => 'Multivitamins + Ginseng Extract',
-                'price'         => 173.25,
-                'image'         => $ph.'Rogin-E',
-                'category_id'   => $catMultivit->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Rogin-E is a complete multivitamin and mineral supplement with ginseng extract. It helps boost energy, enhance mental alertness, and support overall vitality for adults.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 softgel capsule daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'Vitamin A, Vitamin B Complex, Vitamin C, Vitamin D, Vitamin E, Ginseng Extract, Zinc, Iron, Calcium',
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'Sinecod Forte 7+1 Tipid Pack',
-                'generic_name'  => 'Butamirate Citrate',
-                'price'         => 155.00,
-                'image'         => $ph.'Sinecod+7%2B1',
-                'category_id'   => $catCough->id,
-                'description'   => 'Sinecod Forte (Butamirate Citrate) is a non-narcotic cough suppressant that effectively relieves dry, irritating cough. The 7+1 Tipid Pack gives you 8 tablets at the price of 7.',
-                'origin'        => 'Switzerland',
-                'product_usage' => 'Adults: Take 1 tablet 3 times daily. Children 12 years and above: same as adult dose. Do not exceed prescribed dosage.',
-                'ingredients'   => 'Butamirate Citrate 50mg per tablet',
-                'warnings'      => 'Do not use with other cough medicines. Consult a doctor if cough persists for more than 7 days.',
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'Tempra Forte 500mg Tablet',
-                'generic_name'  => 'Paracetamol',
-                'price'         => 35.75,
-                'image'         => $ph.'Tempra+Forte',
-                'category_id'   => $catPainRelief->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Tempra Forte (Paracetamol 500mg) provides fast and effective relief from mild to moderate pain including headache, toothache, and muscle aches, as well as fever reduction.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults: Take 1–2 tablets every 4 to 6 hours as needed. Do not exceed 8 tablets (4000mg) in 24 hours.',
-                'ingredients'   => 'Paracetamol 500mg, Corn Starch, Stearic Acid, Povidone',
-                'warnings'      => 'Do not exceed recommended dose. Avoid alcohol while taking this medication. Consult a doctor if pain or fever persists beyond 3 days.',
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'Flanax 275mg Tablet (Promo Pack)',
-                'generic_name'  => 'Naproxen Sodium',
-                'price'         => 105.75,
-                'image'         => $ph.'Flanax+275',
-                'category_id'   => $catPainRelief->id,
-                'brand_id'      => $bBayer->id,
-                'description'   => 'Flanax (Naproxen Sodium 275mg) is a nonsteroidal anti-inflammatory drug (NSAID) used to relieve mild to moderate pain, fever, and inflammation. Fast-acting formula for targeted relief.',
-                'origin'        => 'Mexico',
-                'product_usage' => 'Adults: Take 1 tablet every 8 to 12 hours as needed. Do not exceed 3 tablets in 24 hours. Take with food or milk to reduce stomach upset.',
-                'ingredients'   => 'Naproxen Sodium 275mg, Magnesium Oxide, Microcrystalline Cellulose, Povidone, Talc',
-                'warnings'      => 'Not for patients with peptic ulcer, aspirin allergy, or kidney impairment. Avoid long-term use without medical supervision.',
-                'sort_order'    => 5,
-            ],
-            [
-                'name'          => 'Rogin-E Softgel Capsule (12s Pack)',
-                'generic_name'  => 'Multivitamins + Ginseng Extract',
-                'price'         => 280.00,
-                'image'         => $ph.'Rogin-E+12',
-                'category_id'   => $catMultivit->id,
-                'brand_id'      => $bUnilab->id,
-                'description'   => 'Rogin-E 12s Pack is a value pack of the popular ginseng-enriched multivitamin supplement. Ideal for those who want sustained daily nutritional support over a 12-day period.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 softgel capsule daily after a meal. Best taken consistently at the same time each day.',
-                'ingredients'   => 'Vitamin A, Vitamin B Complex, Vitamin C, Vitamin D, Vitamin E, Ginseng Extract, Zinc, Iron, Calcium',
-                'sort_order'    => 6,
-            ],
-        ]));
-
-        // ── Guardian Special Deals ────────────────────────────────────────────
-        $secGuardian->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Guardian Comfort & Assurance Pads',
-                'price'         => 449.00,
-                'image'         => $ps.'Comfort+Pads',
-                'brand_id'      => $bGuardian->id,
-                'description'   => 'Guardian Comfort & Assurance Pads offer superior protection with ultra-absorbent technology. Designed for maximum comfort and discretion throughout the day and night.',
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Place pad in underwear with adhesive side facing down. Change as needed throughout the day. Dispose of used pads hygienically.',
-                'ingredients'   => 'Super-absorbent polymer, Non-woven cover, Adhesive strips, Breathable backsheet',
-                'width'         => 20.00,
-                'height'        => 28.00,
-                'depth'         => 8.00,
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Guardian Box Tissue (100 sheets)',
-                'price'         => 69.00,
-                'image'         => $ps.'Box+Tissue',
-                'brand_id'      => $bGuardian->id,
-                'description'   => 'Guardian Box Tissue is made from premium soft paper for gentle use on skin. Each box contains 100 two-ply sheets, ideal for the home, office, or on-the-go.',
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Pull one tissue at a time from the box opening. Dispose of used tissue in a waste bin.',
-                'ingredients'   => '100% Virgin Pulp Paper, Fragrance-Free',
-                'width'         => 24.00,
-                'height'        => 12.00,
-                'depth'         => 12.00,
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'Guardian Antibacterial Hand Wash',
-                'price'         => 199.00,
-                'image'         => $ps.'Antibacterial',
-                'brand_id'      => $bGuardian->id,
-                'description'   => 'Guardian Antibacterial Hand Wash effectively eliminates 99.9% of germs while being gentle on your hands. Enriched with moisturizing agents to keep skin soft and hydrated.',
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Wet hands with water. Apply a small amount of hand wash and lather for at least 20 seconds. Rinse thoroughly and dry with a clean towel.',
-                'ingredients'   => 'Triclosan 0.3%, Sodium Laureth Sulfate, Cocamidopropyl Betaine, Glycerin, Aloe Vera Extract, Fragrance',
-                'warnings'      => 'For external use only. Avoid contact with eyes. Keep out of reach of children.',
-                'width'         => 7.00,
-                'height'        => 18.00,
-                'depth'         => 5.00,
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'Guardian Kids Strawberry Toothpaste',
-                'price'         => 189.00,
-                'image'         => $ps.'Kids+Strawb',
-                'brand_id'      => $bGuardian->id,
-                'category_id'   => $catBabyCare->id,
-                'description'   => "Guardian Kids Strawberry Toothpaste is specially formulated for children's delicate teeth and gums. The fun strawberry flavor makes brushing enjoyable while providing fluoride protection against cavities.",
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Children 3–6 years: Use a pea-sized amount with parental supervision. Children above 6: Use a small amount and brush teeth thoroughly twice daily.',
-                'ingredients'   => 'Sodium Monofluorophosphate 1000ppm, Hydrated Silica, Sorbitol, Glycerin, Strawberry Flavor, Sodium Lauryl Sulfate',
-                'warnings'      => 'Do not swallow. Keep out of reach of children under 3 years. If accidentally swallowed, seek medical help immediately.',
-                'width'         => 4.00,
-                'height'        => 16.00,
-                'depth'         => 4.00,
-                'sort_order'    => 4,
-            ],
-        ]));
-
-        // ── Best Sellers ──────────────────────────────────────────────────────
-        $secBestSellers->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Enervon Multivitamins + B-Complex',
-                'generic_name'  => 'Multivitamins + Minerals',
-                'price'         => 8.50,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'Enervon',
-                'brand_id'      => $bEnervon->id,
-                'category_id'   => $catSupplement->id,
-                'description'   => 'Enervon is a trusted multivitamin supplement that helps convert food into energy, fights fatigue, and boosts the immune system. A household name for daily wellness.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take one tablet daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'Vitamin B1, B2, B6, B12, Vitamin C, Niacinamide, Calcium Pantothenate',
-                'width'         => 3.00,
-                'height'        => 8.00,
-                'depth'         => 3.00,
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Alaxan FR 10 Tablets',
-                'generic_name'  => 'Ibuprofen + Paracetamol',
-                'price'         => 95.00,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'Alaxan+FR',
-                'brand_id'      => $bAlaxan->id,
-                'category_id'   => $catPainRelief->id,
-                'description'   => 'Alaxan FR combines Ibuprofen and Paracetamol for fast and effective relief from body pain, headache, and fever. A favorite go-to pain reliever for everyday aches.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults: Take 1 tablet every 6 to 8 hours as needed. Do not exceed 4 tablets in 24 hours.',
-                'ingredients'   => 'Ibuprofen 200mg, Paracetamol 325mg',
-                'warnings'      => 'Take with food to avoid stomach upset. Consult a doctor if symptoms persist beyond 3 days.',
-                'width'         => 6.00,
-                'height'        => 12.00,
-                'depth'         => 1.00,
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'Neurobion Forte Tablet',
-                'generic_name'  => 'Vitamin B1 + B6 + B12',
-                'price'         => 14.50,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'Neurobion',
-                'brand_id'      => $bNeurobion->id,
-                'category_id'   => $catSupplement->id,
-                'description'   => 'Neurobion Forte is a high-dose Vitamin B complex supplement that supports nerve health and helps relieve numbness, tingling, and body pain caused by nerve damage.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take one tablet daily, or as directed by your physician.',
-                'ingredients'   => 'Vitamin B1 100mg, Vitamin B6 200mg, Vitamin B12 200mcg',
-                'width'         => 3.00,
-                'height'        => 8.00,
-                'depth'         => 3.00,
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'RiteMED Paracetamol 500mg 100s',
-                'generic_name'  => 'Paracetamol',
-                'price'         => 199.00,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'RiteMED+Paracetamol',
-                'brand_id'      => $bRitemed->id,
-                'category_id'   => $catOTC->id,
-                'description'   => 'RiteMED Paracetamol is an affordable and reliable generic medicine for the relief of fever and mild to moderate pain, trusted by Filipino families for everyday use.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults: Take 1 to 2 tablets every 4 to 6 hours as needed. Do not exceed 8 tablets in 24 hours.',
-                'ingredients'   => 'Paracetamol 500mg',
-                'warnings'      => 'Do not use with other paracetamol-containing products. Consult a doctor if fever persists beyond 3 days.',
-                'width'         => 8.00,
-                'height'        => 5.00,
-                'depth'         => 3.00,
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'Safeguard Antibacterial Soap 90g',
-                'generic_name'  => 'Triclocarban Antibacterial Soap',
-                'price'         => 42.00,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'Safeguard',
-                'brand_id'      => $bSafeguard->id,
-                'category_id'   => $catPersonalCare->id,
-                'description'   => 'Safeguard removes 99.9% of germs while keeping skin soft and clean, making it the most trusted antibacterial soap for Filipino households.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Wet skin, lather with soap, and rinse thoroughly. Use daily for effective germ protection.',
-                'ingredients'   => 'Sodium Tallowate, Triclocarban, Water, Fragrance',
-                'width'         => 3.00,
-                'height'        => 5.50,
-                'depth'         => 2.00,
-                'sort_order'    => 5,
-            ],
-            [
-                'name'          => 'Immuni+ Vitamin C 500mg',
-                'generic_name'  => 'Ascorbic Acid',
-                'price'         => 6.75,
-                'badge'         => 'BEST SELLER',
-                'badge_type'    => 'most-sold',
-                'image'         => $ps.'Immuni+',
-                'brand_id'      => $bImmuniPlus->id,
-                'category_id'   => $catSupplement->id,
-                'description'   => 'Immuni+ Vitamin C boosts the immune system and helps the body fight off common colds and infections, a daily favorite for staying healthy.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take one tablet daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'Ascorbic Acid 500mg, Sodium Ascorbate, Zinc',
-                'width'         => 3.00,
-                'height'        => 8.00,
-                'depth'         => 3.00,
-                'sort_order'    => 6,
-            ],
-        ]));
-
-        // ── GG Pharmacy Generics ──────────────────────────────────────────────
-        $secGenerics->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Cetirizine 10mg Tablet (Ritemed)',
-                'generic_name'  => 'Cetirizine Hydrochloride',
-                'price'         => 115.00,
-                'image'         => $ps.'Cetirizine',
-                'category_id'   => $catAllergy->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Cetirizine 10mg is a second-generation antihistamine that provides 24-hour non-drowsy relief from allergy symptoms such as hay fever, allergic rhinitis, and urticaria (hives).',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults and children 12 years and above: Take 1 tablet once daily. May be taken with or without food.',
-                'ingredients'   => 'Cetirizine Hydrochloride 10mg, Lactose, Corn Starch, Microcrystalline Cellulose, Magnesium Stearate',
-                'warnings'      => 'May cause drowsiness in some patients. Avoid alcohol and driving if affected. Consult a doctor for use during pregnancy.',
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Paracetamol 500mg Tablet (Ritemed)',
-                'generic_name'  => 'Paracetamol',
-                'price'         => 27.50,
-                'image'         => $ps.'Paracetamol+500',
-                'category_id'   => $catPainRelief->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Paracetamol 500mg is a widely trusted analgesic and antipyretic for the relief of mild to moderate pain and fever. Safe and effective for adults and children.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults: 1–2 tablets every 4–6 hours as needed. Maximum dose: 4000mg per day. Take with a full glass of water.',
-                'ingredients'   => 'Paracetamol 500mg, Corn Starch, Stearic Acid, Povidone',
-                'warnings'      => 'Do not take with other paracetamol-containing medicines. Avoid excessive alcohol intake. Consult a doctor if symptoms persist.',
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'Clopidogrel 75mg Tablet (Ritemed)',
-                'generic_name'  => 'Clopidogrel Bisulfate',
-                'price'         => 18.50,
-                'image'         => $ps.'Clopidogrel',
-                'category_id'   => $catCardio->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Clopidogrel 75mg is an antiplatelet medication that prevents blood clots in patients with heart disease, recent heart attack, stroke, or peripheral arterial disease.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 tablet once daily with or without food, or as directed by your physician. Do not stop taking without consulting your doctor.',
-                'ingredients'   => 'Clopidogrel Bisulfate 97.875mg (equivalent to 75mg base), Microcrystalline Cellulose, Mannitol, Hydroxypropyl Cellulose',
-                'warnings'      => 'May increase risk of bleeding. Inform your doctor before any surgical procedures. Not for use in patients with active bleeding disorders.',
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'D-Alpha Vitamin E 400 IU (Ritemed)',
-                'generic_name'  => 'D-Alpha-Tocopherol (Vitamin E)',
-                'price'         => 90.00,
-                'image'         => $ps.'Vitamin+E',
-                'category_id'   => $catVitaminE->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed D-Alpha Vitamin E 400 IU is a natural-source antioxidant vitamin supplement that helps protect cells from oxidative stress, supports immune function, and promotes healthy skin.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 softgel capsule daily after a meal, or as directed by your physician.',
-                'ingredients'   => 'D-Alpha-Tocopherol 400 IU (natural source), Soybean Oil, Gelatin, Glycerin',
-                'warnings'      => 'Consult a doctor before use if taking blood thinners or other fat-soluble vitamins. Do not exceed recommended dose.',
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'Losartan 50mg Tablet (Ritemed)',
-                'generic_name'  => 'Losartan Potassium',
-                'price'         => 11.75,
-                'image'         => $pi.'Losartan',
-                'category_id'   => $catCardio->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Losartan 50mg is an angiotensin II receptor blocker (ARB) used for the treatment of hypertension (high blood pressure) and to protect the kidneys in patients with type 2 diabetes.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 tablet once daily with or without food. The usual dose is 50mg once daily. Your doctor may adjust the dose based on your condition.',
-                'ingredients'   => 'Losartan Potassium 50mg, Microcrystalline Cellulose, Lactose Monohydrate, Pregelatinized Starch, Magnesium Stearate',
-                'warnings'      => 'Do not use if pregnant or planning pregnancy. Monitor blood pressure regularly. Do not stop without medical advice.',
-                'sort_order'    => 5,
-            ],
-            [
-                'name'          => 'Amlodipine 10mg Tablet (Ritemed)',
-                'generic_name'  => 'Amlodipine Besylate',
-                'price'         => 8.25,
-                'image'         => $pi.'Amlodipine+10',
-                'category_id'   => $catCardio->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Amlodipine 10mg is a calcium channel blocker used in the management of hypertension and angina (chest pain). It helps relax blood vessels and improves blood flow.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 tablet once daily. May be taken with or without food. Take at the same time each day for best results.',
-                'ingredients'   => 'Amlodipine Besylate 13.87mg (equivalent to 10mg base), Microcrystalline Cellulose, Dibasic Calcium Phosphate, Sodium Starch Glycolate, Magnesium Stearate',
-                'warnings'      => 'May cause dizziness or swelling of the ankles. Do not stop taking abruptly. Inform your doctor of all other medications being taken.',
-                'sort_order'    => 6,
-            ],
-            [
-                'name'          => 'Simvastatin 20mg Tablet (Ritemed)',
-                'generic_name'  => 'Simvastatin',
-                'price'         => 10.50,
-                'image'         => $pi.'Simvastatin',
-                'category_id'   => $catCardio->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Simvastatin 20mg is a cholesterol-lowering medication (statin) used alongside a healthy diet to reduce LDL (bad) cholesterol and triglycerides and increase HDL (good) cholesterol.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 tablet once daily in the evening, with or without food. Avoid grapefruit juice while on this medication.',
-                'ingredients'   => 'Simvastatin 20mg, Ascorbic Acid, Butylated Hydroxyanisole, Citric Acid Anhydrous, Microcrystalline Cellulose, Magnesium Stearate',
-                'warnings'      => 'Report any unexplained muscle pain or weakness to your doctor immediately. Avoid excessive alcohol. Not for use during pregnancy.',
-                'sort_order'    => 7,
-            ],
-            [
-                'name'          => 'Amlodipine 5mg Tablet (Ritemed)',
-                'generic_name'  => 'Amlodipine Besylate',
-                'price'         => 6.00,
-                'image'         => $pi.'Amlodipine+5',
-                'category_id'   => $catCardio->id,
-                'brand_id'      => $bRitemed->id,
-                'description'   => 'Ritemed Amlodipine 5mg is a lower-dose calcium channel blocker for patients with mild to moderate hypertension or those requiring initial titration of blood pressure therapy.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Take 1 tablet once daily with or without food. Your doctor may increase the dose to 10mg after 7–14 days if blood pressure is not adequately controlled.',
-                'ingredients'   => 'Amlodipine Besylate 6.94mg (equivalent to 5mg base), Microcrystalline Cellulose, Dibasic Calcium Phosphate, Sodium Starch Glycolate, Magnesium Stearate',
-                'warnings'      => 'Do not stop taking abruptly. Inform your doctor of all medications being taken. May cause dizziness on standing up.',
-                'sort_order'    => 8,
-            ],
-        ]));
-
-        // ── Featured Products ─────────────────────────────────────────────────
-        $secFeatured->products()->createMany(array_map(function($p){ return $p + ['generic_name'=>null, 'brand_id'=>null]; }, [
-            [
-                'name'          => 'Guardian Face & Body SPF 50 Sunscreen',
-                'price'         => 299.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Guardian+SPF50',
-                'brand_id'      => $bGuardian->id,
-                'description'   => 'Guardian Face & Body SPF 50 Sunscreen provides high broad-spectrum UV protection for both face and body. Lightweight, water-resistant formula keeps skin protected and moisturized all day.',
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Apply generously to face and all exposed body areas 15 minutes before sun exposure. Reapply every 2 hours during prolonged sun exposure or after swimming.',
-                'ingredients'   => 'Octinoxate, Octocrylene, Butyl Methoxydibenzoylmethane, Titanium Dioxide, Glycerin, Vitamin E, Aloe Vera',
-                'warnings'      => 'For external use only. Avoid contact with eyes. Discontinue use if irritation occurs.',
-                'width'         => 6.50,
-                'height'        => 18.00,
-                'depth'         => 4.00,
-                'sort_order'    => 1,
-            ],
-            [
-                'name'          => 'Guardian Kids Strawberry Toothpaste',
-                'price'         => 189.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Kids+Strawb',
-                'brand_id'      => $bGuardian->id,
-                'category_id'   => $catBabyCare->id,
-                'description'   => "Guardian Kids Strawberry Toothpaste is specially formulated for children's delicate teeth and gums. The fun strawberry flavor encourages regular brushing while providing effective cavity protection.",
-                'origin'        => 'Malaysia',
-                'product_usage' => 'Children 3–6 years: Use a pea-sized amount twice daily with parental supervision. Children above 6: Use a small amount and brush teeth thoroughly twice daily.',
-                'ingredients'   => 'Sodium Monofluorophosphate 1000ppm, Hydrated Silica, Sorbitol, Glycerin, Strawberry Flavor, Sodium Lauryl Sulfate',
-                'warnings'      => 'Do not swallow. Keep out of reach of children under 3 years.',
-                'sort_order'    => 2,
-            ],
-            [
-                'name'          => 'ABBOTT | Ensure Gold 850g',
-                'price'         => 3782.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Ensure+Gold',
-                'brand_id'      => $bAbbott->id,
-                'category_id'   => $catMilk->id,
-                'description'   => 'Ensure Gold is a complete and balanced nutritional supplement by Abbott, specially formulated with HMB (Beta-hydroxy-beta-methylbutyrate) to help build and maintain muscle strength for adults.',
-                'origin'        => 'Singapore',
-                'product_usage' => 'Add 6 level scoops (57.5g) to 200ml of water. Stir until fully dissolved. Can be consumed as a meal supplement or snack.',
-                'ingredients'   => 'Corn Syrup Solids, Sucrose, Sodium Caseinate, Soy Protein Isolate, HMB, Vitamins (A, C, D, E, K, B Complex), Minerals (Calcium, Phosphorus, Iron, Zinc)',
-                'warnings'      => 'Not for parenteral use. Not suitable as a sole source of nutrition unless under medical supervision. Consult a doctor if lactose intolerant.',
-                'width'         => 13.00,
-                'height'        => 20.00,
-                'depth'         => 13.00,
-                'sort_order'    => 3,
-            ],
-            [
-                'name'          => 'Berocca Performance Effervescent Tablet',
-                'generic_name'  => 'Vitamin B Complex + Vitamin C',
-                'price'         => 651.00,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Berocca+Perf',
-                'brand_id'      => $bBayer->id,
-                'category_id'   => $catSupplement->id,
-                'description'   => 'Berocca Performance is a high-potency B-vitamin and mineral effervescent tablet by Bayer that supports mental performance, energy metabolism, and reduces fatigue during stressful periods.',
-                'origin'        => 'Germany',
-                'product_usage' => 'Dissolve 1 tablet in a glass of water (200–250ml) and drink immediately. Take once daily, preferably in the morning.',
-                'ingredients'   => 'Vitamin C 500mg, Vitamin B1 15mg, Vitamin B2 15mg, Vitamin B3 50mg, Vitamin B5 23mg, Vitamin B6 10mg, Vitamin B7 150mcg, Vitamin B9 400mcg, Vitamin B12 10mcg, Magnesium 100mg, Zinc 10mg',
-                'warnings'      => 'Contains aspartame — not suitable for phenylketonurics. May cause urine to turn bright yellow, which is harmless.',
-                'width'         => 5.00,
-                'height'        => 19.00,
-                'depth'         => 5.00,
-                'sort_order'    => 4,
-            ],
-            [
-                'name'          => 'Fern-C 568.18mg Capsule',
-                'generic_name'  => 'Sodium Ascorbate (Vitamin C)',
-                'price'         => 581.75,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Fern-C+Caps',
-                'category_id'   => $catVitaminC->id,
-                'description'   => 'Fern-C is a non-acidic Vitamin C supplement using Sodium Ascorbate for better absorption and gentler effect on the stomach. Supports immune health, collagen synthesis, and antioxidant protection.',
-                'origin'        => 'Philippines',
-                'product_usage' => 'Adults: Take 1 capsule once or twice daily after meals. For therapeutic use, take as directed by your physician.',
-                'ingredients'   => 'Sodium Ascorbate 568.18mg (equivalent to Ascorbic Acid 500mg), Microcrystalline Cellulose, Magnesium Stearate',
-                'warnings'      => 'Consult a doctor for doses above 2000mg per day. Patients on sodium-restricted diets should consult a physician.',
-                'sort_order'    => 5,
-            ],
-            [
-                'name'          => 'Centrum Silver Advance 50+ Multivitamin',
-                'generic_name'  => 'Multivitamins + Minerals',
-                'price'         => 378.25,
-                'badge'         => 'MOST SOLD',
-                'badge_type'    => 'most-sold',
-                'image'         => $ph.'Centrum+Silver',
-                'category_id'   => $catMultivit->id,
-                'description'   => 'Centrum Silver Advance is a complete multivitamin and mineral supplement specifically formulated for adults 50 and above. Supports eye health, bone strength, heart health, and immune function.',
-                'origin'        => 'USA',
-                'product_usage' => 'Take 1 tablet daily with a meal. Swallow whole with a full glass of water.',
-                'ingredients'   => 'Vitamin A, Vitamin C, Vitamin D3, Vitamin E, Vitamin K, B-Complex Vitamins, Calcium, Magnesium, Zinc, Selenium, Lutein, Lycopene',
-                'warnings'      => 'Do not exceed recommended dose. Keep out of reach of children. Consult a doctor if taking other medications or supplements.',
-                'width'         => 5.50,
-                'height'        => 11.00,
-                'depth'         => 5.50,
-                'sort_order'    => 6,
-            ],
-        ]));
-
-        // ── 6b. Stocks ───────────────────────────────────────────────────────
+        // ── 5. Products + Stocks (Watsons catalogue) ─────────────────────────
+        // Remove ALL previous products and their stock batches first.
         Stock::truncate();
+        Product::truncate();
+
+        // Source data lives in database/seeders/data/watsons_products.php (links 1–100),
+        // watsons_products_2.php (links 101–200), ... — every watsons_products*.php file
+        // is loaded and merged in natural order.
+        $catalogueFiles = glob(database_path('seeders/data/watsons_products*.php')) ?: [];
+        natsort($catalogueFiles);
+
+        $catalogue = [];
+        foreach ($catalogueFiles as $catalogueFile) {
+            $catalogue = array_merge($catalogue, require $catalogueFile);
+        }
+
+        $this->command?->info('Product files loaded: ' . count($catalogueFiles) . ' (' . count($catalogue) . ' products)');
+
+        $categoryMap = [
+            'otc'        => $catOTC,
+            'supplement' => $catSupplement,
+            'healthcare' => $catHealthcare,   // prescription (Rx) medicines
+            'baby'       => $catBabyCare,
+            'personal'   => $catPersonalCare,
+        ];
+
+        // Existing brands (from step 4) are reused; any brand not found is
+        // created on the fly (no ticker/featured placement, no logo).
+        $brandIds    = Brand::pluck('id', 'name')->mapWithKeys(fn ($id, $name) => [mb_strtolower($name) => $id])->all();
+        $brandOrder  = (int) Brand::max('sort_order');
+        $brandAlias  = ['myra e' => 'myra', 'enervon activ' => 'enervon'];
+
+        $resolveBrand = function (?string $name) use (&$brandIds, &$brandOrder, $brandAlias): ?int {
+            if (blank($name)) {
+                return null;
+            }
+
+            $key = mb_strtolower(trim($name));
+            $key = $brandAlias[$key] ?? $key;
+
+            if (! isset($brandIds[$key])) {
+                $brandIds[$key] = Brand::create([
+                    'name'             => trim($name),
+                    'show_in_ticker'   => false,
+                    'show_in_featured' => false,
+                    'sort_order'       => ++$brandOrder,
+                ])->id;
+            }
+
+            return $brandIds[$key];
+        };
 
         $suppliers = [
             'MedSource Distributors',
@@ -854,52 +230,288 @@ class DatabaseSeeder extends Seeder
             'GG Central Warehouse',
         ];
 
-        Product::all()->each(function (Product $product, int $index) use ($suppliers) {
-            // Cost is derived from selling price (~35–45% margin), so numbers stay realistic.
-            $margin   = fake()->randomFloat(2, 0.30, 0.45);
-            $unitCost = round($product->price * (1 - $margin), 2);
+        // Product images: the admin + storefront render `asset('storage/'.$product->image)`,
+        // so `image` must be a path on the "public" disk (e.g. products/foo.png), not a
+        // remote URL. Each source image is downloaded once into storage/app/public/products.
+        // Source order for each image:
+        //   1. a local file saved with a browser (Watsons blocks scripted downloads with
+        //      HTTP 403 — see download_watsons_images.js). Searched, by original file
+        //      name or Watsons product code, in database/seeders/data/images,
+        //      storage/app/public/products, storage/app/public and public/products.
+        //   2. a direct HTTP download (skipped for the rest of the run after a 403)
+        // If neither works the image is left empty (the views already handle that).
+        // Requires `php artisan storage:link` to have been run.
+        $imageCache = [];
 
-            // Most items are well-stocked; a few are low/near-empty to exercise low-stock UI states.
-            $quantity = fake()->boolean(15)
-                ? fake()->numberBetween(0, 15)
-                : fake()->numberBetween(20, 300);
+        $imageStats  = ['ok' => 0, 'failed' => 0];
+        $httpBlocked = false;
 
-            $manufacturingDate = now()->subMonths(fake()->numberBetween(2, 20))->startOfMonth();
-            $shelfLifeYears    = fake()->numberBetween(2, 4);
-            $expiryDate        = (clone $manufacturingDate)->addYears($shelfLifeYears);
+        // Folders searched for the browser-saved images (non-recursive).
+        $imageDirs = array_values(array_unique(array_filter([
+            database_path('seeders/data/images'),
+            storage_path('app/public/products'),
+            storage_path('app/public'),
+            public_path('storage/products'),
+            public_path('products'),
+            public_path('images/products'),
+        ], 'is_dir')));
+
+        $imageIndex = []; // lower-case file name => full path
+        foreach ($imageDirs as $dir) {
+            foreach (scandir($dir) ?: [] as $file) {
+                $full = $dir . DIRECTORY_SEPARATOR . $file;
+
+                if (is_file($full) && preg_match('/\.(png|jpe?g|webp|gif|avif)$/i', $file)) {
+                    $imageIndex[strtolower($file)] ??= $full;
+                }
+            }
+        }
+
+        $this->command?->info('Local images found: ' . count($imageIndex)
+            . ' (searched: ' . (implode(', ', $imageDirs) ?: 'no image folders exist') . ')');
+
+        // Finds the local file for a Watsons image name: exact name, then ignoring the
+        // browser's " (1)" duplicate suffix, then by the 8-digit Watsons product code
+        // inside the name (survives renames).
+        $findLocal = function (string $basename) use ($imageIndex): ?string {
+            $key = strtolower($basename);
+
+            if (isset($imageIndex[$key])) {
+                return $imageIndex[$key];
+            }
+
+            $stripped = preg_replace('/ \(\d+\)(\.[a-z0-9]+)$/', '$1', $key);
+            if (isset($imageIndex[$stripped])) {
+                return $imageIndex[$stripped];
+            }
+
+            if (preg_match('/\d{8}/', $basename, $m)) {
+                foreach ($imageIndex as $name => $path) {
+                    if (str_contains($name, $m[0])) {
+                        return $path;
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        $storeImage = function (?string $url, string $name) use (&$imageCache, &$imageStats, &$httpBlocked, $findLocal): string {
+            if (blank($url)) {
+                return '';
+            }
+
+            if (isset($imageCache[$url])) {
+                return $imageCache[$url];
+            }
+
+            $basename = rawurldecode(basename(parse_url($url, PHP_URL_PATH) ?? ''));
+            $ext      = strtolower(pathinfo($basename, PATHINFO_EXTENSION)) ?: 'png';
+            $target   = 'products/' . Str::slug($name) . '-' . substr(md5($url), 0, 6) . '.' . $ext;
+
+            // 1) Local file saved from the browser.
+            $local = $basename !== '' ? $findLocal($basename) : null;
+
+            if ($local && is_file($local) && filesize($local) > 0) {
+                $productsDir = realpath(storage_path('app/public/products'));
+
+                if ($productsDir && realpath(dirname($local)) === $productsDir) {
+                    // Already inside storage/app/public/products — use it where it is.
+                    $target = 'products/' . basename($local);
+                } else {
+                    $target = 'products/' . Str::slug($name) . '-' . substr(md5($url), 0, 6) . '.'
+                        . (strtolower(pathinfo($local, PATHINFO_EXTENSION)) ?: $ext);
+                    Storage::disk('public')->put($target, file_get_contents($local));
+                }
+
+                $imageStats['ok']++;
+
+                return $imageCache[$url] = $target;
+            }
+
+            // 2) Direct download (Watsons usually answers 403 to scripts).
+            $reason = $httpBlocked ? 'HTTP 403 (skipped)' : 'unknown error';
+
+            // 1st attempt verifies the SSL certificate. If that fails because the
+            // machine has no CA bundle (common on Windows/XAMPP/Laragon: "cURL error 60"),
+            // retry once without verification — these are public product images only.
+            foreach (($httpBlocked ? [] : [true, false]) as $verify) {
+                try {
+                    $response = Http::timeout(30)
+                        ->retry(2, 500, throw: false)
+                        ->withOptions(['verify' => $verify])
+                        ->withHeaders([
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                            'Referer'    => 'https://www.watsons.com.ph/',
+                            'Accept'     => 'image/avif,image/webp,image/png,image/*,*/*;q=0.8',
+                        ])
+                        ->get($url);
+
+                    if ($response->successful() && $response->body() !== '') {
+                        Storage::disk('public')->put($target, $response->body());
+                        $imageStats['ok']++;
+
+                        return $imageCache[$url] = $target;
+                    }
+
+                    // The server answered (e.g. 403/404): retrying without SSL won't help.
+                    $reason = 'HTTP ' . $response->status();
+                    $httpBlocked = in_array($response->status(), [401, 403], true);
+                    break;
+                } catch (\Throwable $e) {
+                    $reason = Str::limit($e->getMessage(), 220);
+
+                    $isSslProblem = $verify && (
+                        str_contains($reason, 'cURL error 60')
+                        || str_contains($reason, 'cURL error 77')
+                        || stripos($reason, 'SSL certificate') !== false
+                    );
+
+                    if (! $isSslProblem) {
+                        break;
+                    }
+                }
+            }
+
+            $this->command?->warn("No image for \"{$name}\" — {$reason}. Save \"{$basename}\" into storage/app/public/products or database/seeders/data/images");
+            $imageStats['failed']++;
+
+            return $imageCache[$url] = '';
+        };
+
+        foreach ($catalogue as $index => $row) {
+
+            // code_name is generated automatically by Product::booted().
+            $product = Product::create([
+                'name'                  => $row['name'],
+                'generic_name'          => $row['generic_name'] ?? null,
+                'form'                  => $row['form'] ?? null,
+                'price'                 => $row['price'],
+                'old_price'             => $row['old_price'] ?? null,
+                'image'                 => $storeImage($row['image'] ?? null, $row['name']),
+                'badge'                 => $row['badge'] ?? null,
+                'badge_type'            => $row['badge_type'] ?? null,
+                'description'           => $row['description'] ?? null,
+                'origin'                => $row['origin'] ?? null,
+                'product_usage'         => $row['product_usage'] ?? null,
+                'ingredients'           => $row['ingredients'] ?? null,
+                'warnings'              => $row['warnings'] ?? null,
+                'requires_prescription' => $row['requires_prescription'] ?? false,
+                'width'                 => $row['width'] ?? null,
+                'height'                => $row['height'] ?? null,
+                'depth'                 => $row['depth'] ?? null,
+                'category_id'           => ($categoryMap[$row['category']] ?? null)?->id,
+                'brand_id'              => $resolveBrand($row['brand'] ?? null),
+                'sort_order'            => $index + 1,
+                'is_active'             => true,
+            ]);
+
+            // ── Stock: one ongoing active batch per product ──────────────────
+            // Tablets/capsules are sold per piece, so they carry bigger quantities.
+            $perPiece = $row['per_piece'] ?? (bool) preg_match('/tablet|capsule|softgel|sachet/i', (string) $product->form);
+            $quantity = fake()->boolean(8)
+                ? fake()->numberBetween(1, 15)                                   // a few low-stock items
+                : ($perPiece ? fake()->numberBetween(300, 3000) : fake()->numberBetween(20, 150));
+
+            $manufacturingDate = now()->subMonths(fake()->numberBetween(2, 14))->startOfMonth();
+            $expiryDate        = (clone $manufacturingDate)->addYears(fake()->numberBetween(2, 3));
+            $unitCost          = round($product->price * (1 - fake()->randomFloat(2, 0.25, 0.40)), 2);
 
             Stock::create([
-                'product_id'          => $product->id,
-                'supplier'            => $suppliers[$index % count($suppliers)],
-                'quantity'            => $quantity,
-                'unit_cost'           => $unitCost,
-                'manufacturing_date'  => $manufacturingDate,
-                'expiry_date'         => $expiryDate,
+                'product_id'         => $product->id,
+                'supplier'           => $suppliers[$index % count($suppliers)],
+                'quantity'           => $quantity,
+                'unit_cost'          => $unitCost,
+                'manufacturing_date' => $manufacturingDate,
+                'expiry_date'        => $expiryDate,
+                'is_active'          => true,
             ]);
-        });
 
-        // ── 7. Sliders ────────────────────────────────────────────────────────
+            // Some products also have an older, fully sold-out (inactive) batch
+            // so the stocks history/filters have something to show.
+            if (fake()->boolean(20)) {
+                $oldMfg = now()->subMonths(fake()->numberBetween(20, 30))->startOfMonth();
+
+                Stock::create([
+                    'product_id'         => $product->id,
+                    'supplier'           => $suppliers[($index + 1) % count($suppliers)],
+                    'quantity'           => 0,
+                    'unit_cost'          => round($unitCost * fake()->randomFloat(2, 0.92, 1.0), 2),
+                    'manufacturing_date' => $oldMfg,
+                    'expiry_date'        => (clone $oldMfg)->addYears(2),
+                    'is_active'          => false,
+                ]);
+            }
+        }
+
+
+        $this->command?->info("Product images: {$imageStats['ok']} downloaded, {$imageStats['failed']} failed.");
+
+        // ── 6. Sliders ────────────────────────────────────────────────────────
+        // Every slide is about a product (sliders.product_id is required), so this
+        // runs after the products are seeded. 'match' picks the product by brand
+        // and/or name; slides with no match (or no 'match') get the next product
+        // that no other slide is using yet. Edit the matches to point at specific products.
         Slider::truncate();
+
+        $sliderProducts = Product::with('brand:id,name')->orderBy('id')->get();
+        $usedProductIds = [];
+
+        $pickProduct = function (?array $match) use ($sliderProducts, &$usedProductIds): ?Product {
+            if ($match) {
+                $found = $sliderProducts->first(function (Product $p) use ($match, $usedProductIds) {
+                    if (in_array($p->id, $usedProductIds, true)) {
+                        return false;
+                    }
+                    if (isset($match['brand']) && mb_strtolower((string) $p->brand?->name) !== mb_strtolower($match['brand'])) {
+                        return false;
+                    }
+                    if (isset($match['name']) && ! str_contains(mb_strtolower($p->name), mb_strtolower($match['name']))) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                if ($found) {
+                    return $found;
+                }
+            }
+
+            return $sliderProducts->first(fn (Product $p) => ! in_array($p->id, $usedProductIds, true))
+                ?? $sliderProducts->first();
+        };
+
         foreach ([
-            ['image'=>'images/RiteMed.jpg',       'alt'=>'Pharmacy Products',   'sort_order'=>1],
-            ['image'=>'images/DUROTUSS.jpg',       'alt'=>'Healthcare Services', 'sort_order'=>2],
+            ['image'=>'images/RiteMed.jpg',       'alt'=>'Pharmacy Products',   'sort_order'=>1, 'match'=>['brand'=>'Ritemed']],
+            ['image'=>'images/DUROTUSS.jpg',       'alt'=>'Healthcare Services', 'sort_order'=>2, 'match'=>['name'=>'Durotuss']],
             ['image'=>'images/webshare-min.jpg',   'alt'=>'Wellness Products',   'sort_order'=>3],
             ['image'=>'images/312018592_2217127531788714_5400026205529255685_n.jpg','alt'=>'Medicine',      'sort_order'=>4],
             ['image'=>'images/75580347_3169877399707875_2163426682566868992_n.jpg', 'alt'=>'Health Banner', 'sort_order'=>5],
-        ] as $row) Slider::create($row);
+        ] as $row) {
+            $product = $pickProduct($row['match'] ?? null);
 
-        // ── 8. Promo Banners ─────────────────────────────────────────────────
+            if (! $product) {
+                $this->command?->warn("No products were seeded — skipping slider \"{$row['alt']}\" (every slider needs a product).");
+                continue;
+            }
+
+            $usedProductIds[] = $product->id;
+            unset($row['match']);
+            Slider::create($row + ['product_id' => $product->id]);
+        }
+
+        // ── 7. Promo Banners ─────────────────────────────────────────────────
         PromoBanner::truncate();
         PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/C01A1A/fff?text=GET+50+OFF',    'alt'=>'promo_1',        'type'=>'red',  'sort_order'=>1]);
         PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/fff3e0/333?text=FREE+DELIVERY','alt'=>'promo_2','type'=>'beige','sort_order'=>2]);
 
-        // ── 9. Full-Width Banners ────────────────────────────────────────────
+        // ── 8. Full-Width Banners ────────────────────────────────────────────
         FullWidthBanner::truncate();
         FullWidthBanner::create(['sort_order'=>1, 'image'=>'https://via.placeholder.com/800x220/0d47a1/fff?text=OMRON+Banner',         'alt'=>'OMRON']);
         FullWidthBanner::create(['sort_order'=>2, 'image'=>'https://via.placeholder.com/800x220/f5f5f5/1a237e?text=RiteMED+Banner',    'alt'=>'RiteMED']);
         FullWidthBanner::create(['sort_order'=>3, 'image'=>'https://via.placeholder.com/800x200/e65100/ffd600?text=ALAXAN+XTRA+Banner','alt'=>'ALAXAN XTRA']);
 
-        // ── 10. Staff ────────────────────────────────────────────────────────
+        // ── 9. Staff ────────────────────────────────────────────────────────
         Staff::truncate();
         foreach ([
             [
@@ -942,7 +554,7 @@ class DatabaseSeeder extends Seeder
             Staff::create($row);
         }
 
-        // ── 11. Blog Posts ───────────────────────────────────────────────────
+        // ── 10. Blog Posts ───────────────────────────────────────────────────
         Blog::truncate();
         Blog::create(['title'=>'New Branch Opening Sogod City',        'excerpt'=>'GG Pharmacy is pleased to announce the opening of its newest branch located at Zone 2, Sogod, Southern Leyte...', 'day'=>7,  'month'=>'SEP','comment_count'=>0]);
         Blog::create(['title'=>'GG Pharmacy Community Health Day',      'excerpt'=>'GG Pharmacy is pleased to announce a free health check-up event for residents of Sogod and surrounding areas...',  'day'=>7,  'month'=>'SEP','comment_count'=>0]);

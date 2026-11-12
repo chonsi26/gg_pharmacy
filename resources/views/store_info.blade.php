@@ -339,9 +339,10 @@
     .blogs-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -402,108 +403,108 @@
     .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
     .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
   }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
   @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
     .product-card { flex: 0 0 145px; }
     .cat-item { flex: 0 0 76px; }
     .cat-circle { width: 70px; height: 70px; }
   }
 
   /* ============ STORE INFO PAGE (page-specific, prefixed .si-) ============ */
-  .si-wrap { max-width: 1400px; margin: 0 auto; padding: 34px 40px 56px; }
-  .si-crumbs { font-size: 12px; color: var(--gray); margin-bottom: 14px; }
+  .si-wrap { max-width: 1200px; margin: 0 auto; padding: 28px 40px 56px; }
+  .si-crumbs { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
   .si-crumbs a:hover { color: var(--red); text-decoration: underline; }
-  .si-title { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 30px; color: var(--text); }
-  .si-lead { margin-top: 8px; font-size: 15px; line-height: 1.7; color: var(--gray); max-width: 70ch; }
-  .si-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; margin-top: 28px; align-items: stretch; }
-  .si-info { border-top: 3px solid var(--red); }
-  .si-row { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 18px; padding: 22px 0; border-bottom: 1px solid var(--border); }
-  .si-row > i { color: var(--red); font-size: 18px; line-height: 1.4; text-align: center; padding-top: 2px; }
-  .si-row h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 11.5px; letter-spacing: 1.4px; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; }
-  .si-row p { font-size: 15px; line-height: 1.7; color: var(--text); }
-  .si-row p + p { margin-top: 4px; color: #555; font-size: 14px; }
-  .si-info a.si-link { color: var(--red); font-weight: 700; }
-  .si-info a.si-link:hover { text-decoration: underline; }
-  .si-social { display: flex; gap: 10px; margin-top: 12px; }
-  .si-social a { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
-  .si-social a.fb { background: #1877f2; }
-  .si-social a.ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
-  .si-map { position: relative; min-height: 460px; }
-  .si-map iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 1px solid var(--border); border-radius: 10px; background: var(--gray-light); }
-  .si-map-empty { height: 100%; min-height: 300px; border: 1px dashed var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--gray); padding: 24px; line-height: 1.6; }
-  .si-map-empty i { font-size: 28px; display: block; margin-bottom: 10px; }
-  .si-section { margin-top: 48px; }
-  .si-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border-bottom: 2px solid var(--red); padding-bottom: 10px; margin-bottom: 20px; }
-  .si-section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 20px; }
-  .si-section-head span { font-size: 12px; color: var(--gray); }
-  .si-media { margin-top: 26px; }
-  .si-tabs { display: inline-flex; gap: 6px; padding: 5px; background: var(--gray-light); border-radius: 999px; margin-bottom: 16px; }
-  .si-tab { border: 0; background: transparent; padding: 10px 22px; border-radius: 999px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; color: var(--gray); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background .2s, color .2s; }
-  .si-tab:hover { color: var(--red); }
-  .si-tab[aria-selected="true"] { background: var(--red); color: #fff; box-shadow: 0 4px 12px rgba(192,26,26,.28); }
-  .si-tab small { font-size: 11px; font-weight: 700; opacity: .85; }
+  .si-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 28px; color: var(--text); }
+  .si-lead { margin-top: 8px; font-size: 14px; line-height: 1.7; color: var(--gray); max-width: 70ch; }
+
+  /* Section headings */
+  .si-section { margin-top: 36px; }
+  .si-section-head { border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 18px; }
+  .si-section-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; color: var(--text); }
+
+  /* Details + map */
+  .si-layout { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 24px; align-items: stretch; }
+  .si-info { border: 1px solid var(--border); border-radius: 4px; background: #fff; }
+  .si-row { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 16px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .si-row:last-child { border-bottom: 0; }
+  .si-row h3 { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: .6px; text-transform: uppercase; color: var(--gray); line-height: 1.6; }
+  .si-row p { font-size: 14px; line-height: 1.6; color: var(--text); }
+  .si-row p + p { margin-top: 4px; color: #555; }
+  .si-info a.si-link { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .si-info a.si-link:hover { color: var(--red); }
+  .si-social { display: flex; gap: 8px; margin-top: 8px; }
+  .si-social a { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #444; font-size: 14px; background: #fff; }
+  .si-social a:hover { border-color: var(--red); color: var(--red); }
+  .si-map { position: relative; min-height: 380px; }
+  .si-map iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 1px solid var(--border); border-radius: 4px; background: var(--gray-light); }
+  .si-map-empty { height: 100%; min-height: 260px; border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--gray); padding: 24px; line-height: 1.6; background: var(--gray-light); }
+  .si-map-empty i { font-size: 24px; display: block; margin-bottom: 8px; color: #aaa; }
+
+  /* Gallery */
+  .si-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .si-tab { border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: transparent; padding: 9px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: var(--gray); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .si-tab:hover { color: var(--text); }
+  .si-tab[aria-selected="true"] { color: var(--red); border-bottom-color: var(--red); }
+  .si-tab small { font-size: 11px; font-weight: 600; color: #999; }
   .si-panel[hidden] { display: none; }
-  .si-slider { position: relative; border-radius: 16px; overflow: hidden; background: #fff; border: 0; box-shadow: none; outline: none; }
+  .si-slider { position: relative; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: var(--gray-light); outline: none; }
   .si-viewport { overflow: hidden; }
-  .si-track { display: flex; transition: transform .55s cubic-bezier(.4,0,.2,1); will-change: transform; }
-  .si-slide { flex: 0 0 100%; position: relative; height: clamp(300px, 74vh, 740px); background: #fff; }
-  .si-slide .si-photo { position: absolute; inset: 0; padding: 0; border: 0; background: #fff; cursor: zoom-in; display: block; width: 100%; height: 100%; }
+  .si-track { display: flex; transition: transform .45s ease; will-change: transform; }
+  .si-slide { flex: 0 0 100%; position: relative; height: clamp(260px, 56vh, 520px); background: var(--gray-light); }
+  .si-slide .si-photo { position: absolute; inset: 0; padding: 0; border: 0; background: var(--gray-light); cursor: zoom-in; display: block; width: 100%; height: 100%; }
   .si-slide .si-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-  .si-slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #fff; display: block; }
-  .si-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 28px 22px; color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; background: linear-gradient(transparent, rgba(0,0,0,.75)); pointer-events: none; text-align: left; }
-  .si-slide.is-video .si-cap { bottom: 54px; padding-bottom: 14px; }
-  .si-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; border-radius: 50%; border: 0; background: rgba(255,255,255,.92); color: var(--red); font-size: 18px; cursor: pointer; z-index: 5; box-shadow: 0 4px 16px rgba(0,0,0,.25); transition: background .2s, color .2s, transform .2s; display: flex; align-items: center; justify-content: center; }
-  .si-nav:hover { background: var(--red); color: #fff; transform: translateY(-50%) scale(1.06); }
-  .si-prev { left: 18px; }
-  .si-next { right: 18px; }
-  .si-count { position: absolute; top: 16px; right: 16px; z-index: 5; background: rgba(0,0,0,.6); color: #fff; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px; letter-spacing: .5px; }
-  .si-dots { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 5; max-width: 80%; flex-wrap: wrap; justify-content: center; }
+  .si-slide video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; display: block; }
+  .si-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 16px; color: #fff; font-size: 13px; font-weight: 600; background: rgba(0,0,0,.6); pointer-events: none; text-align: left; }
+  .si-slide.is-video .si-cap { bottom: 48px; }
+  .si-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 4px; border: 1px solid var(--border); background: rgba(255,255,255,.95); color: #333; font-size: 14px; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; }
+  .si-nav:hover { background: #fff; color: var(--red); border-color: var(--red); }
+  .si-prev { left: 12px; }
+  .si-next { right: 12px; }
+  .si-count { position: absolute; top: 12px; right: 12px; z-index: 5; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 3px; }
+  .si-dots { position: absolute; left: 50%; bottom: 46px; transform: translateX(-50%); display: flex; gap: 6px; z-index: 5; max-width: 80%; flex-wrap: wrap; justify-content: center; }
   .si-slider.has-video-active .si-dots { display: none; }
-  .si-dot { width: 10px; height: 10px; border-radius: 50%; border: 0; padding: 0; background: rgba(0,0,0,.25); cursor: pointer; transition: all .25s; }
-  .si-dot[aria-current="true"] { background: var(--red); width: 26px; border-radius: 6px; }
-  .si-thumbs { display: flex; gap: 10px; margin-top: 12px; overflow-x: auto; padding: 4px 2px 8px; scrollbar-width: thin; scrollbar-color: var(--red) #eee; }
-  .si-thumbs::-webkit-scrollbar { height: 5px; }
-  .si-thumbs::-webkit-scrollbar-thumb { background: var(--red); border-radius: 4px; }
-  .si-thumb { flex: 0 0 100px; height: 60px; border-radius: 8px; overflow: hidden; border: 3px solid transparent; padding: 0; background: #ddd; cursor: pointer; opacity: .65; transition: opacity .2s, border-color .2s; }
+  .si-dot { width: 8px; height: 8px; border-radius: 50%; border: 0; padding: 0; background: rgba(0,0,0,.3); cursor: pointer; }
+  .si-dot[aria-current="true"] { background: var(--red); }
+  .si-thumbs { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding: 2px 2px 8px; scrollbar-width: thin; }
+  .si-thumb { flex: 0 0 88px; height: 56px; border-radius: 3px; overflow: hidden; border: 2px solid transparent; padding: 0; background: #ddd; cursor: pointer; opacity: .7; }
   .si-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .si-thumb:hover { opacity: 1; }
   .si-thumb[aria-current="true"] { border-color: var(--red); opacity: 1; }
-  .si-thumb.vid { display: flex; align-items: center; justify-content: center; gap: 8px; background: #222; color: #fff; font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; flex-basis: 150px; padding: 0 10px; }
-  .si-thumb.vid i { color: #ffd600; }
+  .si-thumb.vid { display: flex; align-items: center; justify-content: center; gap: 6px; background: #333; color: #fff; font-size: 12px; font-weight: 600; flex-basis: 140px; padding: 0 10px; }
   .si-thumb.vid span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .si-details-head { text-align: center; margin: 54px 0 4px; }
-  .si-details-head h2 { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; }
-  .si-details-head h2::after { content: ''; display: block; width: 56px; height: 3px; background: var(--red); border-radius: 2px; margin: 10px auto 0; }
-  .si-details-head p { margin-top: 10px; color: var(--gray); font-size: 14px; }
-  .si-empty { color: var(--gray); padding: 40px 26px; border: 1px dashed var(--border); border-radius: 12px; text-align: center; background: var(--gray-light); }
-  .si-empty i { display: block; font-size: 28px; margin-bottom: 10px; color: #bbb; }
+  .si-empty { color: var(--gray); padding: 32px 24px; border: 1px solid var(--border); border-radius: 4px; text-align: center; background: var(--gray-light); }
+  .si-empty i { display: block; font-size: 24px; margin-bottom: 8px; color: #aaa; }
+
+  /* Lightbox */
   .si-lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none; align-items: center; justify-content: center; z-index: 9999; padding: 24px; }
   .si-lightbox.open { display: flex; }
   .si-lightbox figure { max-width: 1100px; max-height: 100%; text-align: center; }
-  .si-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 6px; }
+  .si-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 3px; }
   .si-lightbox figcaption { color: #fff; margin-top: 10px; font-size: 14px; }
-  .si-lb-btn { position: absolute; background: rgba(255,255,255,.14); border: 0; color: #fff; width: 44px; height: 44px; border-radius: 50%; font-size: 18px; cursor: pointer; }
+  .si-lb-btn { position: absolute; background: rgba(255,255,255,.14); border: 0; color: #fff; width: 42px; height: 42px; border-radius: 4px; font-size: 16px; cursor: pointer; }
   .si-lb-btn:hover { background: rgba(255,255,255,.28); }
   .si-lb-close { top: 18px; right: 18px; }
   .si-lb-prev { left: 18px; top: 50%; transform: translateY(-50%); }
   .si-lb-next { right: 18px; top: 50%; transform: translateY(-50%); }
-  .si-wrap :focus-visible { outline: 3px solid var(--green); outline-offset: 2px; }
+  .si-wrap :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
   @media (max-width: 900px) {
     .si-layout { grid-template-columns: 1fr; }
-    .si-map { min-height: 320px; }
-    .si-nav { width: 44px; height: 44px; font-size: 15px; }
+    .si-map { min-height: 300px; }
   }
   @media (max-width: 640px) {
-    .si-wrap { padding: 24px 16px 40px; }
-    .si-title { font-size: 24px; }
-      .si-slider { border-radius: 12px; }
-    .si-slide { height: clamp(240px, 52vh, 440px); }
-    .si-cap { font-size: 14px; padding: 40px 16px 14px; }
-    .si-slide.is-video .si-cap { bottom: 48px; }
-    .si-nav { width: 38px; height: 38px; font-size: 13px; }
+    .si-wrap { padding: 20px 16px 40px; }
+    .si-title { font-size: 22px; }
+    .si-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; }
+    .si-slide { height: clamp(220px, 46vh, 400px); }
+    .si-nav { width: 34px; height: 34px; font-size: 12px; }
     .si-prev { left: 8px; } .si-next { right: 8px; }
-    .si-thumb { flex-basis: 92px; height: 58px; }
-    .si-thumb.vid { flex-basis: 120px; }
-    .si-details-head { margin-top: 40px; }
+    .si-thumb { flex-basis: 76px; height: 50px; }
+    .si-thumb.vid { flex-basis: 116px; }
   }
   @media (prefers-reduced-motion: reduce) { .si-track { transition: none; } }
 
@@ -529,10 +530,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -674,8 +672,78 @@
     Here is everything you need to find us, reach us and see what our store looks like.
   </p>
 
-  {{-- ===== MEDIA SLIDERS (first part of the page) ===== --}}
+  {{-- ===== 1. STORE DETAILS + MAP ===== --}}
+  <section class="si-section" aria-label="Store details">
+    <div class="si-section-head"><h2>Store Details</h2></div>
+
+    <div class="si-layout">
+      <div class="si-info">
+
+        <div class="si-row">
+          <h3>Address</h3>
+          <div>
+            @if($address)
+              <p>{{ $address }}</p>
+            @else
+              <p>Our store address has not been added yet.</p>
+            @endif
+            @if($strip)
+              <p>{{ rtrim($strip, '.') }}</p>
+            @endif
+          </div>
+        </div>
+
+        <div class="si-row">
+          <h3>Contact</h3>
+          <div>
+            @if($phone)
+              <p>Phone: <a class="si-link" href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}">{{ $phone }}</a></p>
+            @endif
+            @if($email)
+              <p>Email: <a class="si-link" href="mailto:{{ $email }}">{{ $email }}</a></p>
+            @endif
+            @if(!$phone && !$email)
+              <p>Our contact details have not been added yet.</p>
+            @endif
+          </div>
+        </div>
+
+        <div class="si-row">
+          <h3>Opening Hours</h3>
+          <div>
+            @if($hours)
+              <p>{{ rtrim($hours, '.') }}</p>
+            @else
+              <p>Our working hours have not been added yet.</p>
+            @endif
+          </div>
+        </div>
+
+        @if(count($payments))
+        <div class="si-row">
+          <h3>Payment Methods</h3>
+          <div><p>{{ $list($payments) }}</p></div>
+        </div>
+        @endif
+
+
+
+      </div>
+
+      <div class="si-map">
+        @if($mapEmbedUrl)
+          <iframe src="{{ $mapEmbedUrl }}" title="Map showing the location of {{ $name }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+        @else
+          <div class="si-map-empty"><div><i class="fas fa-map"></i>The map for {{ $name }} has not been added yet.</div></div>
+        @endif
+      </div>
+    </div>
+  </section>
+
+  {{-- ===== 2. PHOTOS & VIDEOS ===== --}}
   @php $hasPhotos = $photos->count() > 0; $hasVideos = $videos->count() > 0; @endphp
+  <div class="si-section">
+    <div class="si-section-head"><h2>Store Photos &amp; Videos</h2></div>
   <section class="si-media" aria-label="Store photos and videos">
     @if(!$hasPhotos && !$hasVideos)
       <div class="si-empty"><i class="fas fa-images"></i>No photos or videos have been added yet.</div>
@@ -683,10 +751,10 @@
       @if($hasPhotos && $hasVideos)
       <div class="si-tabs" role="tablist" aria-label="Media type">
         <button type="button" class="si-tab" role="tab" id="siTabPhotos" aria-controls="siPanelPhotos" aria-selected="true" data-panel="siPanelPhotos">
-          <i class="fas fa-camera"></i> Photos <small>{{ $photos->count() }}</small>
+          Photos <small>{{ $photos->count() }}</small>
         </button>
         <button type="button" class="si-tab" role="tab" id="siTabVideos" aria-controls="siPanelVideos" aria-selected="false" data-panel="siPanelVideos">
-          <i class="fas fa-video"></i> Videos <small>{{ $videos->count() }}</small>
+          Videos <small>{{ $videos->count() }}</small>
         </button>
       </div>
       @endif
@@ -755,92 +823,6 @@
       @endif
     @endif
   </section>
-
-  {{-- ===== STORE DETAILS ===== --}}
-  <div class="si-details-head">
-    <h2>Visit Us</h2>
-    <p>Find our address, contact details, opening hours and location on the map.</p>
-  </div>
-
-  <div class="si-layout">
-    <div class="si-info">
-
-      <div class="si-row">
-        <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-        <div>
-          <h3>Address</h3>
-          @if($address)
-            <p>{{ $address }}</p>
-          @else
-            <p>Our store address has not been added yet.</p>
-          @endif
-          @if($strip)
-            <p>{{ rtrim($strip, '.') }}</p>
-          @endif
-        </div>
-      </div>
-
-      <div class="si-row">
-        <i class="fas fa-phone-alt" aria-hidden="true"></i>
-        <div>
-          <h3>Contact</h3>
-          @if($phone)
-            <p>Phone: <a class="si-link" href="tel:{{ preg_replace('/[^\d+]/', '', $phone) }}">{{ $phone }}</a></p>
-          @endif
-          @if($email)
-            <p>Email: <a class="si-link" href="mailto:{{ $email }}">{{ $email }}</a></p>
-          @endif
-          @if(!$phone && !$email)
-            <p>Our contact details have not been added yet.</p>
-          @endif
-        </div>
-      </div>
-
-      <div class="si-row">
-        <i class="fas fa-clock" aria-hidden="true"></i>
-        <div>
-          <h3>Opening Hours</h3>
-          @if($hours)
-            <p>{{ rtrim($hours, '.') }}</p>
-          @else
-            <p>Our working hours have not been added yet.</p>
-          @endif
-        </div>
-      </div>
-
-      @if(count($payments))
-      <div class="si-row">
-        <i class="fas fa-credit-card" aria-hidden="true"></i>
-        <div>
-          <h3>Payment Methods</h3>
-          <p>{{ $list($payments) }}</p>
-        </div>
-      </div>
-      @endif
-
-      @if($fb || $ig)
-      <div class="si-row">
-        <i class="fas fa-share-alt" aria-hidden="true"></i>
-        <div>
-          <h3>Follow Us</h3>
-          <p>News and updates from {{ $name }} on {{ $list(array_filter([$fb ? 'Facebook' : null, $ig ? 'Instagram' : null])) }}.</p>
-          <div class="si-social">
-            @if($fb)<a href="{{ $fb }}" class="fb" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>@endif
-            @if($ig)<a href="{{ $ig }}" class="ig" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>@endif
-          </div>
-        </div>
-      </div>
-      @endif
-
-    </div>
-
-    <div class="si-map">
-      @if($mapEmbedUrl)
-        <iframe src="{{ $mapEmbedUrl }}" title="Map showing the location of {{ $name }}" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-      @else
-        <div class="si-map-empty"><div><i class="fas fa-map"></i>The map for {{ $name }} has not been added yet.</div></div>
-      @endif
-    </div>
   </div>
 </main>
 
@@ -1605,10 +1587,6 @@
   });
 </script>
 
-@if(!empty($settings['chatbase_id']))
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
-@endif
+
 </body>
 </html>

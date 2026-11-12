@@ -10,8 +10,10 @@ use Illuminate\View\View;
 /**
  * Expiry Tracking for the staff portal.
  *
- * Same screen and same numbers as the admin expiry page
- * (AdminController@expiry) — only the route/guard (auth:staff) and the
+ * Same screen, same numbers and same features as the admin expiry page
+ * (AdminController@expiry): 10-day "Expiring" window, 100-per-page paging,
+ * click-a-row stock detail modal with links to Inventory / Stocks, and the
+ * ?open={stockId} deep link. Only the route/guard (auth:staff) and the
  * sidebar differ. Read-only: the page just monitors batches nearing expiry.
  */
 class StaffExpiryController extends Controller
@@ -24,7 +26,8 @@ class StaffExpiryController extends Controller
         $siteName = Setting::get('site_name', 'Pharmacy');
 
         // Every batch that has an expiry date, soonest-to-expire first, so the
-        // most urgent batches are always what staff see at the top.
+        // most urgent batches are always what staff see at the top. (The page
+        // re-sorts client-side so empty batches sink to the bottom.)
         $stocks = Stock::with('product:id,name,image')
             ->whereNotNull('expiry_date')
             ->orderBy('expiry_date', 'asc')
@@ -39,7 +42,8 @@ class StaffExpiryController extends Controller
 
     /**
      * Shape a Stock model into the flat array the expiry.blade.php grid
-     * expects. Buckets each batch into a level (danger/warning/ok) based on
+     * expects. Buckets each batch into a level (danger = expired,
+     * warning = expiring within 10 days, ok) based on
      * days remaining until expiry, and includes the is_active flag with a
      * human-readable label so the frontend can show a status badge without
      * re-deriving it from a boolean.
@@ -55,11 +59,12 @@ class StaffExpiryController extends Controller
         if ($daysLeft < 0) {
             $level = 'danger';
             $pill  = 'Expired';
-        } elseif ($daysLeft <= 30) {
-            $level = 'danger';
+        } elseif ($daysLeft <= 10) {
+            // Expiring: 10 days or fewer before the expiry date.
+            $level = 'warning';
             $pill  = $daysLeft . ' Days';
         } elseif ($daysLeft <= 90) {
-            $level = 'warning';
+            $level = 'ok';
             $pill  = round($daysLeft / 30) . ' Months';
         } else {
             $level = 'ok';
@@ -68,6 +73,7 @@ class StaffExpiryController extends Controller
 
         return [
             'id'           => $stock->id,
+            'product_id'   => $stock->product_id,
             'name'         => $stock->product->name ?? 'Unknown Product',
             'image'        => $this->productImageUrl($stock->product->image ?? null),
             'batch'        => $stock->stockNo(),

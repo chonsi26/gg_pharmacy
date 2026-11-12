@@ -411,9 +411,10 @@
     .footer-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -428,7 +429,10 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     .breadcrumb-bar { padding: 10px 16px; }
     .product-detail-wrap { grid-template-columns: 1fr; gap: 24px; padding: 20px 16px 0; }
     .product-image-panel { position: static; }
@@ -443,6 +447,13 @@
     footer { padding: 30px 16px 20px; }
     .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
     .modal-fields-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
+  @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
   }
   @media (max-height: 680px) {
     .modal-box.wide { padding: 20px 28px 18px; }
@@ -535,19 +546,59 @@
   .cart-checkout-btn:hover { background: var(--dark-green); }
   .cart-checkout-btn:disabled { background: #e5e7eb; border-color: #d5d8dc; color: #9ca3af; cursor: not-allowed; }
 
-  .cart-empty-state { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; padding: 60px 20px; text-align: center; }
-  .cart-empty-state i { font-size: 40px; color: #d1d5db; margin-bottom: 14px; }
-  .cart-empty-state h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; margin-bottom: 8px; }
-  .cart-empty-state p { color: var(--gray); font-size: 13px; margin-bottom: 20px; }
-  .cart-empty-state .shop-now-btn { display: inline-block; background: var(--green); color: #fff; border: 1px solid var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; padding: 11px 26px; border-radius: 3px; }
+  .cart-empty-state { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; padding: 64px 24px 56px; text-align: center; }
+  .cart-empty-state .empty-icon { width: 56px; height: 56px; margin: 0 auto 20px; border: 1px solid #d5d8dc; border-radius: 50%; background: #f9fafb; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 22px; }
+  .cart-empty-state h2 { font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 17px; color: var(--text); margin-bottom: 8px; }
+  .cart-empty-state p { color: #6b7280; font-size: 13px; line-height: 1.6; max-width: 380px; margin: 0 auto 28px; }
+  .cart-empty-state .shop-now-btn { display: inline-block; background: var(--green); color: #fff; border: 1px solid var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.3px; padding: 11px 28px; border-radius: 3px; transition: background 0.15s; }
   .cart-empty-state .shop-now-btn:hover { background: var(--dark-green); }
 
   @media (max-width: 768px) {
     .cart-page { padding: 20px 12px 30px; margin-bottom: 150px; }
     .cart-page-title { font-size: 20px; }
 
-    /* Table stays a real table but scrolls sideways on small screens. */
-    .cart-table-wrap { -webkit-overflow-scrolling: touch; }
+    /* Table stays a real table, but every column is compacted so the whole
+       thing fits the screen width (no horizontal scrolling). */
+    .cart-table-wrap { overflow-x: hidden; }
+    .cart-table { min-width: 0; width: 100%; table-layout: auto; }
+
+    .cart-table thead th {
+      font-size: 8.5px; letter-spacing: 0; padding: 8px 3px;
+      white-space: normal; line-height: 1.2;
+    }
+    .cart-table thead th.col-check { width: 28px; padding: 8px 0 8px 6px; }
+    .cart-table thead th.col-product { padding-left: 4px; }
+    .cart-table thead th.col-price,
+    .cart-table thead th.col-total { width: auto; }
+    .cart-table thead th.col-qty { width: auto; }
+    .cart-table thead th.col-action { width: 30px; }
+
+    .cart-item td { padding: 8px 3px; }
+    .cart-item td.col-check { padding: 8px 0 8px 6px; }
+    .cart-item td.col-action { padding-right: 4px; }
+
+    .cart-item-product { gap: 6px; align-items: flex-start; }
+    .cart-item-img { width: 32px; height: 32px; }
+    .cart-item-name { font-size: 11px; line-height: 1.25; word-break: break-word; }
+    .code-name { font-size: 9px; word-break: break-all; }
+    .cart-item-meta { font-size: 10px; gap: 4px; }
+    .cart-item-rx { font-size: 9px; }
+
+    .cart-item-price .old { font-size: 9px; }
+    .cart-item-price .now { font-size: 10.5px; }
+    .cart-item-subtotal { font-size: 11px; }
+
+    .qty-stepper button { width: 20px; height: 24px; font-size: 13px; }
+    .qty-stepper input { width: 24px; height: 24px; font-size: 11px; padding: 0; }
+
+    /* "Delete" text becomes a small trash icon to save width */
+    .cart-item-remove { font-size: 0; width: 24px; height: 24px; padding: 0; }
+    .cart-item-remove::before {
+      content: "\f2ed"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+      font-size: 13px; color: var(--gray);
+    }
+    .cart-item-remove:hover::before { color: var(--dark-red); }
+    .cart-item-remove:hover { text-decoration: none; }
 
     .cart-summary-inner { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
     .cart-summary-select-all { font-size: 12px; }
@@ -584,10 +635,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -698,9 +746,11 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}</span>
 </div>
 {{-- ═══════════════════════════════════════════════════════════════════════════
      CART PAGE CONTENT
@@ -718,10 +768,10 @@
   @if($cartItems->isEmpty())
 
     <div class="cart-empty-state">
-      <i class="fas fa-shopping-cart"></i>
+      <div class="empty-icon"><i class="fas fa-shopping-cart"></i></div>
       <h2>Your cart is empty</h2>
-      <p>Looks like you haven't added anything yet. Let's fix that!</p>
-      <a href="{{ route('home') }}" class="shop-now-btn"><i class="fas fa-store"></i> Continue Shopping</a>
+      <p>There are no items in your cart. Browse our products and add items to get started.</p>
+      <a href="{{ route('home') }}" class="shop-now-btn">Continue Shopping</a>
     </div>
 
   @else
@@ -1375,11 +1425,7 @@
   })();
 </script>
 
-@if(!empty($settings['chatbase_id']))
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
-@endif
+
 <script>
   // ── Cart page interactions (select all, qty steppers, remove, checkout) ────
   // Only runs on the /cart page (guarded by #cartList existing). Relies on

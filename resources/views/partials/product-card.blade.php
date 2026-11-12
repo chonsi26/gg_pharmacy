@@ -22,17 +22,34 @@
 --}}
 @once
 <style>
-  .pc-cart-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+  .pc-cart-row { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; margin-top: 8px; }
   .pc-qty { display: flex; align-items: center; border: 1px solid var(--border, #e0e0e0); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
   .pc-qty button { width: 26px; height: 30px; border: none; background: #f5f5f5; font-size: 14px; font-weight: 800; cursor: pointer; color: var(--text, #222); }
   .pc-qty button:hover { background: #eee; }
   .pc-qty input { width: 30px; height: 30px; border: none; border-left: 1px solid var(--border, #e0e0e0); border-right: 1px solid var(--border, #e0e0e0); text-align: center; font-size: 12px; font-weight: 700; }
-  .pc-add-btn { flex: 1; background: var(--red, #C01A1A); color: #fff; border: none; border-radius: 6px; height: 30px; font-family: inherit; font-weight: 800; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: background 0.15s; }
+  .pc-add-btn { flex: 1 1 0; min-width: 0; white-space: nowrap; padding: 0 6px; background: var(--red, #C01A1A); color: #fff; border: none; border-radius: 6px; height: 30px; font-family: inherit; font-weight: 800; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: background 0.15s; }
   .pc-add-btn:hover { background: var(--dark-red, #8B1010); }
   .pc-add-btn.is-loading { opacity: 0.7; cursor: wait; }
   .product-card.is-oos .product-img img { opacity: 0.45; filter: grayscale(1); }
   .pc-oos-label { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); background: rgba(34,34,34,0.88); color: #fff; font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: .3px; padding: 4px 10px; border-radius: 4px; white-space: nowrap; text-transform: uppercase; }
   .pc-add-btn:disabled { background: #bdbdbd; cursor: not-allowed; }
+
+  /* Mobile: cards are only ~145-160px wide, so shrink the qty stepper
+     and keep the Add button on the same row, beside it. */
+  @media (max-width: 768px) {
+    .pc-cart-row { gap: 4px; }
+    .pc-qty button { width: 20px; height: 28px; font-size: 13px; padding: 0; }
+    .pc-qty input { width: 22px; height: 28px; font-size: 11px; padding: 0; min-width: 0; -moz-appearance: textfield; }
+    .pc-qty input::-webkit-outer-spin-button,
+    .pc-qty input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .pc-add-btn { height: 28px; font-size: 10px; gap: 3px; padding: 0 4px; }
+  }
+  @media (max-width: 400px) {
+    .pc-qty button { width: 18px; }
+    .pc-qty input { width: 20px; }
+    .js-add-to-cart { font-size: 0; gap: 0; }       /* icon-only on very small screens */
+    .js-add-to-cart i { font-size: 12px; }
+  }
 </style>
 @endonce
 

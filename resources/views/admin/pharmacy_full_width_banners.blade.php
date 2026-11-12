@@ -729,7 +729,14 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Mobile header: title + compact search + notification/theme buttons, all visible */
+  .header { padding: 0 12px; gap: 8px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header > .header-search { flex: 0 1 130px; min-width: 0; height: 34px; padding: 0 9px; gap: 6px; }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header-actions { gap: 6px; flex-shrink: 0; }
+  /* suggestions panel: span the screen width instead of hanging off the small search box */
+  .header > .header-search .search-panel { position: fixed; top: calc(var(--header-h) + 6px); left: 12px; right: 12px; width: auto; max-width: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -888,6 +895,13 @@ tbody tr:last-child td { border-bottom: none; }
   table.wc-table tbody tr:hover{ background:var(--wc-bg); }
   .wc-cell-actions{ display:flex; gap:6px; justify-content:flex-end; }
   .wc-empty{ text-align:center; padding:40px 20px; color:var(--wc-subtle); font-size:13px; }
+  .wc-empty-state{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:48px 20px; text-align:center; }
+  .wc-empty-state .wc-empty-icon{
+    width:44px; height:44px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--wc-bg); border:1px solid var(--wc-border); color:var(--wc-subtle); font-size:17px; margin-bottom:6px;
+  }
+  .wc-empty-state .wc-empty-title{ font-size:14px; font-weight:700; color:var(--wc-text); }
+  .wc-empty-state .wc-empty-text{ font-size:13px; color:var(--wc-subtle); max-width:320px; line-height:1.5; }
 
   /* Thumbs */
   .wc-thumb{
@@ -1102,7 +1116,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1124,7 +1138,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
   <a class="nav-item active" href="{{ route('admin.pharmacy') }}">
@@ -1204,7 +1218,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div style="margin-bottom:4px;">
   <div style="font-size:20px;font-weight:800;color:var(--text);">Website Customization</div>
 </div>
-<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories and sliders. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
+
 
 <div class="wc-wrap">
   <nav class="wc-tabs">
@@ -1217,7 +1231,6 @@ tbody tr:last-child td { border-bottom: none; }
     <a class="wc-tab" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
-  <div class="wc-group-label active" data-group="storefront">Storefront content · Edit only</div>
   <section class="wc-card wc-section active" id="sec-fwb">
     <div class="wc-card-head">
       <div class="wc-card-title">
@@ -1718,7 +1731,13 @@ function renderCards(){
         </div>
       </td>
     </tr>
-  `).join('') : `<tr><td colspan="5" class="wc-empty">No card images yet. Click “Add Card Image” to create one.</td></tr>`;
+  `).join('') : `<tr><td colspan="5" style="padding:0;">
+    <div class="wc-empty-state">
+      <div class="wc-empty-icon"><i class="far fa-image"></i></div>
+      <div class="wc-empty-title">No card images yet</div>
+      <div class="wc-empty-text">Click “Add Card Image” above to upload your first one.</div>
+    </div>
+  </td></tr>`;
 }
 renderCards();
 

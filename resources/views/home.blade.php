@@ -324,6 +324,10 @@
   .slider-container { position: relative; width: 100%; height: 100%; }
   .slide { position: absolute; width: 100%; height: 100%; opacity: 0; transition: opacity 0.8s ease-in-out; top: 0; left: 0; }
   .slide.active { opacity: 1; }
+  /* Hidden slides are stacked on top of each other; only the visible one may receive clicks. */
+  .slide { pointer-events: none; }
+  .slide.active { pointer-events: auto; }
+  .slide-link { display: block; width: 100%; height: 100%; cursor: pointer; }
   .slide img { width: 100%; height: 100%; object-fit: cover; }
   .slider-controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 10; }
   .slider-dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; border: 2px solid transparent; transition: all 0.3s; }
@@ -339,9 +343,10 @@
     .blogs-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -356,7 +361,10 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     .image-slider { height: 200px; }
     .slider-arrow { padding: 8px 10px; font-size: 14px; }
     .brands-ticker { padding: 12px 16px; }
@@ -387,8 +395,12 @@
     .product-card { flex: 0 0 160px; }
     .product-img { height: 150px; }
     .product-img img { max-width: 110px; max-height: 110px; }
-    .section-row { padding: 20px 16px 12px; flex-direction: column; align-items: flex-start; gap: 10px; }
+    .section-row { padding: 20px 16px 12px; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+    .section-row .see-all-btn { margin-left: auto; flex-shrink: 0; }
     .section-row h2 { font-size: 18px; }
+    .featured-head { justify-content: space-between !important; gap: 10px; }
+    .featured-head h2 { text-align: left !important; font-size: 16px !important; letter-spacing: 1px !important; }
+    .featured-head .featured-see-all { position: static !important; flex-shrink: 0; }
     .see-all-btn { font-size: 12px; padding: 8px 18px; }
     .featured-section { padding: 24px 16px; }
     .featured-section h2 { font-size: 18px; }
@@ -402,7 +414,12 @@
     .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
     .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
   }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
   @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
     .product-card { flex: 0 0 145px; }
     .cat-item { flex: 0 0 76px; }
     .cat-circle { width: 70px; height: 70px; }
@@ -429,10 +446,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -545,10 +559,38 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? 'No location available' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? 'No location available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}</span>
 </div>
+
+@php
+  // ── Homepage sections ────────────────────────────────────────────────────
+  // Defined right here — no `sections` table. The products for each key are
+  // chosen in HomeController::sectionQuery(). To rename a section or change its
+  // subtitle, edit it below.
+  $homeSections = [
+    'hot_deals'    => ['title' => 'Hot Deals of the Month', 'subtitle' => 'View Our Hot Deals Products of the Month'],
+    'sale'         => ['title' => 'Sale',                   'subtitle' => 'Great Deals, Healthy Savings – Shop & Save at Our Pharmacy!'],
+    'promo_packs'  => ['title' => 'Promo Packs',            'subtitle' => 'Exclusive Value Packs – Bundled Savings on Customer Favorites'],
+    'best_sellers' => ['title' => 'Best Sellers',           'subtitle' => 'Discover our best-selling products, loved and trusted by our customers'],
+    'new_products' => ['title' => 'New Products',           'subtitle' => 'All our new arrivals in an exclusive brand selection'],
+    'generics'     => ['title' => 'Pharmacy Generics',      'subtitle' => 'All our new arrivals in a exclusive brand selection'],
+    'featured'     => ['title' => 'Featured Products',      'subtitle' => ''],
+  ];
+
+  // "See all products" link: same seed keeps random sections identical on the listing page.
+  $seeAll = fn (string $key) => route('home', ['home_section' => $key, 'seed' => $seed ?? null]);
+
+  // New Products & Pharmacy Generics use a top row (first 4) and bottom row (next 4).
+  $sp = fn (string $key) => collect($sectionProducts[$key] ?? []);
+  $new_products_top      = $sp('new_products')->take(4)->values();
+  $new_products_bottom   = $sp('new_products')->slice(4)->values();
+  $generics_top          = $sp('generics')->take(4)->values();
+  $generics_bottom       = $sp('generics')->slice(4)->values();
+@endphp
 
 @if(isset($searchResults))
   <div class="section-header">
@@ -557,7 +599,7 @@
     @elseif(isset($selectedCategory))
       <h2>Category: {{ $selectedCategory->name }}</h2>
     @elseif(isset($selectedSection))
-      <h2>{{ $selectedSection->label }}</h2>
+      <h2>{{ $homeSections[$selectedSection]['title'] ?? 'All Products' }}</h2>
     @elseif(isset($selectedBrand))
       <h2>Brand: {{ $selectedBrand->name }}</h2>
     @else
@@ -587,7 +629,14 @@
   <div class="slider-container">
     @forelse(($sliders ?? []) as $index => $slide)
       <div class="slide {{ $index === 0 ? 'active' : '' }}">
-        <img src="{{ asset($slide->image ?? '') }}" alt="{{ $slide->alt ?? '' }}">
+        @if($slide->product_id)
+          {{-- Clicking the slide opens the product assigned to it --}}
+          <a href="{{ route('product.show', $slide->product_id) }}" class="slide-link" aria-label="{{ $slide->alt ?: 'View product' }}">
+            <img src="{{ asset($slide->image ?? '') }}" alt="{{ $slide->alt ?? '' }}">
+          </a>
+        @else
+          <img src="{{ asset($slide->image ?? '') }}" alt="{{ $slide->alt ?? '' }}">
+        @endif
       </div>
     @empty
       <div class="slide active" style="display:flex;align-items:center;justify-content:center;background:#f5f5f5;height:100%;">
@@ -708,24 +757,24 @@ showSlide(currentIndex); autoplay();
   </div>
 </div>
 @else
-<<div class="fw-banner">
+<div class="fw-banner">
   <div style="border-radius:12px;padding:0;min-height:220px;overflow:hidden;">
   <div class="promo-banner" style="background:#f5f5f5;justify-content:center;color:#bbb;">No promo banners</div>  
   </div>
 </div>
 @endif
 
-<!-- HOT DEALS — products via Section hasMany relationship -->
+<!-- HOT DEALS OF THE MONTH — new this month, from brands with many products -->
 <div style="padding: 0 40px 40px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
-      <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $section1?->label ?? 'Section 1' }}</h2>
-      <p style="color:var(--gray);font-size:12px;">{{ $section1?->description ?? '' }}</p>
+      <h2 style="font-family:'Montserrat',sans-serif;font-size:22px;font-weight:800;color:var(--red);">{{ $homeSections['hot_deals']['title'] }}</h2>
+      <p style="color:var(--gray);font-size:12px;">{{ $homeSections['hot_deals']['subtitle'] }}</p>
     </div>
-
+    <a href="{{ $seeAll('hot_deals') }}" class="see-all-btn">See all products</a>
   </div>
   <div class="product-carousel">
-    @forelse(($section1?->products ?? []) as $product)
+    @forelse($sectionProducts['hot_deals'] ?? [] as $product)
       @include('partials.product-card', ['product' => $product, 'showQty' => true])
     @empty
       @for($i = 0; $i < 5; $i++)
@@ -757,17 +806,17 @@ showSlide(currentIndex); autoplay();
 </div>
 @endif
 
-<!-- SALE SECTION — products via Section hasMany relationship -->
+<!-- SALE — cheap products (under ₱50), lowest price first -->
 <div class="section-row">
   <div>
-    <h2>{{ $section2?->label ?? 'Section 2' }}</h2>
-    <p>{{ $section2?->description ?? '' }}</p>
+    <h2>{{ $homeSections['sale']['title'] }}</h2>
+    <p>{{ $homeSections['sale']['subtitle'] }}</p>
   </div>
-  <a href="{{ $section2 ? route('home', ['section_id' => $section2->id]) : '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $seeAll('sale') }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    @forelse(($section2?->products ?? []) as $product)
+    @forelse($sectionProducts['sale'] ?? [] as $product)
       @include('partials.product-card', ['product' => $product])
     @empty
       @for($i = 0; $i < 6; $i++)
@@ -784,17 +833,17 @@ showSlide(currentIndex); autoplay();
   </div>
 </div>
 
-<!-- PROMO PACKS — products via Section hasMany relationship -->
+<!-- PROMO PACKS — products with "Promo" in the name, most sold first -->
 <div class="section-row">
   <div>
-    <h2 style="color:var(--text);">{{ $section3?->label ?? 'Section 3' }}</h2>
-    <p>{{ $section3?->description ?? '' }}</p>
+    <h2 style="color:var(--text);">{{ $homeSections['promo_packs']['title'] }}</h2>
+    <p>{{ $homeSections['promo_packs']['subtitle'] }}</p>
   </div>
-  <a href="{{ $section3 ? route('home', ['section_id' => $section3->id]) : '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $seeAll('promo_packs') }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    @forelse(($section3?->products ?? []) as $product)
+    @forelse($sectionProducts['promo_packs'] ?? [] as $product)
       @include('partials.product-card', ['product' => $product])
     @empty
       @for($i = 0; $i < 6; $i++)
@@ -826,17 +875,17 @@ showSlide(currentIndex); autoplay();
 </div>
 @endif
 
-<!-- BEST SELLERS -->
+<!-- BEST SELLERS — most sold this month -->
 <div class="section-row">
   <div>
-    <h2 style="color:var(--text);">{{ $section4?->label ?? 'Section 4' }}</h2>
-    <p>{{ $section4?->description ?? '' }}</p>
+    <h2 style="color:var(--text);">{{ $homeSections['best_sellers']['title'] }}</h2>
+    <p>{{ $homeSections['best_sellers']['subtitle'] }}</p>
   </div>
-  <a href="{{ $section4 ? route('home', ['section_id' => $section4->id]) : '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $seeAll('best_sellers') }}" class="see-all-btn">See all products</a>
 </div>
 <div class="product-section">
   <div class="product-carousel">
-    @forelse(($section4?->products ?? []) as $product)
+    @forelse($sectionProducts['best_sellers'] ?? [] as $product)
       @include('partials.product-card', ['product' => $product])
     @empty
       @for($i = 0; $i < 6; $i++)
@@ -853,20 +902,20 @@ showSlide(currentIndex); autoplay();
   </div>
 </div>
 
-<!-- GUARDIAN SPECIAL DEALS — products via Section hasMany relationship -->
+<!-- NEW PRODUCTS — newest first, split into top/bottom rows -->
 <div class="section-row">
   <div>
-    <h2>{{ $section5?->label ?? 'Section 5' }}</h2>
-    <p>{{ $section5?->description ?? '' }}</p>
+    <h2>{{ $homeSections['new_products']['title'] }}</h2>
+    <p>{{ $homeSections['new_products']['subtitle'] }}</p>
   </div>
-  <a href="{{ $section5 ? route('home', ['section_id' => $section5->id]) : '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $seeAll('new_products') }}" class="see-all-btn">See all products</a>
 </div>
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;background:#fff;overflow:hidden;">
-      <img src="{{ !empty($cardImage_1?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_1->image, ['http://', 'https://']) ? $cardImage_1->image : asset($cardImage_1->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_1?->alt ?: ($section5?->label ?? 'Promotion') }}" style="width:100%;height:100%;min-height:280px;object-fit:cover;display:block;">
+      <img src="{{ !empty($cardImage_1?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_1->image, ['http://', 'https://']) ? $cardImage_1->image : asset($cardImage_1->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_1?->alt ?: $homeSections['new_products']['title'] }}" style="width:100%;height:100%;min-height:280px;object-fit:cover;display:block;">
     </div>
-    @forelse(($section5_top ?? []) as $product)
+    @forelse($new_products_top as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
     @empty
       @for($i = 0; $i < 4; $i++)
@@ -881,18 +930,18 @@ showSlide(currentIndex); autoplay();
       @endfor
     @endforelse
     <div class="dual-row-bottom-grid">
-      @forelse(($section5_bottom ?? []) as $product)
+      @forelse($new_products_bottom as $product)
         @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
       @empty
         @for($i = 0; $i < 4; $i++)
           <div class="product-card">
-            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
-            <div class="product-info">
-              <div class="product-cat">&nbsp;</div>
-              <div class="product-name" style="color:#ccc;">No product available</div>
-              <div class="product-price" style="color:#ccc;">—</div>
-            </div>
+          <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
           </div>
+        </div>
         @endfor
       @endforelse
     </div>
@@ -912,20 +961,20 @@ showSlide(currentIndex); autoplay();
   @endif
 </div>
 
-<!-- GG PHARMACY GENERICS — products split into top/bottom rows -->
+<!-- PHARMACY GENERICS — products with "Generic(s)" in the name, most sold first -->
 <div class="section-row">
   <div>
-    <h2>{{ $section6?->label ?? 'Section 6' }}</h2>
-    <p>{{ $section6?->description ?? '' }}</p>
+    <h2>{{ $homeSections['generics']['title'] }}</h2>
+    <p>{{ $homeSections['generics']['subtitle'] }}</p>
   </div>
-  <a href="{{ $section6 ? route('home', ['section_id' => $section6->id]) : '#' }}" class="see-all-btn">See all products</a>
+  <a href="{{ $seeAll('generics') }}" class="see-all-btn">See all products</a>
 </div>
 <div class="dual-row-wrap">
   <div class="dual-row-grid">
     <div style="border:2px solid var(--red);border-radius:8px;background:#fff;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">
-      <img src="{{ !empty($cardImage_2?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_2->image, ['http://', 'https://']) ? $cardImage_2->image : asset($cardImage_2->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_2?->alt ?: ($section6?->label ?? 'Low Price Everyday') }}" style="width:100%;height:100%;object-fit:cover;display:block;">
+      <img src="{{ !empty($cardImage_2?->image) ? (\Illuminate\Support\Str::startsWith($cardImage_2->image, ['http://', 'https://']) ? $cardImage_2->image : asset($cardImage_2->image)) : 'https://www.bticino.ph/modules/custom/legrand_ecat/assets/img/no-image.png' }}" alt="{{ $cardImage_2?->alt ?: $homeSections['generics']['title'] }}" style="width:100%;height:100%;object-fit:cover;display:block;">
     </div>
-    @forelse(($section6_top ?? []) as $product)
+    @forelse($generics_top as $product)
       @include('partials.product-card', ['product' => $product, 'imgHeight' => '150px'])
     @empty
       @for($i = 0; $i < 4; $i++)
@@ -940,29 +989,32 @@ showSlide(currentIndex); autoplay();
       @endfor
     @endforelse
     <div class="dual-row-bottom-grid">
-      @forelse(($section6_bottom ?? []) as $product)
+      @forelse($generics_bottom as $product)
         @include('partials.product-card', ['product' => $product, 'imgHeight' => '130px'])
       @empty
         @for($i = 0; $i < 4; $i++)
           <div class="product-card">
-            <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
-            <div class="product-info">
-              <div class="product-cat">&nbsp;</div>
-              <div class="product-name" style="color:#ccc;">No product available</div>
-              <div class="product-price" style="color:#ccc;">—</div>
-            </div>
+          <div class="product-img" style="height:130px;"><i class="fas fa-box-open" style="font-size:32px;color:#ddd;"></i></div>
+          <div class="product-info">
+            <div class="product-cat">&nbsp;</div>
+            <div class="product-name" style="color:#ccc;">No product available</div>
+            <div class="product-price" style="color:#ccc;">—</div>
           </div>
+        </div>
         @endfor
       @endforelse
     </div>
   </div>
 </div>
 
-<!-- FEATURED PRODUCTS — products via Section hasMany relationship -->
+<!-- FEATURED PRODUCTS — random picks, reshuffled on every page load -->
 <div class="featured-section">
-  <h2>{{ $section7?->label ?? 'Section 7' }}</h2>
+  <div class="featured-head" style="display:flex;align-items:center;justify-content:center;position:relative;margin-bottom:24px;">
+    <h2 style="margin-bottom:0;">{{ $homeSections['featured']['title'] }}</h2>
+    <a href="{{ $seeAll('featured') }}" class="see-all-btn featured-see-all" style="position:absolute;right:0;background:#fff;color:var(--red);">See all products</a>
+  </div>
   <div class="product-carousel">
-    @forelse(($section7?->products ?? []) as $product)
+    @forelse($sectionProducts['featured'] ?? [] as $product)
       @include('partials.product-card', ['product' => $product])
     @empty
       @for($i = 0; $i < 6; $i++)
@@ -978,37 +1030,6 @@ showSlide(currentIndex); autoplay();
     @endforelse
   </div>
 </div>
-
-<!-- SECTION 8 to ... — every remaining section (sort_order > 7) is pulled straight
-     from the database, so new sections added via the admin panel appear here
-     automatically without touching this template. -->
-@foreach(($extraSections ?? []) as $section)
-<div class="section-row">
-  <div>
-    <h2 style="color:var(--text);">{{ $section->label }}</h2>
-    <p>{{ $section->description }}</p>
-  </div>
-  <a href="{{ route('home', ['section_id' => $section->id]) }}" class="see-all-btn">See all products</a>
-</div>
-<div class="product-section">
-  <div class="product-carousel">
-    @forelse($section->products as $product)
-      @include('partials.product-card', ['product' => $product])
-    @empty
-      @for($i = 0; $i < 5; $i++)
-        <div class="product-card">
-          <div class="product-img"><i class="fas fa-box-open" style="font-size:40px;color:#ddd;"></i></div>
-          <div class="product-info">
-            <div class="product-cat">&nbsp;</div>
-            <div class="product-name" style="color:#ccc;">No product available</div>
-            <div class="product-price" style="color:#ccc;">—</div>
-          </div>
-        </div>
-      @endfor
-    @endforelse
-  </div>
-</div>
-@endforeach
 
 <!-- EXCLUSIVELY FOR YOU -->
 <div class="exclusively" style="padding:40px;">

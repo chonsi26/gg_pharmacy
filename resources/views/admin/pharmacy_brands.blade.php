@@ -758,7 +758,14 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Mobile header: title + compact search + notification/theme buttons, all visible */
+  .header { padding: 0 12px; gap: 8px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header > .header-search { flex: 0 1 130px; min-width: 0; height: 34px; padding: 0 9px; gap: 6px; }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header-actions { gap: 6px; flex-shrink: 0; }
+  /* suggestions panel: span the screen width instead of hanging off the small search box */
+  .header > .header-search .search-panel { position: fixed; top: calc(var(--header-h) + 6px); left: 12px; right: 12px; width: auto; max-width: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -888,6 +895,51 @@ tbody tr:last-child td { border-bottom: none; }
   table.wc-table tbody tr:hover{ background:var(--wc-bg); }
   .wc-cell-actions{ display:flex; gap:6px; justify-content:flex-end; }
   .wc-empty{ text-align:center; padding:40px 20px; color:var(--wc-subtle); font-size:13px; }
+
+  /* Brand search + pager */
+  .wc-card-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+  .wc-brand-search{
+    display:flex; align-items:center; gap:8px; height:32px; padding:0 10px;
+    background:var(--wc-bg); border:1.5px solid var(--wc-border); border-radius:8px;
+    transition:border-color .2s;
+  }
+  .wc-brand-search:focus-within{ border-color:var(--wc-primary); }
+  .wc-brand-search i{ font-size:12px; color:var(--wc-subtle); }
+  .wc-brand-search input{
+    border:none; background:none; outline:none; width:200px;
+    font-family:inherit; font-size:13px; color:var(--wc-text);
+  }
+  .wc-brand-search input::placeholder{ color:var(--wc-subtle); }
+  .wc-brand-search button{
+    border:none; background:none; cursor:pointer; color:var(--wc-subtle);
+    font-size:12px; padding:0; display:none;
+  }
+  .wc-brand-search button:hover{ color:var(--wc-primary); }
+  .wc-brand-search.has-value button{ display:block; }
+
+  .wc-pager{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    padding:12px 20px; border-top:1px solid var(--wc-border);
+  }
+  .wc-pager[hidden]{ display:none; }
+  .wc-pager-info{ font-size:12.5px; color:var(--wc-subtle); }
+  .wc-pager-btns{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .wc-page-btn{
+    min-width:32px; height:32px; padding:0 10px; border-radius:8px; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:700;
+    background:transparent; color:var(--wc-text); border:1px solid var(--wc-border);
+    transition:all .15s ease;
+  }
+  .wc-page-btn:hover:not(:disabled):not(.active){ color:var(--wc-primary); border-color:var(--wc-primary); }
+  .wc-page-btn.active{ background:var(--wc-primary); border-color:var(--wc-primary); color:#fff; cursor:default; }
+  .wc-page-btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .wc-page-gap{ color:var(--wc-subtle); padding:0 2px; font-size:13px; }
+  @media (max-width: 640px){
+    .wc-card-head{ flex-wrap:wrap; }
+    .wc-card-actions{ width:100%; justify-content:stretch; }
+    .wc-brand-search{ flex:1; }
+    .wc-brand-search input{ width:100%; }
+  }
 
   /* Thumbs */
   .wc-thumb{
@@ -1103,7 +1155,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1125,7 +1177,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
   <a class="nav-item active" href="{{ route('admin.pharmacy') }}">
@@ -1205,7 +1257,6 @@ tbody tr:last-child td { border-bottom: none; }
 <div style="margin-bottom:4px;">
   <div style="font-size:20px;font-weight:800;color:var(--text);">Website Customization</div>
 </div>
-<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories and sliders. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
 
 <div class="wc-wrap">
   <nav class="wc-tabs">
@@ -1218,7 +1269,6 @@ tbody tr:last-child td { border-bottom: none; }
     <a class="wc-tab active" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
-  <div class="wc-group-label active" data-group="catalog">Catalog management · Add, edit or remove</div>
   <section class="wc-card wc-section active" id="sec-brands">
     <div class="wc-card-head">
       <div class="wc-card-title">
@@ -1228,13 +1278,24 @@ tbody tr:last-child td { border-bottom: none; }
           <p>Brand logos used in the scrolling ticker and featured brand strip</p>
         </div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="openModal('brands')"><i class="fas fa-plus"></i> Add brand</button>
+      <div class="wc-card-actions">
+        <div class="wc-brand-search" id="brandSearchWrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="brandSearchInput" placeholder="Search brands..." autocomplete="off" aria-label="Search brands">
+          <button type="button" id="brandSearchClear" title="Clear search" aria-label="Clear search"><i class="fas fa-times"></i></button>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openModal('brands')"><i class="fas fa-plus"></i> Add brand</button>
+      </div>
     </div>
     <div class="wc-table-scroll">
       <table class="wc-table">
         <thead><tr><th>Brand</th><th>Ticker</th><th>Featured</th><th>Status</th><th>Order</th><th style="text-align:right;">Actions</th></tr></thead>
         <tbody id="brandsBody"></tbody>
       </table>
+    </div>
+    <div class="wc-pager" id="brandsPager" hidden>
+      <div class="wc-pager-info" id="brandsPagerInfo"></div>
+      <div class="wc-pager-btns" id="brandsPagerBtns"></div>
     </div>
   </section>
 </div>
@@ -1512,9 +1573,12 @@ function readFileAsDataURL(file){
 /* ============================================================================
    RENDER: BRANDS (full CRUD)
 ============================================================================ */
-function renderBrands(){
-  const sorted = [...brands].sort((a,b)=>a.sort_order-b.sort_order);
-  document.getElementById('brandsBody').innerHTML = sorted.length ? sorted.map(b => `
+const BRANDS_PER_PAGE = 50;
+let brandsPage  = 1;
+let brandsQuery = '';
+
+function brandRowHtml(b){
+  return `
     <tr>
       <td>
         <div class="wc-name-cell">
@@ -1532,9 +1596,90 @@ function renderBrands(){
           <button class="btn-icon danger" title="Delete" onclick="openConfirm('brands', ${b.id}, '${esc(b.name)}')"><i class="fas fa-trash"></i></button>
         </div>
       </td>
-    </tr>
-  `).join('') : `<tr><td colspan="6" class="wc-empty">No brands yet. Click "Add brand" to create one.</td></tr>`;
+    </tr>`;
 }
+
+/** Page numbers with ellipses, e.g. 1 … 4 5 [6] 7 8 … 20 */
+function pageList(current, total){
+  if(total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = new Set([1, total, current - 1, current, current + 1]);
+  if(current <= 3) { pages.add(2); pages.add(3); pages.add(4); }
+  if(current >= total - 2) { pages.add(total - 1); pages.add(total - 2); pages.add(total - 3); }
+  const sortedPages = [...pages].filter(n => n >= 1 && n <= total).sort((a, b) => a - b);
+  const out = [];
+  sortedPages.forEach((n, i) => {
+    if(i && n - sortedPages[i - 1] > 1) out.push('gap');
+    out.push(n);
+  });
+  return out;
+}
+
+function renderBrands(){
+  const q = brandsQuery.trim().toLowerCase();
+  const sorted = [...brands].sort((a,b)=>a.sort_order-b.sort_order);
+  const filtered = q ? sorted.filter(b => String(b.name || '').toLowerCase().includes(q)) : sorted;
+
+  const total      = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / BRANDS_PER_PAGE));
+  if(brandsPage > totalPages) brandsPage = totalPages;   // e.g. after deleting the last row of a page
+  if(brandsPage < 1) brandsPage = 1;
+
+  const start   = (brandsPage - 1) * BRANDS_PER_PAGE;
+  const visible = filtered.slice(start, start + BRANDS_PER_PAGE);
+
+  let emptyMsg = 'No brands yet. Click "Add brand" to create one.';
+  if(q && !total) emptyMsg = `No brands match "${esc(brandsQuery.trim())}".`;
+
+  document.getElementById('brandsBody').innerHTML = visible.length
+    ? visible.map(brandRowHtml).join('')
+    : `<tr><td colspan="6" class="wc-empty">${emptyMsg}</td></tr>`;
+
+  // ── pager ──
+  const pager = document.getElementById('brandsPager');
+  if(!total){ pager.hidden = true; return; }
+  pager.hidden = false;
+
+  document.getElementById('brandsPagerInfo').textContent =
+    `Showing ${start + 1}\u2013${start + visible.length} of ${total} brand${total === 1 ? '' : 's'}`;
+
+  const btns = document.getElementById('brandsPagerBtns');
+  if(totalPages === 1){ btns.innerHTML = ''; return; }
+
+  btns.innerHTML =
+    `<button type="button" class="wc-page-btn" data-page="${brandsPage - 1}" ${brandsPage === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>` +
+    pageList(brandsPage, totalPages).map(n => n === 'gap'
+      ? `<span class="wc-page-gap">\u2026</span>`
+      : `<button type="button" class="wc-page-btn ${n === brandsPage ? 'active' : ''}" data-page="${n}">${n}</button>`
+    ).join('') +
+    `<button type="button" class="wc-page-btn" data-page="${brandsPage + 1}" ${brandsPage === totalPages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+}
+
+document.getElementById('brandsPagerBtns').addEventListener('click', (e) => {
+  const btn = e.target.closest('.wc-page-btn');
+  if(!btn || btn.disabled || btn.classList.contains('active')) return;
+  brandsPage = parseInt(btn.dataset.page, 10);
+  renderBrands();
+  document.getElementById('sec-brands').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// brand search (filters by name, resets to page 1)
+(function(){
+  const input = document.getElementById('brandSearchInput');
+  const wrap  = document.getElementById('brandSearchWrap');
+  const clear = document.getElementById('brandSearchClear');
+  let timer = null;
+
+  function apply(){
+    brandsQuery = input.value;
+    brandsPage  = 1;
+    wrap.classList.toggle('has-value', !!input.value);
+    renderBrands();
+  }
+  input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(apply, 150); });
+  input.addEventListener('keydown', (e) => { if(e.key === 'Escape' && input.value){ input.value = ''; apply(); } });
+  clear.addEventListener('click', () => { input.value = ''; apply(); input.focus(); });
+})();
+
 renderBrands();
 /* ============================================================================
    MODAL ENGINE (add / edit for all entity types)

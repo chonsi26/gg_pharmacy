@@ -772,6 +772,7 @@ tbody tr:last-child td { border-bottom: none; }
 .view-aside .view-img-wrap { width: 100%; height: 200px; border-radius: 10px; }
 .view-aside-name { font-size: 16.5px; font-weight: 700; color: var(--text); line-height: 1.3; }
 .view-aside-generic { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.view-aside-code { font-size: 11.5px; font-weight: 600; letter-spacing: .04em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin-top: 3px; }
 .view-badges { display: flex; flex-wrap: wrap; gap: 6px; }
 .view-price-block { padding-top: 4px; border-top: 1px solid var(--border); }
 .view-price { font-size: 21px; font-weight: 800; color: var(--text); }
@@ -817,7 +818,30 @@ tbody tr:last-child td { border-bottom: none; }
   .view-price-block { width: 100%; border-top: 1px solid var(--border); padding-top: 12px; }
   .view-stock-box { width: 100%; margin-top: 0; }
   .view-field-grid { grid-template-columns: 1fr; }
-  .view-main { max-height: 60vh; }
+
+  /* Fit the screen: pinned header/footer, scrollable middle */
+  #viewModalBg { padding: 10px; align-items: center; }
+  .modal.modal-view {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+  .modal.modal-view .modal-head,
+  .modal.modal-view .modal-foot { flex-shrink: 0; }
+  .modal.modal-view .modal-foot .btn { flex: 1; }
+  #viewModalBody {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  .view-aside { padding: 16px; gap: 12px; }
+  .view-main { max-height: none; overflow: visible; padding: 16px; }
+  .view-field .view-value { overflow-wrap: anywhere; }
 }
 .lightbox-bg {
   display: none;
@@ -877,7 +901,28 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Header search stays visible on mobile: compact, sitting right beside the notifications button */
+  .header { padding: 0 12px; gap: 8px; }
+  .header > .header-title { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .header > .header-search {
+    display: flex;
+    margin-left: auto;
+    flex: 0 1 150px;
+    min-width: 0;
+    width: 150px;
+    max-width: 150px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header > .header-actions { flex-shrink: 0; gap: 6px; }
+  /* suggestions panel: span the screen under the header instead of hanging off the narrow search box */
+  .header .search-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 8px; right: 8px;
+    width: auto; max-width: none;
+  }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -890,6 +935,19 @@ tbody tr:last-child td { border-bottom: none; }
   .stat-card { padding: 14px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
 }
+</style>
+<style>
+  /* ── Pagination (100 products per page) ───────────── */
+  .med-card.is-filtered, .med-card.is-paged-out { display: none !important; }
+  .inv-pager { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 18px 16px 0; }
+  .inv-pager[hidden] { display: none; }
+  .inv-pager-info { font-size: 13px; color: var(--muted); }
+  .inv-pager-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .inv-pg-btn { min-width: 34px; height: 34px; padding: 0 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 7px; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s, color .15s; }
+  .inv-pg-btn:hover:not(:disabled):not(.active) { background: var(--bg); }
+  .inv-pg-btn.active { background: var(--red); border-color: var(--red); color: #fff; cursor: default; }
+  .inv-pg-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .inv-pg-gap { color: var(--subtle); padding: 0 2px; }
 </style>
 <style>
   /* ── Medicine Card Grid ───────────────────────────── */
@@ -1369,6 +1427,61 @@ tbody tr:last-child td { border-bottom: none; }
   .manage-icon-btn:hover { border-color: var(--primary, #d9534f); color: var(--primary, #d9534f); }
   .manage-icon-btn.danger:hover { border-color: var(--red, #38a169); color: var(--red, #38a169); }
   .manage-empty { text-align: center; font-size: 12px; color: var(--muted, #888); padding: 24px 0; }
+
+  /* ── Empty state (no products) ───────────────────── */
+  .empty-state {
+    grid-column: 1 / -1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+    padding: 56px 24px 60px;
+    margin: 4px 0;
+    border: 1.5px dashed var(--border, #dddfe2);
+    border-radius: 16px;
+    background: var(--surface2, #f7f8fa);
+  }
+  .empty-state-icon {
+    width: 76px; height: 76px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--red-light, #f5e0e0); color: var(--red, #CC1F1F);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--red, #CC1F1F) 7%, transparent);
+    margin-bottom: 24px;
+  }
+  .empty-state-icon svg { width: 34px; height: 34px; }
+  .empty-state-title { font-size: 17px; font-weight: 800; color: var(--text, #1c1e21); margin: 0 0 8px; }
+  .empty-state-text { max-width: 380px; font-size: 13px; line-height: 1.6; color: var(--muted, #65676b); margin: 0 0 22px; }
+  .empty-state-btn { display: inline-flex; align-items: center; gap: 7px; }
+  @media (max-width: 480px) { .empty-state { padding: 40px 16px 44px; } }
+
+  /* Search bar inside the Categories / Brand list modals */
+  .manage-search {
+    position: relative; display: flex; align-items: center;
+    margin-bottom: 12px;
+  }
+  .manage-search > svg {
+    position: absolute; left: 11px; width: 14px; height: 14px;
+    color: var(--subtle, #a0a3a7); pointer-events: none;
+  }
+  .manage-search input {
+    width: 100%; height: 38px;
+    padding: 0 34px 0 34px;
+    font-family: 'Inter', sans-serif; font-size: 13px;
+    color: var(--text, #111);
+    background: var(--input-bg, #fff);
+    border: 1.5px solid var(--border, #dddfe2);
+    border-radius: 9px; outline: none;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .manage-search input::placeholder { color: var(--subtle, #a0a3a7); }
+  .manage-search input:focus { border-color: var(--red, #CC1F1F); box-shadow: 0 0 0 3px var(--focus, rgba(204,31,31,.12)); }
+  .manage-search-clear {
+    position: absolute; right: 7px;
+    width: 22px; height: 22px; border: none; border-radius: 50%;
+    background: transparent; color: var(--muted, #888);
+    display: none; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .manage-search-clear svg { width: 12px; height: 12px; }
+  .manage-search-clear:hover { background: var(--hover, rgba(0,0,0,.05)); color: var(--text, #111); }
+  .manage-search.has-text .manage-search-clear { display: flex; }
   .cat-icon-preview {
     width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -1402,6 +1515,45 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .field-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary, #d9534f); cursor: pointer; }
 
+  /* Enable / Disable switch (add + edit product modals) - plain, neutral styling */
+  .field-switch {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 14px 16px; margin: 12px 0 4px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+  }
+  .field-switch-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .field-switch-title { font-size: 13px; font-weight: 600; line-height: 1.3; color: var(--text); }
+  .field-switch-desc { font-size: 12px; font-weight: 400; line-height: 1.4; color: var(--muted); }
+  .field-switch-control { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .field-switch-state {
+    min-width: 56px; text-align: right;
+    font-size: 12px; font-weight: 500; letter-spacing: .02em; color: var(--text);
+  }
+  .field-switch.is-off .field-switch-state { color: var(--muted); }
+  .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; margin: 0; cursor: pointer; }
+  .switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .switch-slider {
+    position: absolute; inset: 0; border-radius: 999px;
+    background: transparent; border: 1px solid var(--muted);
+    transition: background .15s, border-color .15s;
+  }
+  .switch-slider::before {
+    content: ""; position: absolute; left: 3px; top: 50%; width: 14px; height: 14px; margin-top: -7px;
+    border-radius: 50%; background: var(--muted);
+    transition: transform .15s, background .15s;
+  }
+  .switch input:checked + .switch-slider { background: var(--text); border-color: var(--text); }
+  .switch input:checked + .switch-slider::before { transform: translateX(18px); background: var(--surface); }
+  .switch input:focus-visible + .switch-slider { outline: 2px solid var(--text); outline-offset: 2px; }
+
+  /* Disabled products stay visible to staff, just dimmed + tagged */
+  .med-card .disabled-tag { display: none; margin-left: 6px; }
+  .med-card.is-disabled .disabled-tag { display: inline-block; }
+  .med-card.is-disabled .med-img-wrap,
+  .med-card.is-disabled .med-body { opacity: .55; }
+
   /* Color picker input */
   .field input[type="color"] {
     padding: 4px; cursor: pointer;
@@ -1434,7 +1586,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item active" href="{{ route('staff.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('staff.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1452,7 +1604,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('staff.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
         <a class="nav-item" href="{{ route('staff.settings') }}">
@@ -1577,20 +1729,20 @@ tbody tr:last-child td { border-bottom: none; }
           $catColor   = $category->icon_color ?? '#6b7280';
           $catBg      = $category->bg_color ?? '#f3f4f6';
           $catName    = $category->name ?? 'Uncategorized';
-          $searchKey  = strtolower($product->name.' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
+          $searchKey  = strtolower($product->name.' '.($product->code_name ?? '').' '.($product->form ?? '').' '.$catName.' '.($brand->name ?? ''));
           $barColor   = $qty <= 10 ? 'var(--red)' : ($qty <= 50 ? 'var(--orange)' : 'var(--green)');
           $barWidth   = min($qty, 100);
           $badgeClass = $product->badge_type === 'sale-badge' ? 'warning' : 'ok';
         @endphp
-        <div class="med-card" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
+        <div class="med-card {{ $product->is_active ? '' : 'is-disabled' }}" data-name="{{ $searchKey }}" onclick="openViewModal(this)" style="cursor:pointer;"
              data-id="{{ $product->id }}"
+             data-code-name="{{ $product->code_name }}"
              data-generic-name="{{ $product->generic_name }}"
              data-form="{{ $product->form }}"
              data-brand-name="{{ $brand->name ?? '' }}"
              data-brand-id="{{ $product->brand_id }}"
              data-medicine="{{ $product->name }}"
              data-cat="{{ $product->category_id }}"
-             data-section-id="{{ $product->section_id }}"
              data-sort-order="{{ $product->sort_order }}"
              data-old-price="{{ $product->old_price }}"
              data-origin="{{ $product->origin }}"
@@ -1602,6 +1754,7 @@ tbody tr:last-child td { border-bottom: none; }
              data-height="{{ $product->height }}"
              data-depth="{{ $product->depth }}"
              data-requires-rx="{{ $product->requires_prescription ? 'true' : 'false' }}"
+             data-is-active="{{ $product->is_active ? 'true' : 'false' }}"
              @if($product->badge) data-badge-text="{{ $product->badge }}" data-badge-type="{{ $product->badge_type }}" @endif>
           <div class="med-img-wrap" style="background: {{ $product->image ? '#fff' : 'linear-gradient(135deg, '.$catBg.', '.$catBg.')' }};">
             @if($product->badge)
@@ -1620,7 +1773,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <div class="med-body">
             <div class="med-title">{{ $product->name }}</div>
-            <div class="med-cat-row"><span class="med-cat-dot" style="background:{{ $catColor }};"></span><span class="med-cat-label">{{ $catName }}</span></div>
+            <div class="med-cat-row"><span class="med-cat-dot" style="background:{{ $catColor }};"></span><span class="med-cat-label">{{ $catName }}</span><span class="pill danger disabled-tag">Disabled</span></div>
             <div class="stock-section">
               <div class="stock-meta"><span class="stock-label">Stock</span><span class="stock-count-val">{{ $qty }} units</span></div>
               <div class="stock-bar-bg"><div class="stock-bar-fill" style="width:{{ $barWidth }}%;background:{{ $barColor }};"></div></div>
@@ -1643,10 +1796,39 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
       @empty
-        <div class="manage-empty">No products yet. Click "+ Add Products" to get started.</div>
+        <div class="empty-state" role="status">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <h4 class="empty-state-title">No products yet</h4>
+          <p class="empty-state-text">Your inventory is empty. Add your first product to start tracking stock levels, pricing and expiry dates.</p>
+          <button type="button" class="btn primary empty-state-btn" onclick="openModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+          </button>
+        </div>
       @endforelse
 
     </div><!-- /med-grid -->
+
+    <template id="emptyProductsTpl">
+        <div class="empty-state" role="status">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          </div>
+          <h4 class="empty-state-title">No products yet</h4>
+          <p class="empty-state-text">Your inventory is empty. Add your first product to start tracking stock levels, pricing and expiry dates.</p>
+          <button type="button" class="btn primary empty-state-btn" onclick="openModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+          </button>
+        </div>
+    </template>
+
+    <div class="inv-pager" id="invPager" hidden>
+      <div class="inv-pager-info" id="invPagerInfo"></div>
+      <div class="inv-pager-btns" id="invPagerBtns"></div>
+    </div>
   </div><!-- /card -->
 </main>
 
@@ -1697,17 +1879,8 @@ tbody tr:last-child td { border-bottom: none; }
           <div style="font-size:10px;color:var(--subtle);">Auto-generated · PK</div>
         </div>
         <div class="field" style="width:100%;margin-top:10px;">
-          <label>Section</label>
-          <select id="mSection" onchange="handleSectionChange('m')">
-            <option value="">— Select —</option>
-            @foreach($sections as $sec)
-              <option value="{{ $sec->id }}">{{ $sec->label }}</option>
-            @endforeach
-          </select>
-        </div>
-        <div class="field" style="width:100%;margin-top:10px;">
           <label>Sort Order</label>
-          <input type="number" min="0" step="1" id="mSortOrder" placeholder="Select a section first" oninput="checkSortOrderConflict('m')">
+          <input type="number" min="0" step="1" id="mSortOrder" oninput="checkSortOrderConflict('m')">
           <div class="sort-order-hint" id="mSortOrderHint" style="display:none;"></div>
         </div>
       </div>
@@ -1819,6 +1992,19 @@ tbody tr:last-child td { border-bottom: none; }
           <label class="field-check" id="mRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="mRequiresPrescription"> Requires Prescription
           </label>
+          <div class="field-switch" id="mActiveWrap">
+            <div class="field-switch-text">
+              <span class="field-switch-title">Product Status</span>
+              <span class="field-switch-desc">Disabled products are dimmed in the inventory list.</span>
+            </div>
+            <div class="field-switch-control">
+              <span class="field-switch-state" id="mActiveText">Enabled</span>
+              <label class="switch" title="Enable / disable this product">
+                <input type="checkbox" id="mIsActive" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="modal-foot-bar">
           <button class="btn" onclick="closeModal()">Cancel</button>
@@ -1865,15 +2051,6 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="panel-label">MEDICINE ID</div>
           <div class="med-id-badge" id="editMedIdDisplay">MED-0000</div>
           <div style="font-size:10px;color:var(--subtle);">Read-only · PK</div>
-        </div>
-        <div class="field" style="width:100%;margin-top:10px;">
-          <label>Section</label>
-          <select id="eSection" onchange="handleSectionChange('e')">
-            <option value="">— Select —</option>
-            @foreach($sections as $sec)
-              <option value="{{ $sec->id }}">{{ $sec->label }}</option>
-            @endforeach
-          </select>
         </div>
         <div class="field" style="width:100%;margin-top:10px;">
           <label>Sort Order</label>
@@ -1989,6 +2166,19 @@ tbody tr:last-child td { border-bottom: none; }
           <label class="field-check" id="eRxWrap" style="margin-bottom:6px;">
             <input type="checkbox" id="eRequiresPrescription"> Requires Prescription
           </label>
+          <div class="field-switch" id="eActiveWrap">
+            <div class="field-switch-text">
+              <span class="field-switch-title">Product Status</span>
+              <span class="field-switch-desc">Disabled products are dimmed in the inventory list.</span>
+            </div>
+            <div class="field-switch-control">
+              <span class="field-switch-state" id="eActiveText">Enabled</span>
+              <label class="switch" title="Enable / disable this product">
+                <input type="checkbox" id="eIsActive" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
         </div>
         <div class="modal-foot-bar">
           <button class="btn" onclick="closeEditModal()">Cancel</button>
@@ -2102,6 +2292,8 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
+    <div class="modal-sub" id="modalStockError" style="display:none;color:#e07b00;margin:-6px 0 0;"></div>
+
     <div class="modal-actions">
       <button class="btn-sm" id="cancelStockModal">Cancel</button>
       <button class="btn-sm primary" id="confirmAddStock">Add Stock</button>
@@ -2121,6 +2313,13 @@ tbody tr:last-child td { border-bottom: none; }
       </button>
     </div>
     <div class="modal-body">
+      <div class="manage-search" id="categorySearchWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="categorySearchInput" placeholder="Search categories…" autocomplete="off" oninput="renderCategories()">
+        <button type="button" class="manage-search-clear" title="Clear search" onclick="clearManageSearch('category')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       <button class="btn primary" style="width:100%;margin-bottom:14px;justify-content:center;display:flex;align-items:center;gap:6px;" onclick="openCategoryForm()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Category
@@ -2193,6 +2392,13 @@ tbody tr:last-child td { border-bottom: none; }
       </button>
     </div>
     <div class="modal-body">
+      <div class="manage-search" id="brandSearchWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="brandSearchInput" placeholder="Search brands…" autocomplete="off" oninput="renderBrands()">
+        <button type="button" class="manage-search-clear" title="Clear search" onclick="clearManageSearch('brand')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
       <button class="btn primary" style="width:100%;margin-bottom:14px;justify-content:center;display:flex;align-items:center;gap:6px;" onclick="openBrandForm()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Brand
@@ -2535,17 +2741,15 @@ function previewImg(input, previewId) {
 const INVENTORY_URL        = "{{ route('staff.inventory') }}";
 const INVENTORY_SEARCH_URL = "{{ route('staff.inventory.search') }}";
 const INVENTORY_SORT_URL   = "{{ route('staff.inventory.sort') }}";
+const STOCK_STORE_URL      = "{{ route('staff.stocks.store') }}";
 const CSRF_TOKEN           = document.querySelector('meta[name="csrf-token"]').content;
 
 /**
- * Map of section_id → sort_order → { id, name } for every product currently
- * in the grid. Sort order is scoped per section, since each section has its
- * own ordering — a "taken" slot in one section doesn't affect another.
+ * Map of sort_order → { id, name } for every product currently in the grid,
+ * used to warn when a typed Sort Order is already taken.
  */
-const SECTION_SORT_MAP = {!! json_encode(
-    $products->groupBy('section_id')->map(
-        fn ($group) => $group->mapWithKeys(fn ($p) => [(int) $p->sort_order => ['id' => $p->id, 'name' => $p->name]])
-    )
+const SORT_MAP = {!! json_encode(
+    $products->mapWithKeys(fn ($p) => [(int) $p->sort_order => ['id' => $p->id, 'name' => $p->name]])
 ) !!};
 
 /**
@@ -2665,12 +2869,12 @@ function renderViewModal(p) {
 
         <div class="view-aside-text">
           <div class="view-aside-name">${esc(p.name)}</div>
+          ${p.code_name ? `<div class="view-aside-code">Code: ${esc(p.code_name)}</div>` : ''}
           ${p.generic_name ? `<div class="view-aside-generic">${esc(p.generic_name)}</div>` : ''}
           <div class="view-badges" style="margin-top:8px;">
             <span class="pill" style="background:${p.category_bg};color:${p.category_color};">${esc(p.category_name)}</span>
             ${p.form ? `<span class="pill" style="background:var(--bg-soft,#f3f4f6);color:var(--text,#374151);">${esc(p.form)}</span>` : ''}
             ${p.brand_name ? `<span class="pill ok">${esc(p.brand_name)}</span>` : ''}
-            ${p.section_label ? `<span class="pill blue">${esc(p.section_label)}</span>` : ''}
             ${p.requires_prescription ? `<span class="pill warning">Rx Only</span>` : ''}
             ${!p.is_active ? `<span class="pill danger">Inactive</span>` : ''}
           </div>
@@ -2740,7 +2944,6 @@ function collectProductForm(p) {
   fd.append('form',          val(p + 'Form'));
   fd.append('brand_id',      val(p + 'Brand'));
   fd.append('category_id',   val(p + 'Cat'));
-  fd.append('section_id',    val(p + 'Section'));
   fd.append('sort_order',    val(p + 'SortOrder'));
   fd.append('origin',        val(p + 'Origin'));
   fd.append('price',         val(p + 'Price'));
@@ -2751,6 +2954,8 @@ function collectProductForm(p) {
   fd.append('height',        val(p + 'Height'));
   fd.append('depth',         val(p + 'Depth'));
   fd.append('requires_prescription', document.getElementById(p + 'RequiresPrescription').checked ? 1 : 0);
+  // Enable/Disable switch -> products.is_active (1 = enabled, 0 = disabled)
+  fd.append('is_active', document.getElementById(p + 'IsActive').checked ? 1 : 0);
 
   const file = document.getElementById(p === 'm' ? 'mImage' : 'eImage').files[0];
   if (file) fd.append('image', file);
@@ -2763,8 +2968,8 @@ function collectProductForm(p) {
 }
 
 /**
- * Warn when the typed Sort Order is already used by another product in the
- * SAME section. `prefix` is 'm' (add modal) or 'e' (edit modal).
+ * Warn when the typed Sort Order is already used by another product.
+ * `prefix` is 'm' (add modal) or 'e' (edit modal).
  */
 function checkSortOrderConflict(prefix) {
   const input = document.getElementById(prefix + 'SortOrder');
@@ -2772,28 +2977,21 @@ function checkSortOrderConflict(prefix) {
   if (!input || !hint) return;
 
   const raw = input.value.trim();
-  const sectionId = document.getElementById(prefix + 'Section').value;
 
-  if (raw === '' || !sectionId) { hint.style.display = 'none'; hint.textContent = ''; return; }
+  if (raw === '') { hint.style.display = 'none'; hint.textContent = ''; return; }
 
-  const order      = parseInt(raw, 10);
-  const sectionMap = SECTION_SORT_MAP[sectionId] || {};
-  const taken      = sectionMap[order];
-  const excludeId  = (prefix === 'e' && typeof _editTarget !== 'undefined' && _editTarget)
+  const order     = parseInt(raw, 10);
+  const taken     = SORT_MAP[order];
+  const excludeId = (prefix === 'e' && typeof _editTarget !== 'undefined' && _editTarget)
     ? String(_editTarget.dataset.id)
     : null;
 
   if (taken && String(taken.id) !== excludeId) {
-    // A true swap only happens when editing within the SAME section. Adding
-    // a new product, or moving an existing one to a different section, just
-    // bumps whoever is in the way to the end of that section instead.
-    const isSameSectionEdit = prefix === 'e'
-      && typeof _editTarget !== 'undefined' && _editTarget
-      && String(_editTarget.dataset.sectionId || '') === String(sectionId);
-
-    hint.textContent = isSameSectionEdit
-      ? `Taken — "${taken.name}" is currently at position ${order} in this section. Saving will swap the two positions.`
-      : `Taken — "${taken.name}" is currently at position ${order} in this section. Saving will move it to the end of the section to make room.`;
+    // Editing swaps the two positions; adding a new product just bumps
+    // whoever is in the way to the end of the list.
+    hint.textContent = prefix === 'e'
+      ? `Taken — "${taken.name}" is currently at position ${order}. Saving will swap the two positions.`
+      : `Taken — "${taken.name}" is currently at position ${order}. Saving will move it to the end of the list to make room.`;
     hint.style.display = 'block';
   } else {
     hint.style.display = 'none';
@@ -2801,27 +2999,10 @@ function checkSortOrderConflict(prefix) {
   }
 }
 
-/**
- * Section changed: for the Add modal, auto-fill the first open slot in that
- * section (each section has its own ordering, and its own gaps). Either
- * way, re-check whether the currently typed Sort Order now conflicts in the
- * newly picked section.
- */
-function handleSectionChange(prefix) {
-  const sectionId = document.getElementById(prefix + 'Section').value;
-
-  if (prefix === 'm') {
-    document.getElementById('mSortOrder').value = sectionId ? lowestFreeSortOrder(sectionId) : '';
-  }
-
-  checkSortOrderConflict(prefix);
-}
-
-/** Smallest sort order (starting at 1) not already used within a section. */
-function lowestFreeSortOrder(sectionId) {
-  const sectionMap = SECTION_SORT_MAP[sectionId] || {};
+/** Smallest sort order (starting at 1) not already used by any product. */
+function lowestFreeSortOrder() {
   let candidate = 1;
-  while (sectionMap[candidate]) candidate++;
+  while (SORT_MAP[candidate]) candidate++;
   return candidate;
 }
 
@@ -2862,7 +3043,7 @@ async function saveMedicine() {
     resetAddForm();
     /* the grid is re-rendered server-side once the stock step is done */
     _reloadAfterStock = true;
-    openAddStockModal(savedName);
+    openAddStockModal(result.product.id, savedName);
   } catch (err) {
     showToast(err.message);
   } finally {
@@ -2874,8 +3055,8 @@ async function saveMedicine() {
    Picking a Form re-labels (and re-hints) the shared inputs so
    each product type asks for what actually matters to it. The
    input IDs never change, so saving works exactly as before.
-   Each profile: [label, placeholder] per field; `rx` is legacy
-   (the "Requires Prescription" checkbox is always shown).      */
+   Each profile: [label, placeholder] per field. Missing keys use BASE.
+   (The "Requires Prescription" checkbox is always visible.)     */
 const FORM_BASE = {
   name:    ['Product Name',          'e.g. Product name and size'],
   generic: ['Generic Name',          'e.g. Generic / variant name'],
@@ -3053,10 +3234,23 @@ function applyFormProfile(p) {
     input.placeholder = placeholder;
   });
 
-  // "Requires Prescription" is always visible, whatever the Form is.
+  // "Requires Prescription" is always visible, regardless of the selected Form.
   const rxWrap = document.getElementById(p + 'RxWrap');
   if (rxWrap) rxWrap.style.display = '';
 }
+
+/* ── Enable / Disable switch ──────────────────────────── */
+function syncActiveSwitch(p) {
+  const input = document.getElementById(p + 'IsActive');
+  const text  = document.getElementById(p + 'ActiveText');
+  const wrap  = document.getElementById(p + 'ActiveWrap');
+  if (!input || !text || !wrap) return;
+  text.textContent = input.checked ? 'Enabled' : 'Disabled';
+  wrap.classList.toggle('is-off', !input.checked);
+}
+['m', 'e'].forEach(p => {
+  document.getElementById(p + 'IsActive')?.addEventListener('change', () => syncActiveSwitch(p));
+});
 
 /* ── Reset the add-medicine form ─────────────────────── */
 function resetAddForm() {
@@ -3066,13 +3260,15 @@ function resetAddForm() {
     el.style.borderColor = '';
   });
   document.getElementById('mRequiresPrescription').checked = false;
-  ['mForm','mSection'].forEach(id => document.getElementById(id).selectedIndex = 0);
+  document.getElementById('mIsActive').checked = true;   // new products default to Enabled
+  syncActiveSwitch('m');
+  ['mForm'].forEach(id => document.getElementById(id).selectedIndex = 0);
   applyFormProfile('m');
   clearCombo('m', 'brand');
   clearCombo('m', 'category');
 
-  // No section selected yet, so there's no "next free slot" to suggest.
-  document.getElementById('mSortOrder').value = '';
+  // Suggest the first open sort order slot.
+  document.getElementById('mSortOrder').value = lowestFreeSortOrder();
   document.getElementById('mSortOrderHint').style.display = 'none';
 
   const fileInput = document.getElementById('mImage');
@@ -3098,13 +3294,27 @@ function showToast(msg) {
    ══════════════════════════════════════════════════════ */
 let _badgeCard = null;
 
+// Badge type -> default badge name (auto-filled when the type changes)
+const BADGE_TYPE_NAMES = {
+  'most-sold': 'MOST SOLD',
+  'sale-badge': 'SALE',
+};
+
+document.getElementById('badgeType').addEventListener('change', function () {
+  const textEl = document.getElementById('badgeText');
+  textEl.value = BADGE_TYPE_NAMES[this.value] || '';
+  textEl.style.borderColor = '';
+});
+
 function openBadgeModal(pillEl) {
   _badgeCard = pillEl.closest('.med-card');
   const medName = _badgeCard ? _badgeCard.dataset.medicine : '';
   document.getElementById('badgeFormTitle').textContent = medName ? `Add Badge — ${medName}` : 'Add Badge';
 
-  document.getElementById('badgeText').value = _badgeCard?.dataset.badgeText || '';
-  document.getElementById('badgeType').value = _badgeCard?.dataset.badgeType || 'most-sold';
+  const typeVal = _badgeCard?.dataset.badgeType || 'most-sold';
+  document.getElementById('badgeType').value = typeVal;
+  // Keep an existing badge's saved text; otherwise auto-fill from the selected type
+  document.getElementById('badgeText').value = _badgeCard?.dataset.badgeText || BADGE_TYPE_NAMES[typeVal] || '';
   document.getElementById('badgeText').style.borderColor = '';
 
   document.getElementById('badgeModalBg').classList.add('on');
@@ -3177,6 +3387,7 @@ function openEditModal(btn) {
   const height      = card.dataset.height      || '';
   const depth       = card.dataset.depth       || '';
   const requiresRx  = card.dataset.requiresRx  === 'true';
+  const isActive    = card.dataset.isActive !== 'false';
 
   const badge = document.getElementById('editMedIdBadge');
   badge.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ${id}`;
@@ -3194,10 +3405,10 @@ function openEditModal(btn) {
   document.getElementById('eHeight').value       = height;
   document.getElementById('eDepth').value        = depth;
   document.getElementById('eRequiresPrescription').checked = requiresRx;
+  document.getElementById('eIsActive').checked = isActive;
+  syncActiveSwitch('e');
 
   setCombo('e', 'category', cat);
-
-  document.getElementById('eSection').value = card.dataset.sectionId || '';
 
   document.getElementById('eSortOrder').value = card.dataset.sortOrder || '';
   checkSortOrderConflict('e');
@@ -3268,30 +3479,26 @@ async function saveEdit() {
 
 /** Write a product payload from the server back onto its grid card. */
 function applyProductToCard(card, p) {
-  // Clear this product's old slot out of the section map before recording
-  // its new one — it may have moved to a different section or position.
-  const prevSectionId = card.dataset.sectionId;
+  // Clear this product's old slot out of the sort map before recording
+  // its new one — it may have moved to a different position.
   const prevSortOrder = card.dataset.sortOrder;
-  if (prevSectionId && prevSortOrder !== '' && prevSortOrder !== undefined) {
-    const prevMap = SECTION_SORT_MAP[prevSectionId];
-    if (prevMap && prevMap[prevSortOrder] && String(prevMap[prevSortOrder].id) === String(p.id)) {
-      delete prevMap[prevSortOrder];
+  if (prevSortOrder !== '' && prevSortOrder !== undefined) {
+    if (SORT_MAP[prevSortOrder] && String(SORT_MAP[prevSortOrder].id) === String(p.id)) {
+      delete SORT_MAP[prevSortOrder];
     }
   }
 
   card.dataset.id          = p.id;
   card.dataset.medicine    = p.name;
+  card.dataset.codeName    = p.code_name || '';
   card.dataset.genericName = p.generic_name || '';
   card.dataset.form        = p.form || '';
   card.dataset.brandId     = p.brand_id || '';
   card.dataset.brandName   = p.brand_name || '';
   card.dataset.cat         = p.category_id || '';
-  card.dataset.sectionId   = p.section_id || '';
   card.dataset.sortOrder   = p.sort_order ?? '';
-  if (p.sort_order !== undefined && p.sort_order !== null && p.section_id) {
-    const key = String(p.section_id);
-    if (!SECTION_SORT_MAP[key]) SECTION_SORT_MAP[key] = {};
-    SECTION_SORT_MAP[key][p.sort_order] = { id: p.id, name: p.name };
+  if (p.sort_order !== undefined && p.sort_order !== null) {
+    SORT_MAP[p.sort_order] = { id: p.id, name: p.name };
   }
   card.dataset.origin      = p.origin || '';
   card.dataset.price       = p.price;
@@ -3303,6 +3510,8 @@ function applyProductToCard(card, p) {
   card.dataset.height      = p.height || '';
   card.dataset.depth       = p.depth || '';
   card.dataset.requiresRx  = p.requires_prescription ? 'true' : 'false';
+  card.dataset.isActive    = p.is_active ? 'true' : 'false';
+  card.classList.toggle('is-disabled', !p.is_active);
   card.dataset.name        = `${p.name} ${p.form || ''} ${p.category_name} ${p.brand_name}`.toLowerCase();
 
   const titleEl = card.querySelector('.med-title');
@@ -3384,8 +3593,9 @@ async function confirmDelete() {
       showToast(result.message);
       if (!document.querySelector('#medGrid .med-card')) {
         document.getElementById('medGrid').innerHTML =
-          '<div class="manage-empty">No products yet. Click "+ Add Product" to get started.</div>';
+          document.getElementById('emptyProductsTpl').innerHTML;
       }
+      renderPage(_invPage);
     }, 360);
   } catch (err) {
     closeDeleteModal();
@@ -3418,15 +3628,17 @@ async function runCardSearch(q) {
     const ids  = new Set((body.ids || []).map(String));
 
     cards.forEach(card => {
-      card.style.display = ids.has(card.dataset.id) ? '' : 'none';
+      card.classList.toggle('is-filtered', !ids.has(card.dataset.id));
     });
+    renderPage(1);
   } catch (err) {
     // If the search request fails, fall back to the old client-side
     // substring match on name/category/brand rather than hiding everything.
     const val = q.toLowerCase();
     cards.forEach(card => {
-      card.style.display = card.dataset.name.includes(val) ? '' : 'none';
+      card.classList.toggle('is-filtered', !card.dataset.name.includes(val));
     });
+    renderPage(1);
   }
 }
 
@@ -3473,6 +3685,8 @@ async function sortProducts(by) {
     // (shouldn't happen, but just in case) stays put at the end.
     ids.forEach(id => { const card = cards.get(id); if (card) grid.appendChild(card); });
 
+    renderPage(1);
+
     _currentSort = by;
     document.getElementById('sortChipLabel').textContent = SORT_LABELS[by] || 'Sort by';
     document.getElementById('sortChipBtn').classList.add('active');
@@ -3487,41 +3701,40 @@ async function sortProducts(by) {
 /* ══════════════════════════════════════════════════════
    ADD STOCK MODAL
    ══════════════════════════════════════════════════════ */
-let _stockLockedMed = null;
+let _stockLockedId = null;
 /* set by saveMedicine(): reload once the follow-up stock step is dismissed,
    so the freshly created product appears as a server-rendered card. */
 let _reloadAfterStock = false;
 
-function openAddStockModal(lockedMedicineName) {
-  _stockLockedMed = lockedMedicineName || null;
+function openAddStockModal(lockedProductId, lockedProductName) {
+  _stockLockedId = lockedProductId || null;
 
-  /* generate stock number */
-  const stockNo = 'STK-' + (Math.floor(Math.random() * 90000) + 10000);
-  document.getElementById('generatedStockNo').textContent = stockNo;
+  /* the real STK-xxxxx number is assigned by the server when saved */
+  document.getElementById('generatedStockNo').textContent = 'Assigned on save';
 
-  /* populate medicine dropdown from cards in grid */
+  /* populate medicine dropdown from cards in grid (value = product id) */
   const sel = document.getElementById('modalMedicine');
   sel.innerHTML = '<option value="">— Select medicine —</option>';
   document.querySelectorAll('#medGrid .med-card').forEach(card => {
     const medName = card.dataset.medicine || card.querySelector('.med-title')?.textContent || '';
-    if (!medName) return;
+    if (!medName || !card.dataset.id) return;
     const opt = document.createElement('option');
-    opt.value = medName;
+    opt.value = card.dataset.id;
     opt.textContent = medName;
     sel.appendChild(opt);
   });
 
   /* add the newly-saved medicine if not already in grid */
-  if (_stockLockedMed) {
+  if (_stockLockedId) {
     let found = false;
-    for (const opt of sel.options) { if (opt.value === _stockLockedMed) { found = true; break; } }
+    for (const opt of sel.options) { if (opt.value === String(_stockLockedId)) { found = true; break; } }
     if (!found) {
       const opt = document.createElement('option');
-      opt.value = _stockLockedMed;
-      opt.textContent = _stockLockedMed;
+      opt.value = _stockLockedId;
+      opt.textContent = lockedProductName || ('Product #' + _stockLockedId);
       sel.appendChild(opt);
     }
-    sel.value = _stockLockedMed;
+    sel.value = String(_stockLockedId);
     sel.disabled = true;
     sel.title = 'Locked to newly added medicine';
   } else {
@@ -3534,13 +3747,15 @@ function openAddStockModal(lockedMedicineName) {
     document.getElementById(id).value = '';
     document.getElementById(id).style.borderColor = '';
   });
+  const errEl = document.getElementById('modalStockError');
+  errEl.style.display = 'none'; errEl.textContent = '';
 
   document.getElementById('addStockModal').classList.add('on');
 }
 
 function closeAddStockModal() {
   document.getElementById('addStockModal').classList.remove('on');
-  _stockLockedMed = null;
+  _stockLockedId = null;
 
   if (_reloadAfterStock) {
     _reloadAfterStock = false;
@@ -3554,10 +3769,12 @@ document.getElementById('addStockModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeAddStockModal();
 });
 
-document.getElementById('confirmAddStock').addEventListener('click', function () {
+document.getElementById('confirmAddStock').addEventListener('click', async function () {
   const medSel   = document.getElementById('modalMedicine');
   const qtyEl    = document.getElementById('modalQty');
   const expiryEl = document.getElementById('modalExpiry');
+  const errEl    = document.getElementById('modalStockError');
+  const btn      = this;
 
   let valid = true;
 
@@ -3566,7 +3783,7 @@ document.getElementById('confirmAddStock').addEventListener('click', function ()
     valid = false;
   } else { medSel.style.borderColor = ''; }
 
-  if (!qtyEl.value || parseInt(qtyEl.value) < 1) {
+  if (!qtyEl.value || parseInt(qtyEl.value, 10) < 1) {
     qtyEl.style.borderColor = 'var(--red)';
     valid = false;
   } else { qtyEl.style.borderColor = ''; }
@@ -3578,12 +3795,46 @@ document.getElementById('confirmAddStock').addEventListener('click', function ()
 
   if (!valid) return;
 
-  const medName = medSel.value;
-  const qty     = qtyEl.value;
-  const stockNo = document.getElementById('generatedStockNo').textContent;
+  /* same payload the Stocks page sends to StaffStocksController@store */
+  const payload = {
+    product_id:         medSel.value,
+    supplier:           document.getElementById('modalSupplier').value.trim() || null,
+    quantity:           parseInt(qtyEl.value, 10),
+    unit_cost:          document.getElementById('modalCost').value || 0,
+    manufacturing_date: document.getElementById('modalMfgDate').value || null,
+    expiry_date:        expiryEl.value || null,
+    is_active:          true,
+  };
 
-  closeAddStockModal();
-  showToast(`"${medName}" added · ${qty} units logged (${stockNo}).`);
+  errEl.style.display = 'none';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(STOCK_STORE_URL, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': CSRF_TOKEN,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.errors ? Object.values(data.errors)[0][0] : (data.message || 'Could not save the stock.'));
+    }
+
+    closeAddStockModal();   // reloads the page if we came from "add product"
+    showToast(data.message || 'Stock added successfully.');
+  } catch (err) {
+    /* keep the modal open so nothing the user typed is lost */
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 /* ══════════════════════════════════════════════════════
@@ -3604,11 +3855,30 @@ let _catEditId  = null;
 let _catComboTarget = null; // 'm' | 'e' when the form was opened from the typable Category field
 const CATEGORIES_URL = "{{ route('staff.inventory.categories.store') }}";
 
+/* Shared helpers for the search bars in the Categories / Brand list modals */
+function manageSearchTerm(kind) {
+  const input = document.getElementById(kind + 'SearchInput');
+  const term  = (input ? input.value : '').trim().toLowerCase();
+  const wrap  = document.getElementById(kind + 'SearchWrap');
+  if (wrap) wrap.classList.toggle('has-text', !!(input && input.value));
+  return term;
+}
+function clearManageSearch(kind) {
+  const input = document.getElementById(kind + 'SearchInput');
+  if (input) { input.value = ''; input.focus(); }
+  if (kind === 'category') renderCategories(); else renderBrands();
+}
+
 function renderCategories() {
   refreshComboOptions();
   const list = document.getElementById('categoriesList');
   if (!categories.length) { list.innerHTML = '<div class="manage-empty">No categories yet.</div>'; return; }
-  list.innerHTML = categories.map(c => `
+  const term = manageSearchTerm('category');
+  const shown = term
+    ? categories.filter(c => [c.name, c.icon_class, c.status].some(v => String(v ?? '').toLowerCase().includes(term)))
+    : categories;
+  if (!shown.length) { list.innerHTML = '<div class="manage-empty">No categories match your search.</div>'; return; }
+  list.innerHTML = shown.map(c => `
     <div class="manage-list-item">
       <span class="cat-icon-preview" style="background:${c.bg_color};color:${c.icon_color};">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
@@ -3630,7 +3900,11 @@ function renderCategories() {
   `).join('');
 }
 
-function openCategoriesModal() { renderCategories(); document.getElementById('categoriesModalBg').classList.add('on'); }
+function openCategoriesModal() {
+  const si = document.getElementById('categorySearchInput'); if (si) si.value = '';
+  renderCategories();
+  document.getElementById('categoriesModalBg').classList.add('on');
+}
 function closeCategoriesModal() { document.getElementById('categoriesModalBg').classList.remove('on'); }
 document.getElementById('categoriesModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeCategoriesModal(); });
 
@@ -3759,7 +4033,12 @@ function renderBrands() {
   refreshComboOptions();
   const list = document.getElementById('brandsList');
   if (!brands.length) { list.innerHTML = '<div class="manage-empty">No brands yet.</div>'; return; }
-  list.innerHTML = brands.map(b => `
+  const term = manageSearchTerm('brand');
+  const shown = term
+    ? brands.filter(b => [b.name, b.status].some(v => String(v ?? '').toLowerCase().includes(term)))
+    : brands;
+  if (!shown.length) { list.innerHTML = '<div class="manage-empty">No brands match your search.</div>'; return; }
+  list.innerHTML = shown.map(b => `
     <div class="manage-list-item">
       <span class="brand-thumb" style="background:${b.featured_color}22;">
         ${b.ticker_image
@@ -3786,7 +4065,11 @@ function renderBrands() {
   `).join('');
 }
 
-function openBrandsModal() { renderBrands(); document.getElementById('brandsModalBg').classList.add('on'); }
+function openBrandsModal() {
+  const si = document.getElementById('brandSearchInput'); if (si) si.value = '';
+  renderBrands();
+  document.getElementById('brandsModalBg').classList.add('on');
+}
 function closeBrandsModal() { document.getElementById('brandsModalBg').classList.remove('on'); }
 document.getElementById('brandsModalBg').addEventListener('click', e => { if (e.target === e.currentTarget) closeBrandsModal(); });
 
@@ -4009,6 +4292,70 @@ function refreshComboOptions() {
 }
 </script>
 <script>
+/* ══════════════════════════════════════════════════════
+   PAGINATION — 100 products per table, then the next 100
+   Works on the already-rendered cards, so search, sort,
+   edit and delete keep working across all pages.
+   ══════════════════════════════════════════════════════ */
+const INV_PAGE_SIZE = 100;
+let _invPage = 1;
+
+function invVisibleCards() {
+  return Array.from(document.querySelectorAll('#medGrid .med-card:not(.is-filtered)'));
+}
+
+function renderPage(page) {
+  const all   = Array.from(document.querySelectorAll('#medGrid .med-card'));
+  const shown = all.filter(c => !c.classList.contains('is-filtered'));
+  const pages = Math.max(1, Math.ceil(shown.length / INV_PAGE_SIZE));
+  _invPage = Math.min(Math.max(1, page || 1), pages);
+
+  const start = (_invPage - 1) * INV_PAGE_SIZE;
+  const end   = start + INV_PAGE_SIZE;
+  shown.forEach((c, i) => c.classList.toggle('is-paged-out', i < start || i >= end));
+  all.filter(c => c.classList.contains('is-filtered')).forEach(c => c.classList.remove('is-paged-out'));
+
+  const pager = document.getElementById('invPager');
+  if (!pager) return;
+  if (shown.length <= INV_PAGE_SIZE) { pager.hidden = true; return; }
+  pager.hidden = false;
+
+  document.getElementById('invPagerInfo').textContent =
+    `Showing ${start + 1}–${Math.min(end, shown.length)} of ${shown.length} products`;
+
+  // Sliding window of at most 5 page numbers (no "…").
+  // Pages 1–5 show first; clicking page 5 slides to 2–6 (page 1 drops off),
+  // clicking page 4 slides back to 1–5 (page 6 drops off), and so on.
+  const WINDOW = 5;
+  const first  = Math.max(1, Math.min(_invPage - 3, pages - WINDOW + 1));
+  const last   = Math.min(pages, first + WINDOW - 1);
+  const nums = [];
+  for (let p = first; p <= last; p++) nums.push(p);
+
+  document.getElementById('invPagerBtns').innerHTML =
+    `<button type="button" class="inv-pg-btn" ${_invPage === 1 ? 'disabled' : ''} onclick="goToPage(${_invPage - 1})">&lsaquo; Prev</button>` +
+    nums.map(n =>
+      `<button type="button" class="inv-pg-btn ${n === _invPage ? 'active' : ''}" onclick="goToPage(${n})">${n}</button>`).join('') +
+    `<button type="button" class="inv-pg-btn" ${_invPage === pages ? 'disabled' : ''} onclick="goToPage(${_invPage + 1})">Next &rsaquo;</button>`;
+}
+
+function goToPage(page) {
+  renderPage(page);
+  document.getElementById('medGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/** Make sure the page holding this card is the one on screen (deep links, header search). */
+function showCardPage(card) {
+  if (card.classList.contains('is-filtered')) {
+    card.classList.remove('is-filtered');
+  }
+  const idx = invVisibleCards().indexOf(card);
+  if (idx >= 0) renderPage(Math.floor(idx / INV_PAGE_SIZE) + 1);
+}
+
+renderPage(1);
+</script>
+<script>
 /* ── Deep link from the header search: /staff/inventory?open={id} opens that product's details modal ── */
 (function () {
   const params = new URLSearchParams(window.location.search);
@@ -4025,6 +4372,7 @@ function refreshComboOptions() {
     if (typeof showToast === 'function') showToast('That product could not be found.');
     return;
   }
+  showCardPage(card);
   card.scrollIntoView({ block: 'center' });
   openViewModal(card);
 })();
@@ -4168,6 +4516,7 @@ function refreshComboOptions() {
 
     e.preventDefault();
     panel.hidden = true;
+    showCardPage(card);
     card.scrollIntoView({ block: 'center' });
     openViewModal(card);
   });

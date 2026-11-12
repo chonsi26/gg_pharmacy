@@ -16,7 +16,8 @@ use Illuminate\View\View;
 /**
  * Staff-side stocks screen. Mirrors AdminStocksController function-for-function
  * (same rules, same JSON shapes, same filters) — only the guard (auth:staff),
- * the view, and the redirect targets (staff.stocks) differ.
+ * the view, and the redirect targets (staff.stocks) differ. The one admin-only
+ * action left out is reset() (wiping the whole stocks table).
  */
 class StaffStocksController extends Controller
 {
@@ -121,9 +122,11 @@ class StaffStocksController extends Controller
     // ── Quick-activate (from the Products modal) ────────────────────────────
 
     /**
-     * Immediately make $stock the active batch for its product. Any other
-     * active batch for the same product is deactivated first so a product
-     * never ends up with two ongoing active batches.
+     * Immediately make $stock the active batch for its product. Used by the
+     * "Products" modal: when a product is Out of Stock, picking one of its
+     * available (inactive, unexpired, in-quantity) batches activates it on
+     * the spot. Any other active batch for the same product is deactivated
+     * first so a product never ends up with two ongoing active batches.
      */
     public function activate(Request $request, Stock $stock): JsonResponse|RedirectResponse
     {
@@ -292,6 +295,10 @@ class StaffStocksController extends Controller
             'stock_no'           => $stock->stockNo(),
             'product_id'         => $stock->product_id,
             'medicine'           => $stock->product->name ?? '—',
+            'product_image'      => $this->productImageUrl($stock->product->image ?? null),
+            'generic_name'       => $stock->product->generic_name ?? null,
+            'form'               => $stock->product->form ?? null,
+            'code_name'          => $stock->product->code_name ?? null,
             'supplier'           => $stock->supplier,
             'quantity'           => $stock->quantity,
             'unit_cost'          => (float) $stock->unit_cost,

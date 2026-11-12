@@ -482,6 +482,24 @@ class AdminOrdersController extends Controller
         return $this->ok("Order {$order->order_number} deleted.");
     }
 
+    /**
+     * Reset: permanently delete every row in `order_items` and `orders`
+     * (including soft-deleted orders). Only database rows are removed —
+     * uploaded files (payment proofs, prescriptions, refund proofs) stay
+     * on disk. Order items go first, then the orders, in one transaction.
+     */
+    public function reset(): JsonResponse
+    {
+        [$orders, $items] = DB::transaction(function () {
+            $items  = OrderItem::query()->delete();
+            $orders = Order::withTrashed()->forceDelete(); // bypass SoftDeletes: real DELETE
+
+            return [$orders, $items];
+        });
+
+        return $this->ok("Orders reset — {$orders} order(s) and {$items} order item(s) deleted.");
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  Helpers
     // ─────────────────────────────────────────────────────────────────────

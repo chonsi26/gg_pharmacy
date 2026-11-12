@@ -10,12 +10,16 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* NOTE: colors swapped — --red now holds green, --green now holds red */
-  --red:        #2D7A2D;
-  --red-h:      #236123;
-  --red-light:  #e0f0e0;
-  --green:      #CC1F1F;
-  --green-light:#f5e0e0;
+  /* Staff theme: the brand accent is green. Semantic colours keep their meaning:
+     --red = danger / cancelled / down, --green = success / completed / up. */
+  --accent:       #2D7A2D;
+  --accent-h:     #236123;
+  --accent-light: #e0f0e0;
+  --red:        #CC1F1F;
+  --red-h:      #b51a1a;
+  --red-light:  #f5e0e0;
+  --green:      #2D7A2D;
+  --green-light:#e0f0e0;
   --orange:     #e07b00;
   --orange-light:#fef3e2;
   --blue:       #1877f2;
@@ -50,8 +54,9 @@
   --subtle:     #6a6b6c;
   --input-bg:   #3a3b3c;
   --focus:      rgba(45,122,45,0.18);
-  --red-light:  rgba(45,122,45,0.15);
-  --green-light:rgba(204,31,31,0.15);
+  --accent-light: rgba(45,122,45,0.15);
+  --red-light:  rgba(204,31,31,0.15);
+  --green-light:rgba(45,122,45,0.15);
   --orange-light:rgba(224,123,0,0.15);
   --blue-light: rgba(24,119,242,0.15);
   --shadow-sm:  0 1px 3px rgba(0,0,0,.3);
@@ -92,7 +97,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .sidebar-logo-icon {
   width: 36px; height: 36px;
-  background: var(--red);
+  background: var(--accent);
   border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -135,11 +140,11 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   user-select: none;
 }
 .nav-item:hover { background: var(--bg); color: var(--text); }
-.nav-item.active { background: var(--red-light); color: var(--red); font-weight: 600; }
+.nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
 .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
 .nav-badge {
   margin-left: auto;
-  background: var(--red);
+  background: var(--accent);
   color: #fff;
   font-size: 10px; font-weight: 700;
   border-radius: 10px;
@@ -166,7 +171,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .user-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
-  background: var(--red);
+  background: var(--accent);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700;
@@ -228,7 +233,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   height: 36px;
   transition: border-color .2s;
 }
-.header-search:focus-within { border-color: var(--red); }
+.header-search:focus-within { border-color: var(--accent); }
 .header-search svg { width: 14px; height: 14px; color: var(--subtle); flex-shrink: 0; }
 .header-search input {
   border: none; background: none; outline: none;
@@ -253,7 +258,7 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px; color: var(--text); text-decoration: none; cursor: pointer;
 }
-.sp-item:hover, .sp-item.active { background: var(--red-light); }
+.sp-item:hover, .sp-item.active { background: var(--accent-light); }
 .sp-thumb, .sp-avatar {
   width: 34px; height: 34px; flex-shrink: 0; overflow: hidden;
   display: flex; align-items: center; justify-content: center;
@@ -271,13 +276,13 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .sp-text { min-width: 0; flex: 1; }
 .sp-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sp-meta { font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.search-panel mark { background: transparent; color: var(--red); font-weight: 700; }
+.search-panel mark { background: transparent; color: var(--accent); font-weight: 700; }
 .sp-foot {
   display: block; padding: 11px 14px; margin-top: 6px;
   border-top: 1px solid var(--border);
-  font-size: 12.5px; font-weight: 600; color: var(--red); text-decoration: none;
+  font-size: 12.5px; font-weight: 600; color: var(--accent); text-decoration: none;
 }
-.sp-foot:hover { background: var(--red-light); }
+.sp-foot:hover { background: var(--accent-light); }
 .sp-state { padding: 18px 14px; font-size: 13px; color: var(--muted); text-align: center; }
 
 
@@ -293,13 +298,13 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   transition: border-color .2s, color .2s, background .2s;
   position: relative;
 }
-.icon-btn:hover { border-color: var(--red); color: var(--text); }
+.icon-btn:hover { border-color: var(--accent); color: var(--text); }
 .icon-btn svg { width: 16px; height: 16px; }
 .icon-btn .dot {
   position: absolute;
   top: 6px; right: 6px;
   width: 7px; height: 7px;
-  background: var(--red);
+  background: var(--accent);
   border-radius: 50%;
   border: 1.5px solid var(--surface);
 }
@@ -314,9 +319,9 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 }
 .notif-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 16px; border-bottom: 1px solid var(--border, #e5e7eb); }
 .notif-head-title { font-size: 13px; font-weight: 700; color: var(--text, #111); }
-.notif-pill { font-size: 11px; font-weight: 600; color: var(--red); background: var(--red-light); padding: 2px 8px; border-radius: 20px; }
+.notif-pill { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-light); padding: 2px 8px; border-radius: 20px; }
 .notif-link-btn { background: none; border: none; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 600; color: var(--muted, #666); padding: 0; }
-.notif-link-btn:hover { color: var(--red); }
+.notif-link-btn:hover { color: var(--accent); }
 .notif-list { max-height: 400px; overflow-y: auto; }
 .notif-section { padding: 7px 16px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted, #666); background: var(--surface2, #f7f8fa); border-bottom: 1px solid var(--border, #e5e7eb); }
 .notif-section.important { color: #CC1F1F; }
@@ -327,12 +332,12 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
 .notif-ico { width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
 .notif-body { flex: 1; min-width: 0; }
 .notif-title { font-size: 12.5px; font-weight: 600; color: var(--text, #111); display: flex; align-items: center; gap: 6px; }
-.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.notif-unread { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 .notif-msg { font-size: 11.5px; color: var(--muted, #666); margin-top: 2px; line-height: 1.4; }
 .notif-time { font-size: 10.5px; color: var(--subtle, #999); margin-top: 4px; }
 .notif-empty { padding: 28px 16px; text-align: center; font-size: 12.5px; color: var(--muted, #666); }
 .notif-foot { padding: 10px 16px; text-align: center; border-top: 1px solid var(--border, #e5e7eb); }
-.notif-more { display: block; width: 100%; padding: 11px 16px; background: none; border: none; border-top: 1px solid var(--border, #e5e7eb); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--red); }
+.notif-more { display: block; width: 100%; padding: 11px 16px; background: none; border: none; border-top: 1px solid var(--border, #e5e7eb); cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; color: var(--accent); }
 .notif-more:hover { background: var(--hover, rgba(0,0,0,.03)); }
 
 /* ── MAIN CONTENT ── */
@@ -369,7 +374,7 @@ a.stat-card-link {
   cursor: pointer;
 }
 a.stat-card-link:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-a.stat-card-link:focus-visible { outline: 2px solid var(--red, #2D7A2D); outline-offset: 2px; }
+a.stat-card-link:focus-visible { outline: 2px solid var(--accent, #2D7A2D); outline-offset: 2px; }
 
 .stat-top {
   display: flex;
@@ -383,7 +388,7 @@ a.stat-card-link:focus-visible { outline: 2px solid var(--red, #2D7A2D); outline
   display: flex; align-items: center; justify-content: center;
 }
 .stat-icon svg { width: 20px; height: 20px; }
-.stat-icon.red   { background: var(--red-light);    color: var(--red); }
+.stat-icon.red   { background: var(--accent-light);    color: var(--accent); }
 .stat-icon.green { background: var(--green-light);  color: var(--green); }
 .stat-icon.orange{ background: var(--orange-light); color: var(--orange); }
 .stat-icon.blue  { background: var(--blue-light);   color: var(--blue); }
@@ -452,12 +457,12 @@ a.stat-card-link:focus-visible { outline: 2px solid var(--red, #2D7A2D); outline
   color: var(--muted);
   transition: border-color .2s, color .2s, background .2s;
 }
-.btn-sm:hover { border-color: var(--red); color: var(--red); }
-.btn-sm.range-btn.active { border-color: var(--red); color: var(--red); }
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm.range-btn.active { border-color: var(--accent); color: var(--accent); }
 .btn-sm.primary {
-  background: var(--red); border-color: var(--red); color: #fff;
+  background: var(--accent); border-color: var(--accent); color: #fff;
 }
-.btn-sm.primary:hover { background: var(--red-h); border-color: var(--red-h); }
+.btn-sm.primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
 
 /* ── TABLE ── */
 .table-wrap { overflow-x: auto; }
@@ -573,7 +578,7 @@ tbody tr:last-child td { border-bottom: none; }
   border-radius: 4px 4px 0 0;
   cursor: pointer;
   transition: opacity .2s;
-  background: var(--red);
+  background: var(--accent);
   opacity: 0.7;
   position: relative;
 }
@@ -587,7 +592,7 @@ tbody tr:last-child td { border-bottom: none; }
   font-weight: 500;
   white-space: nowrap;
 }
-.chart-bar-col.today .chart-bar-label { color: var(--red); font-weight: 700; }
+.chart-bar-col.today .chart-bar-label { color: var(--accent); font-weight: 700; }
 .chart-legend {
   display: flex;
   gap: 16px;
@@ -644,7 +649,7 @@ tbody tr:last-child td { border-bottom: none; }
   transition: border-color .2s, color .2s, box-shadow .2s, background .2s;
   box-shadow: var(--shadow-sm);
 }
-.quick-btn:hover { border-color: var(--red); color: var(--red); box-shadow: var(--shadow-md); }
+.quick-btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: var(--shadow-md); }
 .quick-icon {
   width: 38px; height: 38px;
   border-radius: 9px;
@@ -735,7 +740,7 @@ tbody tr:last-child td { border-bottom: none; }
   outline: none;
   transition: border-color .2s, background .3s;
 }
-.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--red); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
 .field textarea { height: 70px; padding: 10px 12px; resize: none; }
 .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .modal-foot {
@@ -754,11 +759,11 @@ tbody tr:last-child td { border-bottom: none; }
   background: none; color: var(--muted);
   transition: all .2s;
 }
-.btn:hover { border-color: var(--red); color: var(--red); }
+.btn:hover { border-color: var(--accent); color: var(--accent); }
 .btn.primary {
-  background: var(--red); border-color: var(--red); color: #fff;
+  background: var(--accent); border-color: var(--accent); color: #fff;
 }
-.btn.primary:hover { background: var(--red-h); border-color: var(--red-h); }
+.btn.primary:hover { background: var(--accent-h); border-color: var(--accent-h); }
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
 
@@ -776,7 +781,33 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+
+  /* Header: keep every tool visible on mobile */
+  .header { gap: 8px; padding: 0 12px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { flex-shrink: 0; gap: 6px; }
+
+  /* Compact search, sits right beside the notifications button (matches inventory page) */
+  .header > .header-title { flex: 0 1 auto; min-width: 0; }
+  .header > .header-search {
+    display: flex;
+    margin-left: auto;
+    flex: 0 1 150px;
+    min-width: 0;
+    width: 150px;
+    max-width: 150px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+
+  /* Suggestions span the screen width instead of the narrow search box */
+  .header .search-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 8px; right: 8px;
+    width: auto; max-width: none;
+  }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -816,7 +847,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('staff.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('staff.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -834,31 +865,28 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('staff.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
-
-      <a class="nav-item" href="{{ route('staff.settings') }}">
+  <a class="nav-item" href="{{ route('staff.settings') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Settings
   </a>
 
   <a href = "{{ route('staff.profile') }}" style = "text-decoration: none;">
   <div class="sidebar-bottom">
-      <button type="submit" class="user-chip" style="width:100%;border:none;cursor:pointer;font:inherit;text-align:left;background:transparent;">
-        <div class="user-avatar">
-          @if($staff->profile_picture)
-            <img src="{{ asset($staff->profile_picture) }}" alt="{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}" />
-          @else
-            {{ strtoupper(substr($staff->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr($staff->last_name ?? 'T', 0, 1)) }}
-          @endif
-        </div>
-        <div class="user-info">
-          <div class="user-name">{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}</div>
-          <div class="user-role">Pharmacy Staff</div>
-        </div>
-      </button>
+    <div class="user-chip">
+      @if($staff->profile_picture)
+        <img id="sidebarAvatarImg" src="{{ asset($staff->profile_picture) }}" alt="{{ $staff->first_name }} {{ $staff->last_name }}" class="user-avatar" style="object-fit:cover;">
+      @else
+        <div id="sidebarAvatarImg" class="user-avatar">{{ strtoupper(substr($staff->first_name ?? 'S', 0, 1)) }}{{ strtoupper(substr($staff->last_name ?? 'T', 0, 1)) }}</div>
+      @endif
+      <div class="user-info">
+        <div class="user-name">{{ $staff->first_name ?? 'Staff' }} {{ $staff->last_name ?? 'User' }}</div>
+        <div class="user-role">Pharmacy Staff</div>
+      </div>
+    </div>
   </div>
-</a>
+  </a>
 
 </aside>
 
@@ -893,7 +921,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
         <div class="notif-foot">
-          <button type="button" class="notif-link-btn" id="notifMore" style="color:var(--red);font-size:12px;">View all notifications</button>
+          <button type="button" class="notif-link-btn" id="notifMore" style="color:var(--accent);font-size:12px;">View all notifications</button>
         </div>
       </div>
     </div>
@@ -943,8 +971,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="stat-value">{{ number_format($expiringStocks) }}</div>
     <div class="stat-label">Expiring Stocks</div>
   </a>
-
-
 </div>
 
 <div class="content-grid">
@@ -1015,9 +1041,9 @@ tbody tr:last-child td { border-bottom: none; }
       <div style="position:relative;width:170px;height:170px;flex-shrink:0;">
         <svg id="orderDonut" viewBox="0 0 170 170" style="width:170px;height:170px;display:block;transform:rotate(-90deg);">
           <circle id="donutBg"       cx="85" cy="85" r="64" fill="none" stroke="var(--border)" stroke-width="22"/>
-          <circle id="donutCompleted" cx="85" cy="85" r="64" fill="none" stroke="#CC1F1F" stroke-width="22" stroke-linecap="butt"/>
+          <circle id="donutCompleted" cx="85" cy="85" r="64" fill="none" stroke="#2D7A2D" stroke-width="22" stroke-linecap="butt"/>
           <circle id="donutPending"   cx="85" cy="85" r="64" fill="none" stroke="#e07b00" stroke-width="22" stroke-linecap="butt"/>
-          <circle id="donutCancelled" cx="85" cy="85" r="64" fill="none" stroke="#2D7A2D" stroke-width="22" stroke-linecap="butt"/>
+          <circle id="donutCancelled" cx="85" cy="85" r="64" fill="none" stroke="#CC1F1F" stroke-width="22" stroke-linecap="butt"/>
         </svg>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
           <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1;" id="donutTotal">0</div>
@@ -1028,7 +1054,7 @@ tbody tr:last-child td { border-bottom: none; }
       <div style="display:flex;flex-direction:column;gap:8px;width:100%;margin-top:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#CC1F1F;flex-shrink:0;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#2D7A2D;flex-shrink:0;"></div>
             <span style="font-size:12px;color:var(--muted);font-weight:500;">Completed</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
@@ -1048,7 +1074,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#2D7A2D;flex-shrink:0;"></div>
+            <div style="width:10px;height:10px;border-radius:50%;background:#CC1F1F;flex-shrink:0;"></div>
             <span style="font-size:12px;color:var(--muted);font-weight:500;">Cancelled</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">

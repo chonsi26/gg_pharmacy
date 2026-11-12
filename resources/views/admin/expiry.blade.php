@@ -756,7 +756,14 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Mobile header: title + compact search + notification/theme buttons, all visible */
+  .header { padding: 0 12px; gap: 8px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header > .header-search { flex: 0 1 130px; min-width: 0; height: 34px; padding: 0 9px; gap: 6px; }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header-actions { gap: 6px; flex-shrink: 0; }
+  /* suggestions panel: span the screen width instead of hanging off the small search box */
+  .header > .header-search .search-panel { position: fixed; top: calc(var(--header-h) + 6px); left: 12px; right: 12px; width: auto; max-width: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -916,13 +923,202 @@ tbody tr:last-child td { border-bottom: none; }
   .expiry-summary { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .exp-stat { padding: 13px 14px; }
   .exp-stat-value { font-size: 22px; }
-  .card-head { flex-direction: column; align-items: stretch; }
-  .card-head-right { width: 100%; }
-  .card-head-right .header-search { flex: 1; min-width: 0; }
-  .card-head-right .header-search input { width: 100% !important; }
+  /* Row 1: "Batches" title + long search bar beside it. Row 2: filter chips. */
+  .card-head { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .card-head-right { display: contents; }
+  .card-head h3 { order: 0; }
+  .card-head-right .header-search { order: 1; flex: 1 1 0; min-width: 0; width: auto; }
+  .card-head-right .header-search input { width: 100% !important; min-width: 0; }
+  .card-head::after { content: ""; order: 2; flex-basis: 100%; height: 0; margin-top: -10px; }
+  .card-head-right .exp-filter-chip { order: 3; }
 }
 @media (max-width: 380px) {
   .expiry-summary { grid-template-columns: 1fr; }
+}
+
+/* ── Pagination (100 per page) ── */
+.exp-pager {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px;
+  padding: 14px 4px 0;
+}
+.exp-pager[hidden] { display: none; }
+.exp-pager-info { font-size: 12.5px; color: var(--muted, #888); font-weight: 500; }
+.exp-pager-btns { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.exp-page-btn {
+  min-width: 34px; height: 34px; padding: 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border, #e8eaf0);
+  background: transparent;
+  color: var(--muted, #666);
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.exp-page-btn:hover:not(:disabled):not(.active) { background: var(--hover, #f5f6fa); color: var(--text); }
+.exp-page-btn.active { background: var(--red); border-color: var(--red); color: #fff; cursor: default; }
+.exp-page-btn:disabled { opacity: .4; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .exp-pager { flex-direction: column; align-items: stretch; text-align: center; }
+  .exp-pager-btns { justify-content: center; }
+}
+
+/* ── Clickable rows ── */
+.expiry-table tbody tr.expiry-item { cursor: pointer; }
+.expiry-table tbody tr.expiry-item:focus-visible { outline: 2px solid var(--red); outline-offset: -2px; }
+
+/* ══════════════════════════════════════════════════════════
+   STOCK DETAIL MODAL + FULL IMAGE LIGHTBOX
+   ══════════════════════════════════════════════════════════ */
+body.xm-lock { overflow: hidden; }
+
+.xm-bg {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 150;
+  align-items: center; justify-content: center;
+  padding: 24px;
+}
+.xm-bg.on { display: flex; }
+
+.xm {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.25);
+  width: 100%; max-width: 560px;
+  max-height: calc(100vh - 48px);
+  display: flex; flex-direction: column;
+  animation: fadeUp .25s ease both;
+}
+.xm-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.xm-head h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+.xm-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); padding: 4px; border-radius: 6px;
+  display: flex; transition: color .15s, background .15s;
+}
+.xm-close:hover { color: var(--text); background: var(--bg); }
+.xm-body { padding: 20px; overflow-y: auto; }
+.xm-foot {
+  display: flex; justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Product header */
+.xm-top { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
+.xm-photo {
+  position: relative;
+  width: 112px; height: 112px; flex-shrink: 0;
+  padding: 0;
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: zoom-in;
+}
+.xm-photo:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+.xm-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.xm-photo-zoom {
+  position: absolute; right: 6px; bottom: 6px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,.6); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.xm-photo.empty { cursor: default; }
+.xm-photo.empty .exp-main-icon { width: 40px; height: 40px; }
+.xm-wrap.danger  .xm-photo.empty .exp-main-icon { color: #ef4444; }
+.xm-wrap.warning .xm-photo.empty .exp-main-icon { color: #f97316; }
+.xm-wrap.ok      .xm-photo.empty .exp-main-icon { color: #22c55e; }
+
+.xm-title { min-width: 0; flex: 1; }
+.xm-name { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.25; word-break: break-word; }
+.xm-batch { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.xm-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.xm-hint { font-size: 11px; color: var(--subtle); margin-top: 8px; }
+
+/* Clickable links inside the modal (product → Inventory, batch → Stocks) */
+.xm-link { color: inherit; text-decoration: none; cursor: pointer; transition: color .15s; }
+.xm-link:hover, .xm-link:focus-visible { color: var(--red); outline: none; }
+.xm-batch .xm-link { color: var(--muted); }
+.xm-batch .xm-link:hover { color: var(--red); }
+
+/* Expiry tracking card */
+.xm-track {
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+.xm-track-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.xm-track-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--subtle); margin-bottom: 4px; }
+.xm-count { font-size: 26px; font-weight: 800; line-height: 1; }
+.xm-count small { font-size: 13px; font-weight: 600; margin-left: 4px; }
+.xm-wrap.danger  .xm-count { color: #ef4444; }
+.xm-wrap.warning .xm-count { color: #f97316; }
+.xm-wrap.ok      .xm-count { color: #22c55e; }
+.xm-expdate { text-align: right; font-size: 13px; font-weight: 700; color: var(--text); }
+.xm-expdate span { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--subtle); margin-bottom: 4px; }
+
+.xm-bar { height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.xm-bar-fill { height: 100%; width: 0; border-radius: 99px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+.xm-wrap.danger  .xm-bar-fill { background: linear-gradient(90deg,#fca5a5,#ef4444); }
+.xm-wrap.warning .xm-bar-fill { background: linear-gradient(90deg,#fed7aa,#f97316); }
+.xm-wrap.ok      .xm-bar-fill { background: linear-gradient(90deg,#bbf7d0,#22c55e); }
+.xm-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.45; }
+
+/* Info grid */
+.xm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.xm-cell { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.xm-k { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--subtle); margin-bottom: 4px; }
+.xm-v { font-size: 14px; font-weight: 600; color: var(--text); word-break: break-word; }
+
+/* Full image lightbox */
+.xm-lightbox {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.88);
+  z-index: 300;
+  align-items: center; justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.xm-lightbox.on { display: flex; }
+.xm-lightbox img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 50px rgba(0,0,0,.5);
+  cursor: default;
+}
+.xm-lightbox-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; cursor: pointer;
+  background: rgba(255,255,255,.15); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.xm-lightbox-close:hover { background: rgba(255,255,255,.3); }
+
+@media (max-width: 480px) {
+  .xm-bg { padding: 12px; }
+  .xm-photo { width: 88px; height: 88px; }
+  .xm-name { font-size: 16px; }
+}
+@media (max-width: 360px) {
+  .xm-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -950,7 +1146,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -972,7 +1168,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item active" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
   <a class="nav-item" href="{{ route('admin.pharmacy') }}">
@@ -1065,7 +1261,7 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div>
         <div class="exp-stat-value" id="statCritical">0</div>
-        <div class="exp-stat-label">Critical</div>
+        <div class="exp-stat-label">Expired</div>
       </div>
     </div>
     <div class="exp-stat">
@@ -1076,7 +1272,7 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div>
         <div class="exp-stat-value" id="statWarning">0</div>
-        <div class="exp-stat-label">Expiring Soon</div>
+        <div class="exp-stat-label" title="Stocks expiring within the next 10 days">Expiring <span style="font-weight:400;">(≤ 10 days)</span></div>
       </div>
     </div>
     <div class="exp-stat">
@@ -1098,8 +1294,8 @@ tbody tr:last-child td { border-bottom: none; }
       <h3>Batches</h3>
       <div class="card-head-right">
         <button class="exp-filter-chip active" data-filter="all" onclick="setFilter('all', this)">All</button>
-        <button class="exp-filter-chip" data-filter="danger" onclick="setFilter('danger', this)"><span class="dot" style="background:#ef4444;"></span>Critical</button>
-        <button class="exp-filter-chip" data-filter="warning" onclick="setFilter('warning', this)"><span class="dot" style="background:#f97316;"></span>Soon</button>
+        <button class="exp-filter-chip" data-filter="danger" onclick="setFilter('danger', this)"><span class="dot" style="background:#ef4444;"></span>Expired</button>
+        <button class="exp-filter-chip" data-filter="warning" title="Stocks expiring within the next 10 days" onclick="setFilter('warning', this)"><span class="dot" style="background:#f97316;"></span>Expiring</button>
         <button class="exp-filter-chip" data-filter="ok" onclick="setFilter('ok', this)"><span class="dot" style="background:#22c55e;"></span>Safe</button>
         <div class="header-search" style="height:32px;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;color:var(--subtle);"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1125,10 +1321,35 @@ tbody tr:last-child td { border-bottom: none; }
           <tbody id="expiryGrid"></tbody>
         </table>
       </div>
+      <div class="exp-pager" id="expiryPager" hidden></div>
     </div>
   </div>
 
 </main>
+
+<!-- Stock detail modal (opens when a batch row is clicked) -->
+<div class="xm-bg" id="expModal" aria-hidden="true">
+  <div class="xm" role="dialog" aria-modal="true" aria-labelledby="expModalTitle">
+    <div class="xm-head">
+      <h3 id="expModalTitle">Stock Details</h3>
+      <button type="button" class="xm-close" id="expModalClose" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="xm-body" id="expModalBody"></div>
+    <div class="xm-foot">
+      <button type="button" class="btn" id="expModalDone">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Full product image -->
+<div class="xm-lightbox" id="imgLightbox" aria-hidden="true">
+  <button type="button" class="xm-lightbox-close" id="imgLightboxClose" aria-label="Close image">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <img id="imgLightboxImg" alt="">
+</div>
 
 <script>
 // ── Theme ──────────────────────────────────────────────
@@ -1341,6 +1562,10 @@ function handleImgError(imgEl) {
 let activeFilter = 'all';
 let activeSearch = '';
 
+// Paging: the table shows at most PAGE_SIZE batches at a time.
+const PAGE_SIZE = 100;
+let currentPage = 1;
+
 function countdownLabel(days, level) {
   if (days < 0) {
     return { num: Math.abs(days), unit: 'days overdue' };
@@ -1357,9 +1582,15 @@ const grid = document.getElementById('expiryGrid');
 function render() {
   grid.innerHTML = '';
 
-  // Keep the nearest-to-expiry batches first (backend already sorts this
-  // way, but re-sort defensively so filtering/searching never disturbs it).
-  const sorted = [...items].sort((a, b) => a.days_left - b.days_left);
+  // Batches with stock come first, nearest-to-expiry first. Batches with
+  // 0 units are pushed to the bottom of the table (still ordered by expiry
+  // among themselves). Re-sorted here so filtering/searching never disturbs it.
+  const sorted = [...items].sort((a, b) => {
+    const aEmpty = Number(a.qty) <= 0 ? 1 : 0;
+    const bEmpty = Number(b.qty) <= 0 ? 1 : 0;
+    if (aEmpty !== bEmpty) return aEmpty - bEmpty;
+    return a.days_left - b.days_left;
+  });
 
   const filtered = sorted.filter(item => {
     const matchesFilter = activeFilter === 'all' || item.level === activeFilter;
@@ -1371,10 +1602,18 @@ function render() {
 
   if (filtered.length === 0) {
     grid.innerHTML = `<tr><td colspan="7" class="exp-empty">No batches match your filters.</td></tr>`;
+    renderPager(0, 0);
     return;
   }
 
-  filtered.forEach((item) => {
+  // Clamp the page (e.g. after a filter/search shrinks the result set), then slice it.
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
+
+  pageItems.forEach((item) => {
     const days    = item.days_left;
     const fillPct = Math.min(100, Math.max(4, Math.round((Math.max(days, 0) / item.max_days) * 100)));
     const { num, unit } = countdownLabel(days, item.level);
@@ -1393,6 +1632,9 @@ function render() {
 
     const el = document.createElement('tr');
     el.className = `expiry-item ${item.level}`;
+    el.dataset.idx = items.indexOf(item);   // lets the click handler find the batch
+    el.tabIndex = 0;
+    el.title = 'Click to view stock details';
     el.innerHTML = `
       <td>
         <div class="exp-product-cell">
@@ -1422,6 +1664,8 @@ function render() {
     grid.appendChild(el);
   });
 
+  renderPager(filtered.length, totalPages);
+
   // Animate progress fills in after paint
   requestAnimationFrame(() => {
     setTimeout(() => {
@@ -1432,8 +1676,49 @@ function render() {
   });
 }
 
+// Builds the pager: "Showing 1–100 of 250" + Prev / up to 5 page numbers / Next
+function renderPager(total, totalPages) {
+  const pager = document.getElementById('expiryPager');
+  if (!total || totalPages <= 1) {
+    pager.hidden = true;
+    pager.innerHTML = '';
+    return;
+  }
+
+  const from = (currentPage - 1) * PAGE_SIZE + 1;
+  const to   = Math.min(currentPage * PAGE_SIZE, total);
+
+  let btns = `<button type="button" class="exp-page-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹ Prev</button>`;
+  // Show at most 5 page numbers. The window slides so the current page sits in
+  // the 4th slot when possible: 1-5 → click 5 → 2-6 (1 drops off) → click 4 → 1-5.
+  const MAX_BTNS = 5;
+  let winStart = Math.max(1, currentPage - 3);
+  winStart = Math.min(winStart, Math.max(1, totalPages - MAX_BTNS + 1));
+  const winEnd = Math.min(totalPages, winStart + MAX_BTNS - 1);
+
+  for (let p = winStart; p <= winEnd; p++) {
+    btns += `<button type="button" class="exp-page-btn${p === currentPage ? ' active' : ''}" data-page="${p}" ${p === currentPage ? 'aria-current="page"' : ''}>${p}</button>`;
+  }
+  btns += `<button type="button" class="exp-page-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>Next ›</button>`;
+
+  pager.innerHTML = `
+    <div class="exp-pager-info">Showing ${from}–${to} of ${total} batches</div>
+    <div class="exp-pager-btns">${btns}</div>`;
+  pager.hidden = false;
+}
+
+document.getElementById('expiryPager').addEventListener('click', e => {
+  const btn = e.target.closest('.exp-page-btn');
+  if (!btn || btn.disabled || btn.classList.contains('active')) return;
+  currentPage = Number(btn.dataset.page);
+  render();
+  // Bring the top of the table back into view after switching pages
+  document.querySelector('.expiry-table').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
 function setFilter(level, btn) {
   activeFilter = level;
+  currentPage = 1;
   document.querySelectorAll('.exp-filter-chip').forEach(c => c.classList.remove('active'));
   btn.classList.add('active');
   render();
@@ -1441,6 +1726,7 @@ function setFilter(level, btn) {
 
 function setSearch(value) {
   activeSearch = value.trim().toLowerCase();
+  currentPage = 1;
   render();
 }
 
@@ -1450,8 +1736,217 @@ function updateStats() {
   document.getElementById('statOk').textContent       = items.filter(i => i.level === 'ok').length;
 }
 
+/* ══════════════════════════════════════════════════════
+   STOCK DETAIL MODAL + FULL IMAGE LIGHTBOX
+   • Click (or Enter/Space on) a batch row → detail modal.
+   • Click the product image in the modal → full-size image.
+   • Esc closes the image first, then the modal.
+   ══════════════════════════════════════════════════════ */
+const expModal      = document.getElementById('expModal');
+const expModalBody  = document.getElementById('expModalBody');
+const expModalClose = document.getElementById('expModalClose');
+const imgLightbox   = document.getElementById('imgLightbox');
+const imgLightboxImg = document.getElementById('imgLightboxImg');
+
+let currentItem = null;
+let lastFocus   = null;
+
+const escapeHtml = v => String(v ?? '')
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+const ZOOM_ICON = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>`;
+
+// Short guidance line shown under the progress bar.
+function expiryNote(item) {
+  const days = Number(item.days_left);
+  const qty  = Number(item.qty);
+  if (item.level === 'danger') {
+    return qty > 0
+      ? `This batch is past its expiry date and still has ${qty} unit${qty === 1 ? '' : 's'} on record. It should be removed from sale.`
+      : 'This batch is past its expiry date and has no units left.';
+  }
+  if (item.level === 'warning') {
+    return `This batch expires ${days === 0 ? 'today' : 'in ' + days + ' day' + (days === 1 ? '' : 's')}. Prioritise selling or reviewing it soon.`;
+  }
+  return 'This batch is within a safe expiry window.';
+}
+
+// Swaps a broken photo in the modal for the placeholder icon.
+function handleModalImgError(imgEl) {
+  const btn = imgEl.closest('.xm-photo');
+  if (btn) btn.outerHTML = `<div class="xm-photo empty">${iconMain}</div>`;
+}
+
+// Links from the modal to the other admin pages. "?open={id}" makes the target
+// page open that product's / stock's details modal on arrival.
+const EXPIRY_LINKS = {
+  inventoryProduct: productId => @json(route('admin.inventory')) + '?open=' + encodeURIComponent(productId),
+  stockDetails:     stockId   => @json(route('admin.stocks'))    + '?open=' + encodeURIComponent(stockId),
+};
+
+function productLink(item, label) {
+  const text = escapeHtml(label ?? item.name);
+  if (!item.product_id) return text;
+  return `<a class="xm-link" href="${escapeAttr(EXPIRY_LINKS.inventoryProduct(item.product_id))}" title="View product details in Inventory">${text}</a>`;
+}
+
+function stockLink(item, label) {
+  const text = escapeHtml(label ?? item.batch);
+  if (!item.id) return text;
+  return `<a class="xm-link" href="${escapeAttr(EXPIRY_LINKS.stockDetails(item.id))}" title="View stock details in Stocks">${text}</a>`;
+}
+
+function openExpiryModal(item) {
+  currentItem = item;
+  lastFocus   = document.activeElement;
+
+  const days    = Number(item.days_left);
+  const maxDays = Number(item.max_days) || 1;
+  const fillPct = Math.min(100, Math.max(4, Math.round((Math.max(days, 0) / maxDays) * 100)));
+  const { num, unit } = countdownLabel(days, item.level);
+  const statusClass = item.is_active ? 'ok' : 'warning';
+
+  const photo = item.image
+    ? `<button type="button" class="xm-photo" id="xmPhoto" aria-label="View full image of ${escapeAttr(item.name)}">
+         <img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.name)}" onerror="handleModalImgError(this)">
+         <span class="xm-photo-zoom">${ZOOM_ICON}</span>
+       </button>`
+    : `<div class="xm-photo empty">${iconMain}</div>`;
+
+  // Optional extras: shown only if AdminController@expiry includes them in $stocks.
+  const extras = [
+    ['category', 'Category'], ['sku', 'SKU'], ['supplier', 'Supplier'],
+    ['received', 'Date Received'], ['price', 'Unit Price'],
+  ].filter(([key]) => item[key] !== undefined && item[key] !== null && item[key] !== '')
+   .map(([key, label]) => `<div class="xm-cell"><div class="xm-k">${label}</div><div class="xm-v">${escapeHtml(item[key])}</div></div>`)
+   .join('');
+
+  expModalBody.innerHTML = `
+    <div class="xm-wrap ${escapeAttr(item.level)}">
+      <div class="xm-top">
+        ${photo}
+        <div class="xm-title">
+          <div class="xm-name">${productLink(item)}</div>
+          <div class="xm-batch">Batch ${stockLink(item)}</div>
+          <div class="xm-pills">
+            <span class="pill ${escapeAttr(item.level)}">${escapeHtml(item.pill)}</span>
+            <span class="pill ${statusClass}">${escapeHtml(item.status_label)}</span>
+          </div>
+          ${item.image ? '<div class="xm-hint">Click the image to view it full size</div>' : ''}
+        </div>
+      </div>
+
+      <div class="xm-track">
+        <div class="xm-track-top">
+          <div>
+            <div class="xm-track-label">Expiry Tracking</div>
+            <div class="xm-count">${num}<small>${unit}</small></div>
+          </div>
+          <div class="xm-expdate"><span>Expires</span>${escapeHtml(item.expiry)}</div>
+        </div>
+        <div class="xm-bar"><div class="xm-bar-fill" id="xmBarFill"></div></div>
+        <div class="xm-note">${escapeHtml(expiryNote(item))}</div>
+      </div>
+
+      <div class="xm-grid">
+        <div class="xm-cell"><div class="xm-k">Product</div><div class="xm-v">${productLink(item)}</div></div>
+        <div class="xm-cell"><div class="xm-k">Batch No.</div><div class="xm-v">${stockLink(item)}</div></div>
+        <div class="xm-cell"><div class="xm-k">Quantity</div><div class="xm-v">${escapeHtml(item.qty)} units</div></div>
+        <div class="xm-cell"><div class="xm-k">Stock Status</div><div class="xm-v">${escapeHtml(item.status_label)}</div></div>
+        <div class="xm-cell"><div class="xm-k">Expiry Date</div><div class="xm-v">${escapeHtml(item.expiry)}</div></div>
+        <div class="xm-cell"><div class="xm-k">Expiry Status</div><div class="xm-v">${escapeHtml(item.pill)}</div></div>
+        ${extras}
+      </div>
+    </div>
+  `;
+
+  expModal.classList.add('on');
+  expModal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('xm-lock');
+  expModalClose.focus();
+
+  // Animate the progress bar in after paint
+  requestAnimationFrame(() => setTimeout(() => {
+    const fill = document.getElementById('xmBarFill');
+    if (fill) fill.style.width = fillPct + '%';
+  }, 60));
+}
+
+function closeExpiryModal() {
+  expModal.classList.remove('on');
+  expModal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('xm-lock');
+  currentItem = null;
+  if (lastFocus && typeof lastFocus.focus === 'function') lastFocus.focus();
+}
+
+function openLightbox() {
+  if (!currentItem || !currentItem.image) return;
+  imgLightboxImg.alt = currentItem.name || '';
+  imgLightboxImg.src = currentItem.image;
+  imgLightbox.classList.add('on');
+  imgLightbox.setAttribute('aria-hidden', 'false');
+}
+
+function closeLightbox() {
+  imgLightbox.classList.remove('on');
+  imgLightbox.setAttribute('aria-hidden', 'true');
+  imgLightboxImg.removeAttribute('src');
+}
+
+// Row click / keyboard
+grid.addEventListener('click', e => {
+  const row = e.target.closest('tr.expiry-item');
+  if (!row) return;
+  const item = items[Number(row.dataset.idx)];
+  if (item) openExpiryModal(item);
+});
+grid.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const row = e.target.closest('tr.expiry-item');
+  if (!row) return;
+  e.preventDefault();
+  const item = items[Number(row.dataset.idx)];
+  if (item) openExpiryModal(item);
+});
+
+// Modal: close button, footer button, backdrop click; image click → lightbox
+expModalClose.addEventListener('click', closeExpiryModal);
+document.getElementById('expModalDone').addEventListener('click', closeExpiryModal);
+expModal.addEventListener('click', e => { if (e.target === expModal) closeExpiryModal(); });
+expModalBody.addEventListener('click', e => {
+  if (e.target.closest('.xm-photo:not(.empty)')) openLightbox();
+});
+
+// Lightbox: click anywhere outside the image (or the X) to close; a broken image closes it
+imgLightbox.addEventListener('click', e => { if (e.target !== imgLightboxImg) closeLightbox(); });
+imgLightboxImg.addEventListener('error', closeLightbox);
+
+// Esc closes the full image first, then the modal
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (imgLightbox.classList.contains('on')) { closeLightbox(); return; }
+  if (expModal.classList.contains('on')) closeExpiryModal();
+});
+
 updateStats();
 render();
+
+// Deep link from the Stocks page: /admin/expiry?open={stockId} opens that batch's expiry details modal.
+(function openExpiryFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('open')) return;
+  const id = Number(params.get('open'));
+
+  // Drop the param so a refresh or Back doesn't re-open the modal.
+  params.delete('open');
+  const qs = params.toString();
+  history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : '') + window.location.hash);
+
+  const item = items.find(i => Number(i.id) === id);
+  if (item) openExpiryModal(item);
+})();
 </script>
 
 <script>

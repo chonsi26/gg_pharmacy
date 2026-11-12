@@ -767,7 +767,27 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  .header { padding: 0 12px; gap: 8px; }
+  .header > .header-title { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .header > .header-search {
+    display: flex;
+    margin-left: auto;
+    flex: 0 1 150px;
+    min-width: 0;
+    width: 150px;
+    max-width: 150px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header > .header-actions { flex-shrink: 0; gap: 6px; }
+  /* suggestions panel: span the screen under the header instead of hanging off the narrow search box */
+  .header .search-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 8px; right: 8px;
+    width: auto; max-width: none;
+  }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -1225,6 +1245,46 @@ tbody tr:last-child td { border-bottom: none; }
     #ordersTable { min-width: 860px; }
   }
 
+  /* ── Order search bar (2nd search: order #, customer, product) ── */
+  .order-search-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .order-search {
+    position: relative; flex: 1 1 320px; max-width: 360px;
+    margin-left: auto;              /* pushes the search box to the right */
+    display: flex; align-items: center;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    height: 36px; padding: 0 10px; gap: 8px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .order-search:focus-within { border-color: var(--red); box-shadow: 0 0 0 3px var(--focus); }
+  .order-search svg { width: 14px; height: 14px; color: var(--subtle); flex-shrink: 0; }
+  .order-search input {
+    flex: 1; min-width: 0; border: none; background: none; outline: none;
+    font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--text);
+  }
+  .order-search input::placeholder { color: var(--subtle); }
+  .order-search-clear {
+    display: none; background: none; border: none; cursor: pointer;
+    color: var(--muted); font-size: 18px; line-height: 1; padding: 0 2px; border-radius: 4px;
+  }
+  .order-search-clear:hover { color: var(--red); }
+  .order-search.has-value .order-search-clear { display: block; }
+  .order-search-meta { font-size: 12px; color: var(--muted); order: -1; }  /* match count sits on the left */
+  .order-search-meta a { color: var(--red); font-weight: 600; cursor: pointer; text-decoration: none; }
+  .order-search-meta a:hover { text-decoration: underline; }
+  #ordersBody tr.no-results td { text-align: center; color: var(--muted); padding: 28px 16px; white-space: normal; }
+  @media (max-width: 768px) {
+    .order-search-bar { padding: 12px; }
+    .order-search { flex-basis: 100%; max-width: none; margin-left: 0; }
+    .order-search-meta { order: 0; }
+  }
+
   /* dark-mode patches */
   [data-theme="dark"] .confirm-icon { background: #450a0a; }
   [data-theme="dark"] .modal { background: var(--card, #1e2130); }
@@ -1270,7 +1330,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('staff.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item active" href="{{ route('staff.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1288,7 +1348,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('staff.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
         <a class="nav-item" href="{{ route('staff.settings') }}">
@@ -1397,11 +1457,11 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- Orders Table -->
   <div class="card">
     <div class="card-head">
-      <div style="display:flex;gap:12px;align-items:center;">
+      <div class="oh-left" style="display:flex;gap:12px;align-items:center;">
         <h3>Incoming Orders</h3>
         <button class="btn-sm primary" type="button" onclick="openAddOrderModal()">+ Add Order</button>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div class="oh-tabs" style="display:flex;gap:8px;align-items:center;">
         <span style="font-size:12px;color:var(--muted);" id="tabPending" class="tab-link active-tab" onclick="filterTable('pending')" style="cursor:pointer;">Pending</span>
         <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabConfirmed" class="tab-link" onclick="filterTable('confirmed')">Confirmed</span>
         <span style="font-size:12px;color:var(--muted);cursor:pointer;" id="tabApproved" class="tab-link" onclick="filterTable('approved')">For Pick Up</span>
@@ -1413,7 +1473,34 @@ tbody tr:last-child td { border-bottom: none; }
       .tab-link { cursor:pointer; padding:4px 10px; border-radius:6px; font-weight:600; transition:background .15s,color .15s; }
       .tab-link:hover { background:var(--surface,#f4f5f8); color:var(--text); }
       .tab-link.active-tab { background:var(--primary,#2D7A2D); color:#fff !important; }
+
+      /* Mobile only: title + Add Order on one row, status tabs on their own row, all fitting the width */
+      @media (max-width: 768px) {
+        .card-head { flex-wrap: wrap; row-gap: 12px; padding: 14px 12px; }
+        .card-head .oh-left { width: 100%; justify-content: space-between; }
+        .card-head .oh-left h3 { white-space: nowrap; }
+        .card-head .oh-left .btn-sm { white-space: nowrap; flex-shrink: 0; }
+        .card-head .oh-tabs { width: 100%; gap: 4px !important; justify-content: space-between; }
+        .card-head .oh-tabs .tab-link {
+          flex: 1 1 auto; min-width: 0;
+          padding: 6px 4px; text-align: center;
+          font-size: 11px !important; white-space: nowrap;
+        }
+      }
+      @media (max-width: 380px) {
+        .card-head .oh-tabs { gap: 2px !important; }
+        .card-head .oh-tabs .tab-link { padding: 6px 2px; font-size: 10px !important; }
     </style>
+    <!-- Order search: matches order number, customer name, or any product in the order -->
+    <div class="order-search-bar">
+      <div class="order-search" id="orderSearchBox">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="orderSearchInput" placeholder="Search by order number, customer or product…" maxlength="100" autocomplete="off" aria-label="Search orders by order number, customer or product">
+        <button type="button" class="order-search-clear" id="orderSearchClear" aria-label="Clear search" title="Clear">&times;</button>
+      </div>
+      <div class="order-search-meta" id="orderSearchMeta"></div>
+    </div>
+
     <div class="table-wrap">
       <table id="ordersTable">
         <thead>
@@ -1983,7 +2070,13 @@ function renderTable(filter) {
   } else {
     filtered = ORDERS;
   }
+  // 2nd search bar: narrow the current tab by order #, customer or product
+  filtered = filtered.filter(matchesOrderSearch);
   body.innerHTML = '';
+  if (!filtered.length && orderSearchTerms().length) {
+    const cols = 8 + (filter === 'approved' ? 1 : 0) + (filter === 'cancelled' ? 1 : 0);
+    body.innerHTML = `<tr class="no-results"><td colspan="${cols}">No orders in this tab match “${esc(document.getElementById('orderSearchInput').value.trim())}”.</td></tr>`;
+  }
   filtered.forEach(order => {
     const total = orderTotal(order);
     const isPending = order.status === 'pending';
@@ -2056,6 +2149,7 @@ function renderTable(filter) {
 
   updateStats();
   updateTabs();
+  updateOrderSearchMeta();
   applySearch();
 }
 
@@ -2826,10 +2920,60 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('on'), 2800);
 }
 
+/* ─── Order search (order #, customer, product) ─── */
+function orderSearchTerms() {
+  const el = document.getElementById('orderSearchInput');
+  return el ? el.value.toLowerCase().split(/\s+/).filter(Boolean) : [];
+}
+
+// Every typed word must appear in the order number, customer name, or a product name.
+function matchesOrderSearch(order, terms = orderSearchTerms()) {
+  if (!terms.length) return true;
+  const hay = [
+    order.id,
+    order.customer,
+    ...order.items.map(i => i.name),
+  ].join(' ').toLowerCase();
+  return terms.every(t => hay.includes(t));
+}
+
+const TAB_LABELS = { pending: 'Pending', confirmed: 'Confirmed', approved: 'For Pick Up', completed: 'Completed', cancelled: 'Cancelled' };
+
+function updateOrderSearchMeta() {
+  const meta  = document.getElementById('orderSearchMeta');
+  const box   = document.getElementById('orderSearchBox');
+  const terms = orderSearchTerms();
+  box.classList.toggle('has-value', document.getElementById('orderSearchInput').value.length > 0);
+  if (!terms.length) { meta.textContent = ''; return; }
+
+  const inTab   = ORDERS.filter(o => o.status === currentFilter && matchesOrderSearch(o, terms)).length;
+  const others  = {};
+  ORDERS.forEach(o => {
+    if (o.status !== currentFilter && matchesOrderSearch(o, terms)) others[o.status] = (others[o.status] || 0) + 1;
+  });
+  const otherKeys = Object.keys(others);
+
+  let html = `${inTab} match${inTab === 1 ? '' : 'es'} in ${TAB_LABELS[currentFilter] || 'this tab'}`;
+  if (otherKeys.length) {
+    html += ' · also in ' + otherKeys.map(k => `<a onclick="filterTable('${k}')">${TAB_LABELS[k]} (${others[k]})</a>`).join(', ');
+  }
+  meta.innerHTML = html;
+}
+
+(function () {
+  const input = document.getElementById('orderSearchInput');
+  const clear = document.getElementById('orderSearchClear');
+  input.addEventListener('input', () => renderTable(currentFilter));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && input.value) { input.value = ''; renderTable(currentFilter); }
+  });
+  clear.addEventListener('click', () => { input.value = ''; renderTable(currentFilter); input.focus(); });
+})();
+
 /* ─── Search ─── */
 function applySearch() {
   const q = document.getElementById('staffSearchInput').value.toLowerCase();
-  document.querySelectorAll('#ordersBody tr').forEach(tr => {
+  document.querySelectorAll('#ordersBody tr:not(.no-results)').forEach(tr => {
     tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 }

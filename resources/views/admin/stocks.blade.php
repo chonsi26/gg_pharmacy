@@ -439,6 +439,10 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   background: var(--red); border-color: var(--red); color: #fff;
 }
 .btn-sm.primary:hover { background: var(--red-h); border-color: var(--red-h); }
+.btn-sm.danger { color: var(--red); border-color: var(--red); }
+.btn-sm.danger:hover { background: var(--red); color: #fff; }
+.btn-sm:disabled { opacity: .6; cursor: not-allowed; }
+.filter-actions { display: flex; align-items: center; gap: 8px; }
 
 /* ── TABLE ── */
 .table-wrap { overflow-x: auto; }
@@ -757,7 +761,33 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+
+  /* Header: keep every tool visible on mobile */
+  .header { gap: 8px; padding: 0 12px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { flex-shrink: 0; gap: 6px; }
+
+  /* Compact search, sits right beside the notifications button (same as dashboard) */
+  .header > .header-title { flex: 0 1 auto; min-width: 0; }
+  .header > .header-search {
+    display: flex;
+    margin-left: auto;
+    flex: 0 1 150px;
+    min-width: 0;
+    width: 150px;
+    max-width: 150px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+
+  /* Suggestions span the screen width instead of the narrow search box */
+  .header .search-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 8px; right: 8px;
+    width: auto; max-width: none;
+  }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -933,6 +963,59 @@ tbody tr:last-child td { border-bottom: none; }
     cursor: pointer;
   }
 
+  /* Batch Inventory header – mobile layout */
+  @media (max-width: 768px) {
+    .card-head {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+    .card-head h3 { font-size: 16px; }
+    .card-head .filter-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+    /* Search bar on its own full-width row */
+    .card-head .filter-row input {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    /* Reset + Products buttons share the first cell of the second row */
+    .card-head .filter-row .filter-actions {
+      grid-row: 2;
+      grid-column: 1;
+    }
+    .card-head .filter-row .filter-actions .btn-sm {
+      grid-row: auto;
+      grid-column: auto;
+    }
+    /* Products button + status filter share the second row */
+    .card-head .filter-row .btn-sm {
+      grid-row: 2;
+      grid-column: 1;
+      white-space: nowrap;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    .card-head .filter-row select {
+      grid-row: 2;
+      grid-column: 2;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+  }
+
   /* Stock number style in table */
   .stock-num {
     font-family: 'Courier New', monospace;
@@ -1024,6 +1107,37 @@ tbody tr:last-child td { border-bottom: none; }
   .modal-back:hover { color: var(--text); }
   .modal-back svg { width: 14px; height: 14px; }
 
+  /* ── Products modal search bar ── */
+  .pick-search { position: relative; margin: 0 0 12px; }
+  .pick-search svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; color: var(--subtle); pointer-events: none;
+  }
+  .pick-search input {
+    width: 100%;
+    padding: 9px 34px 9px 34px;
+    border: 1.5px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .pick-search input:focus { border-color: var(--red); }
+  .pick-search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 22px; height: 22px;
+    border: none; background: none; cursor: pointer;
+    color: var(--muted); font-size: 16px; line-height: 1;
+    border-radius: 50%;
+    display: none;
+  }
+  .pick-search-clear:hover { color: var(--text); background: var(--bg); }
+  .pick-search.has-value .pick-search-clear { display: block; }
+  [data-theme="dark"] .pick-search input { background: var(--bg); }
+
   /* ── Products modal list ── */
   .pick-list { max-height: 380px; overflow-y: auto; margin: 0 -4px; }
   .pick-item {
@@ -1072,6 +1186,116 @@ tbody tr:last-child td { border-bottom: none; }
   .row-action-btn svg { width: 14px; height: 14px; }
   .row-action-btn:hover { border-color: var(--red); color: var(--red); }
   .row-action-btn.edit:hover { border-color: var(--blue); color: var(--blue); }
+
+  /* ── Stock details modal (landscape, plain) ── */
+  .modal.modal-landscape {
+    max-width: 800px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  .sd-header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 16px 52px 14px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sd-header h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .sd-header-meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .modal-landscape .modal-close { top: 12px; right: 14px; }
+  .sd-layout { display: grid; grid-template-columns: 240px 1fr; }
+  .sd-media {
+    padding: 24px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .sd-image {
+    width: 100%; aspect-ratio: 1 / 1;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .sd-image img { width: 100%; height: 100%; object-fit: contain; }
+  .sd-image .sd-initial { font-size: 48px; font-weight: 600; color: var(--subtle); }
+  .sd-media-name { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  a.sd-media-name { display: inline-block; text-decoration: none; cursor: pointer; }
+  a.sd-media-name:hover { text-decoration: underline; color: var(--red, #c0392b); }
+  .sd-media-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .sd-code { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .sd-code::before { content: "Code: "; }
+  .sd-info { padding: 8px 24px 0; min-width: 0; display: flex; flex-direction: column; }
+  .sd-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .sd-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .sd-item .sd-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  .sd-item .sd-value { font-size: 14px; font-weight: 500; color: var(--text); word-break: break-word; }
+  .sd-item .sd-value a.sd-link { color: inherit; text-decoration: none; cursor: pointer; }
+  .sd-item .sd-value a.sd-link:hover { text-decoration: underline; color: var(--red, #c0392b); }
+  .sd-item .sd-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .sd-item .sd-hint.warn { color: var(--orange); }
+  .sd-item .sd-hint.bad  { color: var(--red); }
+  .sd-footer {
+    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 14px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .stock-table-row { cursor: pointer; }
+  .sd-image.zoomable { cursor: zoom-in; }
+  .sd-image-hint { font-size: 11px; color: var(--subtle); text-align: center; margin-top: 6px; }
+
+  /* Full image viewer */
+  .img-viewer {
+    display: none; position: fixed; inset: 0; z-index: 1100;
+    background: rgba(0,0,0,.85);
+    align-items: center; justify-content: center;
+    padding: 32px; cursor: zoom-out;
+  }
+  .img-viewer.open { display: flex; }
+  .img-viewer img {
+    max-width: 100%; max-height: 100%;
+    object-fit: contain; background: #fff;
+    border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,.5);
+    cursor: default;
+  }
+  .img-viewer-close {
+    position: absolute; top: 14px; right: 18px;
+    background: none; border: none; color: #fff;
+    font-size: 30px; line-height: 1; cursor: pointer; padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .img-viewer-close:hover { background: rgba(255,255,255,.15); }
+
+  @media (max-width: 720px) {
+    .sd-layout { grid-template-columns: 1fr; }
+    .sd-media { border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; align-items: center; padding: 16px 24px; }
+    .sd-image { width: 90px; flex-shrink: 0; }
+    .sd-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Pagination (100 per page) ── */
+  .pager {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .pager[hidden] { display: none; }
+  .pager-info { font-size: 12px; color: var(--muted); }
+  .pager-info strong { color: var(--text); font-weight: 600; }
+  .pager-controls { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .pager-btn {
+    min-width: 32px; height: 32px; padding: 0 10px;
+    border: 1.5px solid var(--border); border-radius: 6px;
+    background: var(--surface); color: var(--muted);
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: border-color .15s, color .15s, background .15s;
+  }
+  .pager-btn:hover:not(:disabled):not(.active) { border-color: var(--red); color: var(--red); }
+  .pager-btn.active { background: var(--red); border-color: var(--red); color: #fff; cursor: default; }
+  .pager-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .pager-gap { padding: 0 4px; color: var(--subtle); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -1144,12 +1368,68 @@ tbody tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- Stock Details Modal (landscape) -->
+<div class="modal-backdrop" id="stockDetailsModal">
+  <div class="modal modal-landscape">
+    <button class="modal-close" id="closeStockDetails" title="Close">&times;</button>
+
+    <div class="sd-header">
+      <h3>Stock Details</h3>
+      <div class="sd-header-meta">
+        <span id="sdStockNo">—</span>
+        <span id="sdStatus"></span>
+      </div>
+    </div>
+
+    <div class="sd-layout">
+      <div class="sd-media">
+        <div class="sd-image" id="sdImage"></div>
+        <div class="sd-image-hint" id="sdImageHint" style="display:none;">Click image to enlarge</div>
+        <div>
+          <a class="sd-media-name" id="sdProductName" href="#" title="View product details in Inventory">—</a>
+          <div class="sd-media-sub" id="sdProductSub"></div>
+          <div class="sd-code" id="sdCode" style="display:none;margin-top:6px;"></div>
+        </div>
+      </div>
+
+      <div class="sd-info">
+        <div class="sd-grid">
+          <div class="sd-item"><div class="sd-label">Supplier</div><div class="sd-value" id="sdSupplier">—</div></div>
+          <div class="sd-item"><div class="sd-label">Availability</div><div class="sd-value" id="sdAvail">—</div></div>
+          <div class="sd-item"><div class="sd-label">Quantity</div><div class="sd-value" id="sdQty">—</div></div>
+          <div class="sd-item"><div class="sd-label">Unit Cost</div><div class="sd-value" id="sdCost">—</div></div>
+          <div class="sd-item"><div class="sd-label">Total Value</div><div class="sd-value" id="sdTotal">—</div></div>
+          <div class="sd-item"><div class="sd-label">Date Added</div><div class="sd-value" id="sdAdded">—</div></div>
+          <div class="sd-item"><div class="sd-label">Manufacturing Date</div><div class="sd-value" id="sdMfg">—</div></div>
+          <div class="sd-item"><div class="sd-label">Expiry Date</div><div class="sd-value" id="sdExpiry">—</div><div class="sd-hint" id="sdExpiryHint"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sd-footer">
+      <button class="btn-sm" id="sdCloseBtn" type="button">Close</button>
+      <button class="btn-sm primary" id="sdEditBtn" type="button">Edit Stock</button>
+    </div>
+  </div>
+</div>
+
+<!-- Full image viewer -->
+<div class="img-viewer" id="imgViewer">
+  <button class="img-viewer-close" id="imgViewerClose" title="Close" type="button">&times;</button>
+  <img id="imgViewerImg" src="" alt="">
+</div>
+
 <!-- Products Modal (status overview) -->
 <div class="modal-backdrop" id="productsModal">
   <div class="modal modal-lg">
     <button class="modal-close" id="closeProductsModal" title="Close">&times;</button>
     <h3>Products</h3>
     <div class="modal-sub">Green means a product has an ongoing active batch. Tap an Out of Stock product to activate one of its available batches.</div>
+    <div class="pick-search" id="productsSearchWrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="productsSearch" placeholder="Search products…" autocomplete="off">
+      <button type="button" class="pick-search-clear" id="productsSearchClear" title="Clear">&times;</button>
+    </div>
     <div class="pick-list" id="productsList">
       <div class="pick-empty">Loading products…</div>
     </div>
@@ -1190,7 +1470,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1212,7 +1492,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
     <a class="nav-item" href="{{ route('admin.pharmacy') }}">
@@ -1319,7 +1599,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card summary-card">
       <div class="sc-label">Expiring Soon</div>
       <div class="sc-value" id="sumExpiring" style="color:#e53e3e;">—</div>
-      <div class="sc-sub">Within 90 days</div>
+      <div class="sc-sub">Within 10 days</div>
     </div>
   </div>
 
@@ -1328,9 +1608,14 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head">
       <h3>Batch Inventory</h3>
       <div class="filter-row">
+        <div class="filter-actions">
+        <button class="btn-sm danger" id="resetStocksBtn" type="button">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>Reset
+        </button>
         <button class="btn-sm" id="openProductsModal" type="button">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>Products
         </button>
+        </div>
         <input type="text" id="searchBatch" placeholder="Search medicine or stock no…">
         <select id="filterStatus">
           <option value="Active" selected>Available</option>
@@ -1365,6 +1650,10 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="empty-state" id="emptyState" style="display:none;">
       <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
       <div>No batches found. Click <strong>+ Add Stock</strong> to get started.</div>
+    </div>
+    <div class="pager" id="pager" hidden>
+      <div class="pager-info" id="pagerInfo"></div>
+      <div class="pager-controls" id="pagerControls"></div>
     </div>
   </div>
 
@@ -1408,14 +1697,23 @@ const ROUTES = {
   store: "{{ route('admin.stocks.store') }}",
   update: id => `{{ url('/admin/stocks') }}/${id}`,
   destroy: id => `{{ url('/admin/stocks') }}/${id}`,
+  reset: "{{ route('admin.stocks.reset') }}",
   activate: id => `{{ url('/admin/stocks') }}/${id}/activate`,
   products: "{{ route('admin.stocks.products') }}",
   availableStocks: productId => `{{ url('/admin/stocks/products') }}/${productId}/available`,
+  // Inventory page; "?open={id}" makes it open that product's details modal.
+  inventoryProduct: productId => `{{ route('admin.inventory') }}?open=${productId}`,
+  // Expiry page; "?open={id}" makes it open that batch's expiry details modal.
+  expiryStock: stockId => `{{ route('admin.expiry') }}?open=${stockId}`,
 };
 
 // Seeded from the server. Every batch already carries a single computed
 // `status`: Active, Inactive, Out of Stock, or Expired.
 let batches = @json($stocks);
+
+// Batch table shows this many rows per page.
+const PAGE_SIZE = 100;
+let currentPage = 1;
 
 // Batches with this many units or fewer count as "Low Stock" in the status filter.
 const LOW_STOCK_THRESHOLD = 10;
@@ -1475,7 +1773,7 @@ function renderTable() {
   const search = document.getElementById("searchBatch").value.toLowerCase();
   const filter = document.getElementById("filterStatus").value;
 
-  const rows = batches.filter(b => {
+  const filtered = batches.filter(b => {
     const matchS = b.medicine.toLowerCase().includes(search) || b.stock_no.toLowerCase().includes(search);
     // "Low Stock" is a quantity-based filter (1–10 units left, not expired);
     // every other option matches on the computed `status`.
@@ -1488,6 +1786,13 @@ function renderTable() {
     return matchS && matchF;
   });
 
+  // Paging: keep the current page in range, then take this page's slice.
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  const startIdx = (currentPage - 1) * PAGE_SIZE;
+  const rows = filtered.slice(startIdx, startIdx + PAGE_SIZE);
+
   const tbody = document.getElementById("batchTableBody");
   const empty = document.getElementById("emptyState");
 
@@ -1498,7 +1803,7 @@ function renderTable() {
     empty.style.display = "none";
     tbody.innerHTML = rows.map(b => {
       const qc = b.quantity <= 50 ? "qty-badge qty-low" : "qty-badge qty-ok";
-      return `<tr>
+      return `<tr class="stock-table-row" onclick="openStockDetails(${b.id})" title="View stock details">
         <td><span class="stock-num">${b.stock_no}</span></td>
         <td style="font-weight:600;">${b.medicine}</td>
         <td style="font-size:12px;color:var(--muted);">${b.supplier || "—"}</td>
@@ -1510,10 +1815,10 @@ function renderTable() {
         <td style="font-size:12px;color:var(--muted);">${fmtDate(b.added)}</td>
         <td>
           <div class="row-actions">
-            <button class="row-action-btn edit" title="Edit" onclick="openEditStock(${b.id})">
+            <button class="row-action-btn edit" title="Edit" onclick="event.stopPropagation(); openEditStock(${b.id})">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             </button>
-            <button class="row-action-btn" title="Delete" onclick="deleteStock(${b.id}, '${b.stock_no}')">
+            <button class="row-action-btn" title="Delete" onclick="event.stopPropagation(); deleteStock(${b.id}, '${b.stock_no}')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
             </button>
           </div>
@@ -1522,19 +1827,53 @@ function renderTable() {
     }).join("");
   }
 
+  renderPager(filtered.length, totalPages, startIdx, rows.length);
+
   // Summary
   const totalUnits = batches.reduce((s, b) => s + b.quantity, 0);
   const uniqueMeds = new Set(batches.map(b => b.medicine)).size;
-  const expiring = batches.filter(b => {
-    if (!b.expiry_date) return false;
-    const d = (new Date(b.expiry_date) - new Date()) / 86400000;
-    return d >= 0 && d < 90;
-  }).length;
+  const expiring = batches.filter(isExpiringSoon).length;
   document.getElementById("sumBatches").textContent = batches.length;
   document.getElementById("sumUnits").textContent = totalUnits.toLocaleString();
   document.getElementById("sumMeds").textContent = uniqueMeds;
   document.getElementById("sumExpiring").textContent = expiring;
 }
+
+// ── Pagination ─────────────────────────────────────────────────────────────
+function renderPager(total, totalPages, startIdx, shown) {
+  const pager = document.getElementById("pager");
+  if (!total) { pager.hidden = true; return; }
+  pager.hidden = false;
+
+  document.getElementById("pagerInfo").innerHTML =
+    `Showing <strong>${(startIdx + 1).toLocaleString()}–${(startIdx + shown).toLocaleString()}</strong> of <strong>${total.toLocaleString()}</strong> batches`;
+
+  const controls = document.getElementById("pagerControls");
+  if (totalPages <= 1) { controls.innerHTML = ""; return; }
+
+  // First, last, and a window of pages around the current one, with "…" gaps.
+  const pages = [];
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === 1 || i === totalPages || Math.abs(i - currentPage) <= 2) pages.push(i);
+    else if (pages[pages.length - 1] !== "…") pages.push("…");
+  }
+
+  controls.innerHTML =
+    `<button class="pager-btn" type="button" data-page="${currentPage - 1}" ${currentPage === 1 ? "disabled" : ""}>‹ Prev</button>` +
+    pages.map(p => p === "…"
+      ? `<span class="pager-gap">…</span>`
+      : `<button class="pager-btn ${p === currentPage ? "active" : ""}" type="button" data-page="${p}">${p}</button>`
+    ).join("") +
+    `<button class="pager-btn" type="button" data-page="${currentPage + 1}" ${currentPage === totalPages ? "disabled" : ""}>Next ›</button>`;
+}
+
+document.getElementById("pagerControls").addEventListener("click", e => {
+  const btn = e.target.closest(".pager-btn");
+  if (!btn || btn.disabled || btn.classList.contains("active")) return;
+  currentPage = parseInt(btn.dataset.page, 10);
+  renderTable();
+  document.getElementById("batchTableBody").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 
 // ── Add / Edit Stock Modal ─────────────────────────────────────────────────
 let stockModalMode = "add"; // "add" | "edit"
@@ -1634,13 +1973,162 @@ function deleteStock(id, stockNo) {
     .catch(err => alert(err.message));
 }
 
+// ── Reset: delete every row in the stocks table ───────────────────────────
+document.getElementById("resetStocksBtn").addEventListener("click", function () {
+  if (!confirm("Delete ALL stock batches? This removes every record in the stocks table and cannot be undone.")) return;
+
+  const btn = this;
+  btn.disabled = true;
+  apiFetch(ROUTES.reset, { method: "POST" })
+    .then(data => {
+      batches = data.stocks || [];
+      currentPage = 1;
+      renderTable();
+      // Refresh the Products modal's cached list if it has been opened before.
+      if (typeof allProducts !== "undefined") {
+        allProducts = data.products || [];
+      }
+      showToast(data.message || "All stocks were deleted.");
+    })
+    .catch(err => alert(err.message))
+    .finally(() => { btn.disabled = false; });
+});
+
+// ── Stock details modal (click a row) ──────────────────────────────────────
+let detailsStockId = null;
+
+function escHtml(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function openStockDetails(id) {
+  const b = batches.find(x => x.id === id);
+  if (!b) return;
+  detailsStockId = id;
+
+  // Product image (falls back to the product's initial)
+  const imgBox = document.getElementById("sdImage");
+  const initial = (b.medicine || "?").charAt(0).toUpperCase();
+  imgBox.innerHTML = b.product_image
+    ? `<img src="${escHtml(b.product_image)}" alt="${escHtml(b.medicine)}">`
+    : `<span class="sd-initial">${escHtml(initial)}</span>`;
+  const img = imgBox.querySelector("img");
+  const hintEl = document.getElementById("sdImageHint");
+  imgBox.classList.remove("zoomable");
+  imgBox.onclick = null;
+  hintEl.style.display = "none";
+  if (img) {
+    img.onload = () => {
+      imgBox.classList.add("zoomable");
+      hintEl.style.display = "";
+      imgBox.onclick = () => openImageViewer(b.product_image, b.medicine);
+    };
+    img.onerror = () => {
+      imgBox.classList.remove("zoomable");
+      imgBox.onclick = null;
+      hintEl.style.display = "none";
+      imgBox.innerHTML = `<span class="sd-initial">${escHtml(initial)}</span>`;
+    };
+  }
+
+  const nameEl = document.getElementById("sdProductName");
+  nameEl.textContent = b.medicine || "—";
+  if (b.product_id) {
+    nameEl.href = ROUTES.inventoryProduct(b.product_id);
+  } else {
+    nameEl.removeAttribute("href");
+  }
+  document.getElementById("sdProductSub").textContent =
+    [b.generic_name, b.form].filter(Boolean).join(" · ");
+  const code = document.getElementById("sdCode");
+  code.textContent = b.code_name || "";
+  code.style.display = b.code_name ? "" : "none";
+
+  document.getElementById("sdStockNo").textContent = b.stock_no;
+  document.getElementById("sdStatus").innerHTML = statusPill(b.status);
+  document.getElementById("sdSupplier").textContent = b.supplier || "—";
+  document.getElementById("sdQty").textContent = Number(b.quantity).toLocaleString() + " units";
+  document.getElementById("sdCost").textContent = fmtMoney(b.unit_cost);
+  document.getElementById("sdTotal").textContent = fmtMoney((b.unit_cost || 0) * (b.quantity || 0));
+  document.getElementById("sdMfg").textContent = fmtDate(b.manufacturing_date);
+  const expiryEl = document.getElementById("sdExpiry");
+  expiryEl.textContent = "";
+  if (b.expiry_date) {
+    // Only batches with an expiry date appear on the Expiry page, so only they get a link.
+    const link = document.createElement("a");
+    link.className = "sd-link";
+    link.href = ROUTES.expiryStock(b.id);
+    link.title = "View expiry details in Expiry Tracking";
+    link.textContent = fmtDate(b.expiry_date);
+    expiryEl.appendChild(link);
+  } else {
+    expiryEl.textContent = fmtDate(b.expiry_date);
+  }
+  document.getElementById("sdAvail").textContent = b.is_active ? "Available" : "Unavailable";
+  document.getElementById("sdAdded").textContent = fmtDate(b.added);
+
+  // Days-to-expiry hint
+  const hint = document.getElementById("sdExpiryHint");
+  hint.className = "sd-hint";
+  hint.textContent = "";
+  if (b.expiry_date) {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = Math.round((new Date(b.expiry_date + "T00:00:00") - today) / 86400000);
+    if (days < 0) { hint.textContent = `Expired ${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} ago`; hint.classList.add("bad"); }
+    else if (days === 0) { hint.textContent = "Expires today"; hint.classList.add("bad"); }
+    else { hint.textContent = `${days} day${days === 1 ? "" : "s"} left`; if (days <= EXPIRING_DAYS) hint.classList.add("warn"); }
+  }
+
+  document.getElementById("stockDetailsModal").classList.add("open");
+}
+
+function closeStockDetails() {
+  document.getElementById("stockDetailsModal").classList.remove("open");
+  detailsStockId = null;
+}
+
+document.getElementById("closeStockDetails").addEventListener("click", closeStockDetails);
+document.getElementById("sdCloseBtn").addEventListener("click", closeStockDetails);
+document.getElementById("stockDetailsModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeStockDetails(); });
+document.getElementById("sdEditBtn").addEventListener("click", () => {
+  const id = detailsStockId;
+  closeStockDetails();
+  if (id !== null) openEditStock(id);
+});
+
+// ── Full image viewer ──
+function openImageViewer(src, alt) {
+  const img = document.getElementById("imgViewerImg");
+  img.src = src;
+  img.alt = alt || "";
+  document.getElementById("imgViewer").classList.add("open");
+}
+function closeImageViewer() {
+  document.getElementById("imgViewer").classList.remove("open");
+  document.getElementById("imgViewerImg").src = "";
+}
+document.getElementById("imgViewer").addEventListener("click", e => {
+  if (e.target.id !== "imgViewerImg") closeImageViewer();   // click outside the image closes
+});
+document.getElementById("imgViewerClose").addEventListener("click", closeImageViewer);
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  // Escape closes the image viewer first, then the details modal.
+  if (document.getElementById("imgViewer").classList.contains("open")) closeImageViewer();
+  else closeStockDetails();
+});
+
 // ── Search / Filter ────────────────────────────────────────────────────────
-document.getElementById("searchBatch").addEventListener("input", renderTable);
-document.getElementById("filterStatus").addEventListener("change", renderTable);
+document.getElementById("searchBatch").addEventListener("input", () => { currentPage = 1; renderTable(); });
+document.getElementById("filterStatus").addEventListener("change", () => { currentPage = 1; renderTable(); });
 
 // ── Products modal (status overview) ────────────────────────────────────────
+let allProducts = [];
 function showProductsModal() {
   document.getElementById("productsModal").classList.add("open");
+  document.getElementById("productsSearch").value = "";
+  document.getElementById("productsSearchWrap").classList.remove("has-value");
   loadProducts();
 }
 function hideProductsModal() {
@@ -1650,13 +2138,20 @@ function loadProducts() {
   const list = document.getElementById("productsList");
   list.innerHTML = `<div class="pick-empty">Loading products…</div>`;
   apiFetch(ROUTES.products, { method: "GET" })
-    .then(data => renderProductsList(data.products))
+    .then(data => { allProducts = data.products || []; applyProductsFilter(); })
     .catch(err => { list.innerHTML = `<div class="pick-empty">${err.message}</div>`; });
 }
-function renderProductsList(products) {
+function applyProductsFilter() {
+  const q = document.getElementById("productsSearch").value.trim().toLowerCase();
+  const filtered = q
+    ? allProducts.filter(p => (p.name || "").toLowerCase().includes(q) || (p.status || "").toLowerCase().includes(q))
+    : allProducts;
+  renderProductsList(filtered, q);
+}
+function renderProductsList(products, query = "") {
   const list = document.getElementById("productsList");
   if (!products.length) {
-    list.innerHTML = `<div class="pick-empty">No products yet.</div>`;
+    list.innerHTML = `<div class="pick-empty">${query ? "No products match your search." : "No products yet."}</div>`;
     return;
   }
   list.innerHTML = products.map(p => {
@@ -1679,6 +2174,17 @@ function renderProductsList(products) {
   }).join("");
 }
 
+document.getElementById("productsSearch").addEventListener("input", e => {
+  document.getElementById("productsSearchWrap").classList.toggle("has-value", !!e.target.value);
+  applyProductsFilter();
+});
+document.getElementById("productsSearchClear").addEventListener("click", () => {
+  const input = document.getElementById("productsSearch");
+  input.value = "";
+  document.getElementById("productsSearchWrap").classList.remove("has-value");
+  applyProductsFilter();
+  input.focus();
+});
 document.getElementById("openProductsModal").addEventListener("click", showProductsModal);
 document.getElementById("closeProductsModal").addEventListener("click", hideProductsModal);
 document.getElementById("productsModal").addEventListener("click", e => { if (e.target === e.currentTarget) hideProductsModal(); });
@@ -1754,6 +2260,24 @@ document.getElementById("backToProducts").addEventListener("click", () => {
   if (param in map) document.getElementById("filterStatus").value = map[param];
 })();
 renderTable();
+
+// Deep link from the Expiry page: /admin/stocks?open={stockId} opens that batch's details modal.
+(function openStockFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const id = Number(params.get("open"));
+  if (!params.has("open")) return;
+
+  // Drop the param so a refresh or Back doesn't re-open the modal.
+  params.delete("open");
+  const qs = params.toString();
+  history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : "") + window.location.hash);
+
+  if (!id || !batches.some(b => b.id === id)) {
+    showToast("That stock batch could not be found.");
+    return;
+  }
+  openStockDetails(id);
+})();
 </script>
 <script>
 /* ══════════════════════════════════════════════════════

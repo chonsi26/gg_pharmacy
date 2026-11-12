@@ -758,7 +758,14 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+  /* Mobile header: title + compact search + notification/theme buttons, all visible */
+  .header { padding: 0 12px; gap: 8px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header > .header-search { flex: 0 1 130px; min-width: 0; height: 34px; padding: 0 9px; gap: 6px; }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+  .header-actions { gap: 6px; flex-shrink: 0; }
+  /* suggestions panel: span the screen width instead of hanging off the small search box */
+  .header > .header-search .search-panel { position: fixed; top: calc(var(--header-h) + 6px); left: 12px; right: 12px; width: auto; max-width: none; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -1108,6 +1115,29 @@ tbody tr:last-child td { border-bottom: none; }
     padding:2px 8px; border-radius:999px; background:var(--wc-bg); color:var(--wc-subtle); border:1px solid var(--wc-border);
   }
   .wc-upload-box video{ width:100%; height:100%; object-fit:cover; }
+
+  /* Searchable product combobox */
+  .wc-combo{ position:relative; }
+  .wc-combo-input{ padding-right:34px; }
+  .wc-combo-caret{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-size:11px; color:var(--wc-subtle); pointer-events:none;
+  }
+  .wc-combo-list{
+    position:fixed; z-index:1100; overflow-y:auto; max-height:240px;
+    background:var(--wc-card); border:1px solid var(--wc-border); border-radius:10px;
+    box-shadow:0 12px 32px rgba(0,0,0,.18); padding:4px;
+  }
+  .wc-combo-list[hidden]{ display:none; }
+  .wc-combo-opt{
+    padding:8px 10px; border-radius:7px; font-size:13px; color:var(--wc-text);
+    cursor:pointer; display:flex; align-items:baseline; gap:8px;
+  }
+  .wc-combo-opt .code{ font-size:11.5px; color:var(--wc-subtle); }
+  .wc-combo-opt.active{ background:var(--wc-primary-light); }
+  .wc-combo-opt.selected{ font-weight:700; }
+  .wc-combo-opt mark{ background:transparent; color:var(--wc-primary); font-weight:800; }
+  .wc-combo-empty{ padding:12px 10px; font-size:12.5px; color:var(--wc-subtle); text-align:center; }
 </style>
 </head>
 <body>
@@ -1134,7 +1164,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1156,7 +1186,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
 
   <a class="nav-item active" href="{{ route('admin.pharmacy') }}">
@@ -1235,8 +1265,6 @@ tbody tr:last-child td { border-bottom: none; }
 <div style="margin-bottom:4px;">
   <div style="font-size:20px;font-weight:800;color:var(--text);">Website Customization</div>
 </div>
-<p class="wc-intro">Control what shoppers see on the storefront — site details, homepage banners, section headings, and the product catalog's brands, categories, sliders and pharmacy media. Changes to Settings, Banners, Sections and the Promo Banner update existing content; Brands, Categories and Sliders can be freely added, edited or removed.</p>
-
 <div class="wc-wrap">
   <nav class="wc-tabs">
     <a class="wc-tab" href="{{ route('admin.pharmacy') }}"><i class="fas fa-store"></i> Settings</a>
@@ -1248,7 +1276,6 @@ tbody tr:last-child td { border-bottom: none; }
     <a class="wc-tab" href="{{ route('admin.pharmacy_brands') }}"><i class="fas fa-tags"></i> Brands</a>
     <a class="wc-tab" href="{{ route('admin.pharmacy_payment_accounts') }}"><i class="fas fa-wallet"></i>Accounts</a>
   </nav>
-  <div class="wc-group-label active" data-group="catalog">Catalog management · Add, edit or remove</div>
   <section class="wc-card wc-section active" id="sec-sliders">
     <div class="wc-card-head">
       <div class="wc-card-title">
@@ -1344,6 +1371,7 @@ overlay.addEventListener('click', () => {
    DATA — loaded from the database via AdminController@pharmacy_sliders
 ============================================================================ */
 let sliders = @json($sliders);
+const PRODUCTS = @json($products);
 let mediaItems = @json($media);
 
 const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
@@ -1421,6 +1449,7 @@ function renderSliders(){
       </div>
       <div class="wc-slide-card-body">
         <div class="wc-slide-card-title">${esc(s.alt)}</div>
+        <div class="wc-slide-card-file"><i class="fas fa-capsules"></i> ${esc(s.product_name) || '—'}</div>
         <div class="wc-slide-card-file">${esc(fileBase(s.image)) || '—'}</div>
       </div>
       <div class="wc-slide-card-actions">
@@ -1467,6 +1496,7 @@ function openModal(type, id=null){
   document.getElementById('wcModalTitle').textContent = existing ? `Edit ${cfg.label}` : `Add ${cfg.label}`;
   document.getElementById('wcModalBody').innerHTML = buildForm(type, modalState.draft);
   document.getElementById('wcModalOverlay').classList.add('open');
+  if(type === 'sliders') initProductCombo();
 }
 
 function closeModal(){
@@ -1478,6 +1508,7 @@ function defaultDraft(type){
   const bases = {
     sliders: {
       image: '',
+      product_id: '',
       alt: '',
       sort_order: (sliders.length ? Math.max(...sliders.map(s => s.sort_order)) + 1 : 1),
       is_active: true,
@@ -1546,12 +1577,175 @@ async function handleDraftUpload(input, fieldKey){
   document.getElementById(`upbox-${fieldKey}`).innerHTML = `<img src="${dataUrl}">`;
   document.getElementById(`upname-${fieldKey}`).textContent = file.name;
 }
+function productLabel(p){
+  return p.name + (p.code_name ? ' — ' + p.code_name : '');
+}
+
+/** Searchable product picker: type to filter, or click / use arrow keys to choose. */
+function productSelectControl(selectedId){
+  const sel = PRODUCTS.find(p => String(p.id) === String(selectedId));
+  return `
+    <div class="wc-combo" id="wcProductCombo">
+      <input type="text" class="wc-input wc-combo-input" id="wcProductInput"
+             placeholder="Search or select a product…" autocomplete="off"
+             role="combobox" aria-expanded="false" aria-controls="wcProductList"
+             value="${esc(sel ? productLabel(sel) : '')}">
+      <i class="fas fa-chevron-down wc-combo-caret"></i>
+      <div class="wc-combo-list" id="wcProductList" role="listbox" hidden></div>
+    </div>`;
+}
+
+function initProductCombo(){
+  const input = document.getElementById('wcProductInput');
+  const list  = document.getElementById('wcProductList');
+  if(!input || !list) return;
+
+  let matches = [];
+  let active = -1;
+
+  const selectedProduct = () => PRODUCTS.find(p => String(p.id) === String(modalState.draft.product_id));
+
+  function highlight(text, q){
+    text = String(text ?? '');
+    if(!q) return esc(text);
+    const i = text.toLowerCase().indexOf(q);
+    if(i < 0) return esc(text);
+    return esc(text.slice(0, i)) + '<mark>' + esc(text.slice(i, i + q.length)) + '</mark>' + esc(text.slice(i + q.length));
+  }
+
+  function position(){
+    const r = input.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - r.bottom - 12;
+    const spaceAbove = r.top - 12;
+    const flip = spaceBelow < 160 && spaceAbove > spaceBelow;
+    const maxH = Math.max(120, Math.min(240, flip ? spaceAbove : spaceBelow));
+    list.style.left = r.left + 'px';
+    list.style.width = r.width + 'px';
+    list.style.maxHeight = maxH + 'px';
+    if(flip){
+      list.style.top = 'auto';
+      list.style.bottom = (window.innerHeight - r.top + 4) + 'px';
+    } else {
+      list.style.bottom = 'auto';
+      list.style.top = (r.bottom + 4) + 'px';
+    }
+  }
+
+  function setActive(i){
+    const opts = list.querySelectorAll('.wc-combo-opt');
+    opts.forEach(o => o.classList.remove('active'));
+    active = i;
+    if(i >= 0 && opts[i]){
+      opts[i].classList.add('active');
+      opts[i].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function render(filterText){
+    const q = (filterText || '').trim().toLowerCase();
+    matches = PRODUCTS.filter(p => !q || productLabel(p).toLowerCase().includes(q));
+    const sel = selectedProduct();
+    list.innerHTML = matches.length
+      ? matches.map((p, i) => `
+          <div class="wc-combo-opt ${sel && sel.id === p.id ? 'selected' : ''}" role="option" data-i="${i}">
+            <span>${highlight(p.name, q)}</span>
+            ${p.code_name ? `<span class="code">${highlight(p.code_name, q)}</span>` : ''}
+          </div>`).join('')
+      : '<div class="wc-combo-empty">No products match your search.</div>';
+    active = -1;
+  }
+
+  function openList(filterText){
+    render(filterText);
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+    position();
+    // Start on the already-selected product so it's easy to see/change.
+    const sel = selectedProduct();
+    if(sel){
+      const idx = matches.findIndex(p => p.id === sel.id);
+      if(idx >= 0) setActive(idx);
+    }
+  }
+
+  function closeList(){
+    list.hidden = true;
+    input.setAttribute('aria-expanded', 'false');
+    active = -1;
+  }
+
+  function choose(p){
+    modalState.draft.product_id = p.id;
+    input.value = productLabel(p);
+    closeList();
+  }
+
+  // Opening: show everything if the box holds the chosen product (or is empty).
+  input.addEventListener('focus', () => { input.select(); openList(''); });
+  input.addEventListener('click', () => { if(list.hidden) openList(''); });
+
+  // Typing: filter live, and clear the choice until a product is picked again.
+  input.addEventListener('input', () => {
+    modalState.draft.product_id = '';
+    openList(input.value);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      if(list.hidden) { openList(input.value === (selectedProduct() ? productLabel(selectedProduct()) : '') ? '' : input.value); return; }
+      if(matches.length) setActive(active + 1 >= matches.length ? 0 : active + 1);
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      if(!list.hidden && matches.length) setActive(active <= 0 ? matches.length - 1 : active - 1);
+    } else if(e.key === 'Enter'){
+      if(!list.hidden){
+        e.preventDefault();
+        if(active >= 0 && matches[active]) choose(matches[active]);
+        else if(matches.length === 1) choose(matches[0]);
+      }
+    } else if(e.key === 'Escape'){
+      if(!list.hidden){
+        e.stopPropagation();   // close the list only, not the whole modal
+        closeList();
+        const sel = selectedProduct();
+        input.value = sel ? productLabel(sel) : '';
+      }
+    } else if(e.key === 'Tab'){
+      closeList();
+    }
+  });
+
+  // mousedown (not click) so the input keeps focus and blur doesn't close the list first.
+  list.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const opt = e.target.closest('.wc-combo-opt');
+    if(opt) choose(matches[Number(opt.dataset.i)]);
+  });
+  list.addEventListener('mousemove', (e) => {
+    const opt = e.target.closest('.wc-combo-opt');
+    if(opt) setActive(Number(opt.dataset.i));
+  });
+
+  // Leaving the box: snap back to the chosen product, or clear the stray text.
+  input.addEventListener('blur', () => {
+    closeList();
+    const sel = selectedProduct();
+    input.value = sel ? productLabel(sel) : '';
+  });
+
+  const modalEl = input.closest('.wc-modal');
+  if(modalEl) modalEl.addEventListener('scroll', () => { if(!list.hidden) position(); });
+  window.addEventListener('resize', () => { if(!list.hidden) position(); });
+}
+
 function buildForm(type, d){
   if(type === 'media') return buildMediaForm(d);
   if(type === 'sliders'){
     const taken = findSliderTaking(d.sort_order, modalState.id);
     return `
       ${fieldRow('Slide image', imageUploadControl('image', d.image))}
+      ${fieldRow('Product', productSelectControl(d.product_id), 'The product this slide is about.')}
       ${fieldRow('Alt text', `<input class="wc-input" value="${esc(d.alt)}" oninput="modalState.draft.alt=this.value" placeholder="e.g. Pharmacy Products">`)}
       <div class="wc-field">
         <label>Sort order</label>
@@ -1602,6 +1796,10 @@ async function saveSlider(id, draft){
     toast('Please choose a slide image.');
     return;
   }
+  if(!draft.product_id){
+    toast('Please select the product this slide is about.');
+    return;
+  }
   if(!draft.sort_order || draft.sort_order < 1){
     toast('Please enter a valid sort order (1 or higher).');
     return;
@@ -1609,6 +1807,7 @@ async function saveSlider(id, draft){
 
   const fd = new FormData();
   fd.append('_token', CSRF_TOKEN);
+  fd.append('product_id', draft.product_id);
   fd.append('alt', draft.alt || '');
   fd.append('sort_order', draft.sort_order);
   fd.append('is_active', draft.is_active === false ? '0' : '1');

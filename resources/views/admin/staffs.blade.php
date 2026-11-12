@@ -757,7 +757,33 @@ tbody tr:last-child td { border-bottom: none; }
   .header { left: 0; }
   .main { margin-left: 0; padding: 16px; }
   .hamburger { display: flex; }
-  .header-search { display: none; }
+
+  /* Header: keep every tool visible on mobile */
+  .header { gap: 8px; padding: 0 12px; }
+  .header-title { font-size: 15px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { flex-shrink: 0; gap: 6px; }
+
+  /* Compact search, sits right beside the notifications button (same as dashboard) */
+  .header > .header-title { flex: 0 1 auto; min-width: 0; }
+  .header > .header-search {
+    display: flex;
+    margin-left: auto;
+    flex: 0 1 150px;
+    min-width: 0;
+    width: 150px;
+    max-width: 150px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .header > .header-search input { width: 100%; min-width: 0; font-size: 13px; }
+
+  /* Suggestions span the screen width instead of the narrow search box */
+  .header .search-panel {
+    position: fixed;
+    top: calc(var(--header-h) + 6px);
+    left: 8px; right: 8px;
+    width: auto; max-width: none;
+  }
   .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .quick-grid { grid-template-columns: repeat(2, 1fr); }
   .content-grid { grid-template-columns: 1fr; }
@@ -872,6 +898,27 @@ tbody tr:last-child td { border-bottom: none; }
   .card-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; flex-wrap:wrap; gap:10px; }
   .card-head h3 { font-size:15px; font-weight:700; color:var(--text); margin:0; }
   .card-head-right { display:flex; align-items:center; gap:8px; }
+
+  /* Mobile: "All Staff" title on the left, search fills the rest of the row (far right) */
+  @media (max-width: 768px) {
+    .card-head { flex-wrap: nowrap; gap: 12px; padding: 16px 16px 12px; }
+    .card-head h3 { flex-shrink: 0; white-space: nowrap; }
+    .card-head .card-head-right { flex: 1 1 auto; min-width: 0; justify-content: flex-end; }
+    .card-head .card-head-right .header-search {
+      display: flex;
+      flex: 1 1 auto;
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+      padding: 0 10px;
+      gap: 6px;
+    }
+    .card-head .card-head-right .header-search input {
+      width: 100% !important;
+      min-width: 0;
+      font-size: 13px;
+    }
+  }
 
   /* ═══════════════════════════════════════════════════════
      MODAL — Landscape on PC (≥700px) / Portrait on Mobile
@@ -1179,7 +1226,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -1200,7 +1247,7 @@ tbody tr:last-child td { border-bottom: none; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
   <a class="nav-item" href="{{ route('admin.pharmacy') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>

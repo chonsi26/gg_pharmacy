@@ -193,7 +193,32 @@ td.strong { font-weight:700; }
   .header { left:0; }
   .main { margin-left:0; padding:16px; }
   .hamburger { display:flex; }
-  .header-search { display:none; }
+  /* Header: keep every tool visible on mobile */
+  .header { gap:8px; padding:0 12px; }
+  .header-title { font-size:15px; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .header-actions { flex-shrink:0; gap:6px; }
+
+  /* Compact search, sits right beside the notifications button (matches dashboard/index page) */
+  .header > .header-title { flex:0 1 auto; min-width:0; }
+  .header > .header-search {
+    display:flex;
+    margin-left:auto;
+    flex:0 1 150px;
+    min-width:0;
+    width:150px;
+    max-width:150px;
+    padding:0 10px;
+    gap:6px;
+  }
+  .header > .header-search input { width:100%; min-width:0; font-size:13px; }
+
+  /* Suggestions span the screen width instead of the narrow search box */
+  .header .search-panel {
+    position:fixed;
+    top:calc(var(--header-h) + 6px);
+    left:8px; right:8px;
+    width:auto; max-width:none;
+  }
   .stats-grid { gap:12px; }
   .stat-value { font-size:20px; }
   .head-tools { width:100%; }
@@ -265,7 +290,7 @@ td.strong { font-weight:700; }
   </a>
   <a class="nav-item" href="{{ route('admin.inventory') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-    Inventory<span class="nav-badge">3</span>
+    Inventory
   </a>
   <a class="nav-item" href="{{ route('admin.orders') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
@@ -287,7 +312,7 @@ td.strong { font-weight:700; }
   </a>
   <a class="nav-item" href="{{ route('admin.expiry') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    Expiry Tracking<span class="nav-badge">2</span>
+    Expiry Tracking
   </a>
   <a class="nav-item" href="{{ route('admin.pharmacy') }}">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -401,12 +426,12 @@ td.strong { font-weight:700; }
     <div class="stat-card">
       <div class="stat-icon orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></div>
       <div class="stat-value" id="statPurchases">0</div>
-      <div class="stat-label">Units Purchased</div>
+      <div class="stat-label">Stocks Purchased</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
       <div class="stat-value" id="statUnitsSold">0</div>
-      <div class="stat-label">Units Sold</div>
+      <div class="stat-label">Total Products Orders</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
@@ -445,6 +470,7 @@ td.strong { font-weight:700; }
     <div class="card-head">
       <div><h3>Brands</h3><small id="brandsSub"></small></div>
       <div class="card-tools">
+        <input type="text" class="tbl-search" id="brandSearch" placeholder="Filter brands…" aria-label="Filter brands table">
       </div>
     </div>
     <div class="table-wrap">
@@ -466,6 +492,7 @@ td.strong { font-weight:700; }
     <div class="card-head">
       <div><h3>Categories</h3><small id="categoriesSub"></small></div>
       <div class="card-tools">
+        <input type="text" class="tbl-search" id="categorySearch" placeholder="Filter categories…" aria-label="Filter categories table">
       </div>
     </div>
     <div class="table-wrap">
@@ -684,6 +711,7 @@ async function loadData() {
 
 /* ── Generic paginated table ───────────────────────── */
 const PAGE_SIZE = 10;
+const MAX_PAGE_BTNS = 5;   // page numbers visible at once
 function makeTable({ bodyId, pagerId, getRows, renderRow, colSpan, emptyText }) {
   const body = document.getElementById(bodyId);
   const pager = document.getElementById(pagerId);
@@ -703,7 +731,11 @@ function makeTable({ bodyId, pagerId, getRows, renderRow, colSpan, emptyText }) 
       ? `Showing ${from + 1}–${from + slice.length} of ${rows.length}`
       : 'No results';
     let btns = `<button ${t.page === 1 ? 'disabled' : ''} data-p="${t.page - 1}">‹ Prev</button>`;
-    for (let i = 1; i <= pages; i++) btns += `<button class="${i === t.page ? 'active' : ''}" data-p="${i}">${i}</button>`;
+    // Show at most MAX_PAGE_BTNS numbers; the window slides as the page changes
+    let start = Math.max(1, t.page - Math.floor(MAX_PAGE_BTNS / 2));
+    let end = start + MAX_PAGE_BTNS - 1;
+    if (end > pages) { end = pages; start = Math.max(1, end - MAX_PAGE_BTNS + 1); }
+    for (let i = start; i <= end; i++) btns += `<button class="${i === t.page ? 'active' : ''}" data-p="${i}">${i}</button>`;
     btns += `<button ${t.page === pages ? 'disabled' : ''} data-p="${t.page + 1}">Next ›</button>`;
     pager.innerHTML = `<div class="pager-info">${info}</div>` + (pages > 1 ? `<div class="pager-btns">${btns}</div>` : '');
   };
@@ -740,6 +772,28 @@ function filteredProducts() {
   );
 }
 
+const brandSearchInput = document.getElementById('brandSearch');
+const categorySearchInput = document.getElementById('categorySearch');
+
+function filteredBrands() {
+  const q = brandSearchInput.value.trim().toLowerCase();
+  return brandRows.filter(b => !q || `${b.brand} ${b.mostSold}`.toLowerCase().includes(q));
+}
+function filteredCategories() {
+  const q = categorySearchInput.value.trim().toLowerCase();
+  return categoryRows.filter(c => !q || `${c.category} ${c.mostSold}`.toLowerCase().includes(q));
+}
+
+/* Products included in exports: only those with at least one purchase in the
+   selected period (week / month / all time). Zero-purchase products are skipped.
+   The on-screen table is unchanged. */
+function exportableProducts() {
+  return filteredProducts().filter(p => Number(p.totalPurchases) > 0);
+}
+/* Same rule for brands and categories: no Total Purchases = not exported. */
+const exportableBrands     = () => filteredBrands().filter(b => Number(b.totalPurchases) > 0);
+const exportableCategories = () => filteredCategories().filter(c => Number(c.totalPurchases) > 0);
+
 const productsTable = makeTable({
   bodyId:'productsBody', pagerId:'productsPager', colSpan:7, emptyText:'No products match your search.',
   getRows: filteredProducts,
@@ -749,31 +803,31 @@ const productsTable = makeTable({
     <td>${esc(p.brand)}</td>
     <td class="num">${int(p.stocks)}</td>
     <td class="num">${int(p.qty)}</td>
-    <td class="num">${int(p.purchases)}</td>
+    <td class="num">${int(p.totalPurchases)}</td>
     <td class="num strong">${peso(p.sales)}</td>
   </tr>`
 });
 
 const brandsTable = makeTable({
-  bodyId:'brandsBody', pagerId:'brandsPager', colSpan:5, emptyText:'No brands.',
-  getRows: () => brandRows,
+  bodyId:'brandsBody', pagerId:'brandsPager', colSpan:5, emptyText:'No brands match your search.',
+  getRows: filteredBrands,
   renderRow: b => `<tr>
     <td class="strong">${esc(b.brand)}</td>
     <td class="num">${int(b.totalProducts)}</td>
-    <td class="num">${int(b.purchases)}</td>
+    <td class="num">${int(b.totalPurchases)}</td>
     <td>${esc(b.mostSold)}</td>
     <td class="num strong">${peso(b.sales)}</td>
   </tr>`
 });
 
 const categoriesTable = makeTable({
-  bodyId:'categoriesBody', pagerId:'categoriesPager', colSpan:6, emptyText:'No categories.',
-  getRows: () => categoryRows,
+  bodyId:'categoriesBody', pagerId:'categoriesPager', colSpan:6, emptyText:'No categories match your search.',
+  getRows: filteredCategories,
   renderRow: c => `<tr>
     <td class="strong">${esc(c.category)}</td>
     <td class="num">${int(c.totalProducts)}</td>
     <td class="num">${int(c.totalBrands)}</td>
-    <td class="num">${int(c.purchases)}</td>
+    <td class="num">${int(c.totalPurchases)}</td>
     <td class="num strong">${peso(c.sales)}</td>
     <td>${esc(c.mostSold)}</td>
   </tr>`
@@ -803,6 +857,9 @@ document.getElementById('periodSwitch').addEventListener('click', e => {
 
 [searchInput, filterCategory, filterBrand].forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { productsTable.page = 1; productsTable.render(); }));
 
+brandSearchInput.addEventListener('input', () => { brandsTable.page = 1; brandsTable.render(); });
+categorySearchInput.addEventListener('input', () => { categoriesTable.page = 1; categoriesTable.render(); });
+
 /* ── CSV export (exports all rows, not just the current page) ── */
 function csvCell(v) {
   const s = String(v ?? '');
@@ -827,15 +884,15 @@ function showToast(msg) {
 const EXPORTS = {
   products: () => ({
     header: ['Product','Category','Brand','Total Stocks','Total Stock Quantity','Total Purchases','Total Sales'],
-    rows: filteredProducts().map(p => [p.name, p.category, p.brand, p.stocks, p.qty, p.purchases, p.sales.toFixed(2)])
+    rows: exportableProducts().map(p => [p.name, p.category, p.brand, p.stocks, p.qty, p.totalPurchases, p.sales.toFixed(2)])
   }),
   brands: () => ({
     header: ['Brand','Total Products','Total Purchases','Most Sold Product','Total Sales'],
-    rows: brandRows.map(b => [b.brand, b.totalProducts, b.purchases, b.mostSold, b.sales.toFixed(2)])
+    rows: exportableBrands().map(b => [b.brand, b.totalProducts, b.totalPurchases, b.mostSold, b.sales.toFixed(2)])
   }),
   categories: () => ({
     header: ['Category','Total Products','Total Brands','Total Purchases','Total Sales','Most Sold Product'],
-    rows: categoryRows.map(c => [c.category, c.totalProducts, c.totalBrands, c.purchases, c.sales.toFixed(2), c.mostSold])
+    rows: exportableCategories().map(c => [c.category, c.totalProducts, c.totalBrands, c.totalPurchases, c.sales.toFixed(2), c.mostSold])
   })
 };
 
@@ -909,8 +966,8 @@ const maxBy    = (rows, k) => rows.reduce((best, r) => (!best || Number(r[k]) > 
 /* Each builder returns the sentences + table for one report. */
 const PDF_REPORTS = {
   products() {
-    const rows = filteredProducts();
-    const sold = sumBy(rows, 'unitsSold'), bought = sumBy(rows, 'purchases');
+    const rows = exportableProducts();
+    const sold = sumBy(rows, 'unitsSold'), bought = sumBy(rows, 'purchases'), purchased = sumBy(rows, 'totalPurchases');
     const sales = sumBy(rows, 'sales'), onHand = sumBy(rows, 'qty'), batches = sumBy(rows, 'stocks');
     const outOfStock = rows.filter(r => Number(r.qty) === 0).length;
     const topRev = maxBy(rows, 'sales'), topUnits = maxBy(rows, 'unitsSold');
@@ -922,14 +979,14 @@ const PDF_REPORTS = {
 
     const p = [];
     p.push(`This Product Performance Report summarizes ${count(rows.length, 'product')} from the ${SITE_NAME} inventory for the period: ${periodLabel}.` +
-      (filters.length ? ` The figures are limited to the current filters (${filters.join(', ')}).` : ' All products in the catalogue are included.'));
+      (filters.length ? ` The figures are limited to the current filters (${filters.join(', ')}).` : ' All products with at least one purchase in this period are included; products with no purchases are omitted.'));
     if (!rows.length) {
-      p.push('No products matched the selected filters, so there is no data to report.');
+      p.push('No products with purchases matched the selected period and filters, so there is no data to report.');
     } else {
-      p.push(`Within this period, customers ordered ${count(bought, 'unit')} (excluding cancelled orders), and ${count(sold, 'unit')} were completed and picked up, generating total sales of ${pdfPeso(sales)}.`);
+      p.push(`Within this period, ${count(bought, 'stock record')} were purchased, customers placed ${count(sold, 'product order')} with ${count(purchased, 'unit')} purchased in total (excluding cancelled orders); completed (picked up) orders generated total sales of ${pdfPeso(sales)}.`);
       p.push(topRev && topRev.sales > 0
         ? `The highest-earning product was ${topRev.name} with ${pdfPeso(topRev.sales)} in sales` +
-          (topUnits && topUnits.id !== topRev.id && topUnits.unitsSold > 0 ? `, while ${topUnits.name} sold the most units (${int(topUnits.unitsSold)}).` : '.')
+          (topUnits && topUnits.id !== topRev.id && topUnits.unitsSold > 0 ? `, while ${topUnits.name} had the most orders (${int(topUnits.unitsSold)}).` : '.')
         : 'No completed sales were recorded for these products in this period.');
       p.push(`Current stock on hand stands at ${count(onHand, 'unit')} across ${count(batches, 'stock batch', 'stock batches')}. ` +
         (outOfStock ? `${count(outOfStock, 'product')} ${outOfStock === 1 ? 'has' : 'have'} no stock on hand and may need to be replenished. ` : 'Every listed product currently has stock on hand. ') +
@@ -938,25 +995,25 @@ const PDF_REPORTS = {
     return {
       title: 'Product Performance Report',
       paragraphs: p,
-      kpis: [['Products', int(rows.length)], ['Units Purchased', int(bought)], ['Units Sold', int(sold)], ['Total Sales', pdfPeso(sales)]],
-      head: ['Product', 'Category', 'Brand', 'Stocks', 'Stock Qty', 'Purchases', 'Total Sales (PHP)'],
-      body: rows.map(r => [r.name, r.category, r.brand, int(r.stocks), int(r.qty), int(r.purchases), pdfMoney(r.sales)]),
-      foot: ['Total', '', '', int(batches), int(onHand), int(bought), pdfMoney(sales)],
+      kpis: [['Products', int(rows.length)], ['Stocks Purchased', int(bought)], ['Total Products Orders', int(sold)], ['Total Sales', pdfPeso(sales)]],
+      head: ['Product', 'Category', 'Brand', 'Stocks', 'Stock Qty', 'Total Purchases', 'Total Sales (PHP)'],
+      body: rows.map(r => [r.name, r.category, r.brand, int(r.stocks), int(r.qty), int(r.totalPurchases), pdfMoney(r.sales)]),
+      foot: ['Total', '', '', int(batches), int(onHand), int(purchased), pdfMoney(sales)],
       numCols: [3, 4, 5, 6],
       widths: { 0: 44 }
     };
   },
 
   brands() {
-    const rows = brandRows;
-    const sales = sumBy(rows, 'sales'), bought = sumBy(rows, 'purchases'), prods = sumBy(rows, 'totalProducts');
-    const topSales = maxBy(rows, 'sales'), topBuy = maxBy(rows, 'purchases');
+    const rows = exportableBrands();
+    const sales = sumBy(rows, 'sales'), ordered = sumBy(rows, 'totalPurchases'), prods = sumBy(rows, 'totalProducts');
+    const topSales = maxBy(rows, 'sales'), topBuy = maxBy(rows, 'totalPurchases');
     const idle = rows.filter(r => Number(r.sales) === 0).length;
 
     const p = [];
-    p.push(`This Brand Performance Report compares ${count(rows.length, 'brand')} carried by ${SITE_NAME} for the period: ${periodLabel}. Together they cover ${count(prods, 'product')}, with ${count(bought, 'unit')} ordered by customers and total sales of ${pdfPeso(sales)}.`);
+    p.push(`This Brand Performance Report compares ${count(rows.length, 'brand')} with purchases at ${SITE_NAME} for the period: ${periodLabel}. Together they cover ${count(prods, 'product')}, with ${count(ordered, 'unit')} purchased and total sales of ${pdfPeso(sales)}.`);
     if (!rows.length) {
-      p.push('No brands are on record yet.');
+      p.push('No brands with purchases were recorded for this period.');
     } else {
       if (topSales && topSales.sales > 0) {
         const share = sales > 0 ? (topSales.sales / sales * 100).toFixed(1) : '0.0';
@@ -965,33 +1022,33 @@ const PDF_REPORTS = {
       } else {
         p.push('No completed sales were recorded for any brand in this period.');
       }
-      if (topBuy && topBuy.purchases > 0 && (!topSales || topBuy.brand !== topSales.brand)) {
-        p.push(`${topBuy.brand} received the most customer orders with ${count(topBuy.purchases, 'unit')} ordered.`);
+      if (topBuy && topBuy.totalPurchases > 0 && (!topSales || topBuy.brand !== topSales.brand)) {
+        p.push(`${topBuy.brand} had the most purchases with ${count(topBuy.totalPurchases, 'unit')}.`);
       }
       if (idle) p.push(`${count(idle, 'brand')} recorded no sales in this period, which may be worth reviewing for promotion or stocking decisions.`);
     }
     return {
       title: 'Brand Performance Report',
       paragraphs: p,
-      kpis: [['Brands', int(rows.length)], ['Products', int(prods)], ['Units Purchased', int(bought)], ['Total Sales', pdfPeso(sales)]],
-      head: ['Brand', 'Products', 'Purchases', 'Most Sold Product', 'Total Sales (PHP)'],
-      body: rows.map(r => [r.brand, int(r.totalProducts), int(r.purchases), r.mostSold, pdfMoney(r.sales)]),
-      foot: ['Total', int(prods), int(bought), '', pdfMoney(sales)],
+      kpis: [['Brands', int(rows.length)], ['Products', int(prods)], ['Total Purchases', int(ordered)], ['Total Sales', pdfPeso(sales)]],
+      head: ['Brand', 'Products', 'Total Purchases', 'Most Sold Product', 'Total Sales (PHP)'],
+      body: rows.map(r => [r.brand, int(r.totalProducts), int(r.totalPurchases), r.mostSold, pdfMoney(r.sales)]),
+      foot: ['Total', int(prods), int(ordered), '', pdfMoney(sales)],
       numCols: [1, 2, 4],
       widths: {}
     };
   },
 
   categories() {
-    const rows = categoryRows;
-    const sales = sumBy(rows, 'sales'), bought = sumBy(rows, 'purchases'), prods = sumBy(rows, 'totalProducts');
-    const topSales = maxBy(rows, 'sales'), topBuy = maxBy(rows, 'purchases');
+    const rows = exportableCategories();
+    const sales = sumBy(rows, 'sales'), ordered = sumBy(rows, 'totalPurchases'), prods = sumBy(rows, 'totalProducts');
+    const topSales = maxBy(rows, 'sales'), topBuy = maxBy(rows, 'totalPurchases');
     const idle = rows.filter(r => Number(r.sales) === 0).length;
 
     const p = [];
-    p.push(`This Category Performance Report reviews ${count(rows.length, 'category', 'categories')} in the ${SITE_NAME} inventory for the period: ${periodLabel}. Together they contain ${count(prods, 'product')}, with ${count(bought, 'unit')} ordered by customers and total sales of ${pdfPeso(sales)}.`);
+    p.push(`This Category Performance Report reviews ${count(rows.length, 'category', 'categories')} with purchases in the ${SITE_NAME} inventory for the period: ${periodLabel}. Together they contain ${count(prods, 'product')}, with ${count(ordered, 'unit')} purchased and total sales of ${pdfPeso(sales)}.`);
     if (!rows.length) {
-      p.push('No categories are on record yet.');
+      p.push('No categories with purchases were recorded for this period.');
     } else {
       if (topSales && topSales.sales > 0) {
         const share = sales > 0 ? (topSales.sales / sales * 100).toFixed(1) : '0.0';
@@ -1000,18 +1057,18 @@ const PDF_REPORTS = {
       } else {
         p.push('No completed sales were recorded for any category in this period.');
       }
-      if (topBuy && topBuy.purchases > 0 && (!topSales || topBuy.category !== topSales.category)) {
-        p.push(`${topBuy.category} attracted the most customer orders with ${count(topBuy.purchases, 'unit')} ordered.`);
+      if (topBuy && topBuy.totalPurchases > 0 && (!topSales || topBuy.category !== topSales.category)) {
+        p.push(`${topBuy.category} had the most purchases with ${count(topBuy.totalPurchases, 'unit')}.`);
       }
       if (idle) p.push(`${count(idle, 'category', 'categories')} recorded no sales in this period.`);
     }
     return {
       title: 'Category Performance Report',
       paragraphs: p,
-      kpis: [['Categories', int(rows.length)], ['Products', int(prods)], ['Units Purchased', int(bought)], ['Total Sales', pdfPeso(sales)]],
-      head: ['Category', 'Products', 'Brands', 'Purchases', 'Total Sales (PHP)', 'Most Sold Product'],
-      body: rows.map(r => [r.category, int(r.totalProducts), int(r.totalBrands), int(r.purchases), pdfMoney(r.sales), r.mostSold]),
-      foot: ['Total', int(prods), '', int(bought), pdfMoney(sales), ''],
+      kpis: [['Categories', int(rows.length)], ['Products', int(prods)], ['Total Purchases', int(ordered)], ['Total Sales', pdfPeso(sales)]],
+      head: ['Category', 'Products', 'Brands', 'Total Purchases', 'Total Sales (PHP)', 'Most Sold Product'],
+      body: rows.map(r => [r.category, int(r.totalProducts), int(r.totalBrands), int(r.totalPurchases), pdfMoney(r.sales), r.mostSold]),
+      foot: ['Total', int(prods), '', int(ordered), pdfMoney(sales), ''],
       numCols: [1, 2, 3, 4],
       widths: {}
     };
@@ -1040,6 +1097,7 @@ async function exportPdf() {
   if (!window.jspdf || !window.jspdf.jsPDF) { showToast('PDF library failed to load. Check your connection.'); return; }
   showToast('Preparing PDF…');
   const logo = await loadLogoDataUrl();
+  const exportedProductCount = exportableProducts().length;
   const sections = [PDF_REPORTS.products(), PDF_REPORTS.brands(), PDF_REPORTS.categories()];
 
   const { jsPDF } = window.jspdf;
@@ -1093,8 +1151,8 @@ async function exportPdf() {
   doc.setTextColor(...PDF_INK); doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
   const overview = [
     `This report consolidates the product, brand and category performance of ${SITE_NAME} for the period: ${periodLabel}. ` +
-    `Across the inventory, ${count(totals.products, 'product')} were tracked, customers ordered ${count(totals.purchases, 'unit')}, ` +
-    `and ${count(totals.unitsSold, 'unit')} were completed and picked up, generating total sales of ${pdfPeso(totals.sales)}.`,
+    `Across the inventory, ${count(exportedProductCount, 'product')} with purchases were tracked, ${count(totals.purchases, 'stock record')} were purchased, ` +
+    `customers placed ${count(totals.unitsSold, 'product order')} for ${count(totals.totalPurchases, 'unit')} purchased in total, and completed (picked up) orders generated total sales of ${pdfPeso(totals.sales)}.`,
     'The report is organized in three sections: (1) Products, (2) Brands and (3) Categories. Each section opens with a written summary of its key findings, followed by the detailed figures.'
   ];
   overview.forEach(par => {
@@ -1105,7 +1163,7 @@ async function exportPdf() {
 
   /* KPI tiles */
   y += 2;
-  const kpis = [['Products', int(totals.products)], ['Units Purchased', int(totals.purchases)], ['Units Sold', int(totals.unitsSold)], ['Total Sales', pdfPeso(totals.sales)]];
+  const kpis = [['Products', int(exportedProductCount)], ['Stocks Purchased', int(totals.purchases)], ['Total Products Orders', int(totals.unitsSold)], ['Total Sales', pdfPeso(totals.sales)]];
   const gap = 4, bw = (W - 2 * M - 3 * gap) / 4;
   kpis.forEach(([label, value], i) => {
     const x = M + i * (bw + gap);
@@ -1120,7 +1178,7 @@ async function exportPdf() {
   y += 17 + 6;
   doc.setFont('helvetica', 'italic'); doc.setFontSize(8); doc.setTextColor(...PDF_GREY);
   const noteLines = doc.splitTextToSize(
-    'Note: Sales are based on completed (picked up) orders. Purchases are units ordered by customers, excluding cancelled orders. ' +
+    'Note: Sales are based on completed (picked up) orders. Stocks Purchased is the number of stock records, Total Purchases is the number of units customers ordered, and Total Products Orders is the number of customer orders containing each product (both exclude cancelled orders). ' +
     'Stock figures reflect current inventory and are independent of the selected period. Amounts are in Philippine Peso (PHP).', W - 2 * M);
   doc.text(noteLines, M, y, { lineHeightFactor: 1.4 });
   y += noteLines.length * 3.9 + 8;

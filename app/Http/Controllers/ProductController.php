@@ -21,15 +21,18 @@ class ProductController extends Controller
         // ── Navigation (categories, same as the homepage nav) ─────────────────
         $categories = Category::active()->orderBy('sort_order')->get();
 
-        // ── Related products (same section, excluding current, max 10) ────────
-        $relatedProducts = Product::active()
-            ->where('section_id', $product->section_id)
-            ->where('id', '!=', $product->id)
-            ->with(['category', 'brand'])
-            ->withAvailableStock()
-            ->orderBy('sort_order')
-            ->limit(10)
-            ->get();
+        // ── Related products (same brand, excluding current, max 10) ──────────
+        // Products without a brand have nothing to match on, so skip the query.
+        $relatedProducts = $product->brand_id
+            ? Product::active()
+                ->where('brand_id', $product->brand_id)
+                ->where('id', '!=', $product->id)
+                ->with(['category', 'brand'])
+                ->withAvailableStock()
+                ->orderBy('sort_order')
+                ->limit(10)
+                ->get()
+            : collect();
 
         // ── Wishlist state (drives whether the heart renders red) ─────────────
         $inWishlist = Auth::check()

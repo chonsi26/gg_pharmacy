@@ -339,9 +339,10 @@
     .blogs-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -356,7 +357,10 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     .image-slider { height: 200px; }
     .slider-arrow { padding: 8px 10px; font-size: 14px; }
     .brands-ticker { padding: 12px 16px; }
@@ -402,7 +406,12 @@
     .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
     .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
   }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
   @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
     .product-card { flex: 0 0 145px; }
     .cat-item { flex: 0 0 76px; }
     .cat-circle { width: 70px; height: 70px; }
@@ -511,7 +520,9 @@
   .pay-accounts-link:hover { color: #083769; }
   .pa-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 2100; align-items: center; justify-content: center; padding: 16px; }
   .pa-overlay.open { display: flex; }
-  .pa-box { background: #fff; border-radius: 12px; width: 100%; max-width: 760px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
+  .pa-box { background: #fff; border-radius: 12px; width: 100%; max-width: 420px; max-height: 92vh; display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,0.2); transition: max-width .2s ease; }
+  /* Portrait for the app list; landscape once a payment app is selected */
+  .pa-box.landscape { max-width: 760px; }
   .pa-head { display: flex; align-items: center; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--border); }
   .pa-head h3 { font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 800; flex: 1; }
   .pa-back { background: none; border: none; color: #0b4a8f; font-size: 13px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 5px; padding: 0; font-family: 'Montserrat', sans-serif; }
@@ -520,7 +531,7 @@
   .pa-close:hover { color: var(--red); }
   .pa-body { padding: 18px 22px 22px; overflow-y: auto; flex: 1 1 auto; }
   .pa-hint { font-size: 12px; color: var(--gray); margin-bottom: 12px; }
-  .pa-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .pa-list { display: grid; grid-template-columns: 1fr; gap: 8px; }
   .pa-app-btn { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 14px; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s, background .15s; }
   .pa-app-btn:hover { border-color: #0b4a8f; background: #f5faff; }
   .pa-app-btn i { color: #9ca3af; font-size: 12px; }
@@ -649,6 +660,13 @@
   .status-tab.active { color: var(--red); border-bottom-color: var(--red); }
   .status-tab .tab-count { font-size: 11px; font-weight: 700; background: #f3f4f6; color: #4b5563; border-radius: 10px; padding: 1px 8px; }
   .status-tab.active .tab-count { background: var(--red); color: #fff; }
+  /* Mobile: all 6 tabs on ONE row, equal widths, no horizontal scrolling */
+  @media (max-width: 600px) {
+    .status-tabs { display: flex; flex-wrap: nowrap; overflow: visible; }
+    .status-tab { flex: 1 1 0; min-width: 0; flex-direction: column; justify-content: center; gap: 4px; padding: 9px 1px 8px; font-size: 10px; line-height: 1.15; letter-spacing: -0.1px; white-space: normal; text-align: center; border-right: 1px solid #eceef1; }
+    .status-tab:last-child { border-right: none; }
+    .status-tab .tab-count { font-size: 9.5px; padding: 1px 6px; min-width: 18px; }
+  }
   /* ── ORDER SEARCH ─────────────────────────────────────────────────────── */
   .order-search { position: relative; margin-bottom: 12px; width: 100%; max-width: 280px; }
   .order-search > i.fa-search { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 12px; pointer-events: none; }
@@ -664,9 +682,12 @@
   .filter-empty.show { display: block; }
   .filter-empty i { font-size: 34px; color: var(--border); margin-bottom: 12px; display: block; }
 
-  .empty-orders { text-align: center; padding: 60px 20px; color: var(--gray); }
-  .empty-orders i { font-size: 40px; color: var(--border); margin-bottom: 14px; }
-  .empty-orders a { color: var(--red); font-weight: 700; }
+  .empty-orders { background: #fff; border: 1px solid #d5d8dc; border-radius: 4px; text-align: center; padding: 56px 24px; }
+  .empty-orders-icon { width: 56px; height: 56px; margin: 0 auto 18px; border-radius: 50%; background: #f3f4f6; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 22px; }
+  .empty-orders h2 { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .empty-orders p { font-size: 13px; color: var(--gray); line-height: 1.5; max-width: 360px; margin: 0 auto; }
+  .empty-orders-btn { display: inline-flex; align-items: center; justify-content: center; margin-top: 22px; height: 40px; padding: 0 24px; background: var(--green); color: #fff; border: 1px solid var(--dark-green); border-radius: 3px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.3px; transition: background 0.15s ease; }
+  .empty-orders-btn:hover { background: var(--dark-green); }
 
   /* ── ORDER TABLE — mobile: collapse the 4 columns into a stacked card row ─ */
   @media (max-width: 600px) {
@@ -706,10 +727,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -822,9 +840,11 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? 'No location available' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? 'No location available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}</span>
 </div>
 <div class="page-wrap">
 
@@ -950,10 +970,10 @@
   @if($orders->isEmpty())
 
     <div class="empty-orders">
-      <i class="fas fa-receipt"></i>
-      <h2 style="margin-bottom:8px;">No orders yet</h2>
-      <p>Once you place an order, it'll show up here.</p>
-      <p style="margin-top:14px;"><a href="{{ route('home') }}">Start shopping →</a></p>
+      <div class="empty-orders-icon"><i class="fas fa-receipt"></i></div>
+      <h2>No orders yet</h2>
+      <p>Once you place an order, it will appear here so you can track its status.</p>
+      <a href="{{ route('home') }}" class="empty-orders-btn">Browse Products</a>
     </div>
 
   @else
@@ -1414,6 +1434,7 @@
     $('paDetailView').style.display = 'none';
     $('paBack').style.display       = 'none';
     $('paTitle').textContent        = 'Payment Accounts';
+    modal.querySelector('.pa-box').classList.remove('landscape');
   }
 
   function openLightbox(src, alt) {
@@ -1453,6 +1474,7 @@
     $('paDetailView').style.display = '';
     $('paBack').style.display       = 'inline-flex';
     $('paTitle').textContent        = acc.app;
+    modal.querySelector('.pa-box').classList.toggle('landscape', !!acc.image);
   }
 
   // Build the list of payment apps once
@@ -2152,11 +2174,6 @@
   });
 </script>
 
-@if(!empty($settings['chatbase_id']))
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
-@endif
 
 <script>
   // Keep the header cart badge in sync on load (cart.js also updates it on

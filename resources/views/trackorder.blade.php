@@ -339,9 +339,10 @@
     .blogs-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 768px) {
-    .top-bar { padding: 6px 16px; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    .top-bar .sep { display: none; }
-    .top-bar a.store-finder, .top-bar a.track-order { display: none; }
+    .top-bar { padding: 6px 8px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; font-size: 10.5px; }
+    .top-bar > a, .top-bar > form { flex: 0 1 auto; min-width: 0; }
+    .top-bar a { white-space: nowrap; gap: 4px; }
+    .top-bar .sep { display: inline; font-size: 10px; flex: 0 0 auto; }
     .top-bar .social { margin-left: 0; }
     .header { padding: 10px 16px; flex-wrap: wrap; gap: 10px; }
     .logo img { height: 44px; }
@@ -356,7 +357,10 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     .image-slider { height: 200px; }
     .slider-arrow { padding: 8px 10px; font-size: 14px; }
     .brands-ticker { padding: 12px 16px; }
@@ -402,7 +406,12 @@
     .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
     .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
   }
+  @media (max-width: 340px) {
+    .top-bar a i { display: none; }
+  }
   @media (max-width: 400px) {
+    .top-bar { padding: 6px 6px; gap: 4px; font-size: 10px; }
+    .top-bar a i { font-size: 10px; }
     .product-card { flex: 0 0 145px; }
     .cat-item { flex: 0 0 76px; }
     .cat-circle { width: 70px; height: 70px; }
@@ -557,10 +566,7 @@
       </a>
     </form>
   @endguest
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <!-- HEADER -->
@@ -673,9 +679,11 @@
 
 <!-- GREEN ADDRESS STRIP -->
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? 'No location available' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? 'No location available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? 'No phone number available' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? 'No working hours available' }}</span>
 </div>
 <div class="track-page">
 <div class="track-wrap">
@@ -1095,6 +1103,22 @@
       setTimeout(tick, 30000);
     }
     tick();
+  })();
+</script>
+
+<!-- SHIPPING BAR -->
+<div class="shipping-bar">
+  {{ $settings['shipping_message'] ?? 'No shipping message' }} &nbsp;<a href="#">Dismiss</a>
+</div>
+
+<script>
+  (function () {
+    var link = document.querySelector('.shipping-bar a');
+    if (!link) return;
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.target.closest('.shipping-bar').style.display = 'none';
+    });
   })();
 </script>
 

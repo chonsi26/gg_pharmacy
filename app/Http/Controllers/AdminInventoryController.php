@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Section;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -24,9 +24,7 @@ class AdminInventoryController extends Controller
     // ── Page ────────────────────────────────────────────────────────────────
 
     /**
-     * Inventory listing. Same query as the old AdminController@inventory,
-     * plus $sections so the Section dropdowns can be populated from the DB
-     * instead of the hard-coded "Section A/B/C/D" options.
+     * Inventory listing. Same query as the old AdminController@inventory.
      */
     public function index(): View
     {
@@ -36,7 +34,6 @@ class AdminInventoryController extends Controller
         $products = Product::with([
                 'category',
                 'brand',
-                'section',
                 'stocks' => function ($query) {
                     $query->where('is_active', true)->orderBy('id');
                 },
@@ -47,10 +44,9 @@ class AdminInventoryController extends Controller
 
         $categories = Category::orderBy('sort_order')->orderBy('name')->get();
         $brands     = Brand::orderBy('sort_order')->orderBy('name')->get();
-        $sections   = Section::orderBy('sort_order')->orderBy('label')->get();
 
         return view('admin.inventory', compact(
-            'logo2', 'siteName', 'products', 'categories', 'brands', 'sections'
+            'logo2', 'siteName', 'products', 'categories', 'brands'
         ));
     }
 
@@ -131,7 +127,6 @@ class AdminInventoryController extends Controller
         $product->load([
             'category',
             'brand',
-            'section',
             'stocks' => function ($query) {
                 $query->where('is_active', true)->orderBy('id');
             },
@@ -148,8 +143,6 @@ class AdminInventoryController extends Controller
     {
         $data = $this->validatedProductData($request);
 
-        $data['section_id'] = $this->resolveSectionId($request->input('section_id'));
-
         // products.image is NOT NULL in the migration, so default to an empty
         // string — the blade already checks @if($product->image) before rendering.
         $data['image'] = $request->hasFile('image')
@@ -164,18 +157,17 @@ class AdminInventoryController extends Controller
         if ($request->filled('sort_order')) {
             [$data['sort_order'], $swapped] = $this->resolveSortOrder(
                 (int) $request->input('sort_order'),
-                $data['section_id'],
                 null
             );
         } else {
-            $data['sort_order'] = $this->lowestFreeSortOrder($data['section_id']);
+            $data['sort_order'] = $this->lowestFreeSortOrder();
         }
 
         $product = Product::create($data);
-        $product->load(['category', 'brand', 'section']);
+        $product->load(['category', 'brand']);
 
         $message = $swapped
-            ? "\"{$product->name}\" added to inventory. \"{$swapped->name}\" was moved to the end of that section to make room."
+            ? "\"{$product->name}\" added to inventory. \"{$swapped->name}\" was moved to the end of the list to make room."
             : "\"{$product->name}\" added to inventory.";
 
         if ($request->wantsJson()) {
@@ -195,11 +187,6 @@ class AdminInventoryController extends Controller
     {
         $data = $this->validatedProductData($request, $product);
 
-        // Only move the product to another section if one was actually sent.
-        if ($request->filled('section_id')) {
-            $data['section_id'] = $this->resolveSectionId($request->input('section_id'));
-        }
-
         // Replace the image only when a new file is uploaded; otherwise keep
         // the existing one and leave the stored file alone.
         if ($request->hasFile('image')) {
@@ -214,42 +201,28 @@ class AdminInventoryController extends Controller
         $data['requires_prescription'] = $request->boolean('requires_prescription');
         $data['is_active']             = $request->boolean('is_active', (bool) $product->is_active);
 
-        $swapped        = null;
-        $sectionChanged = false;
+        $swapped = null;
 
         // Only touch sort_order if one was actually sent, and only swap when
-        // something is actually changing — the number, the section, or both.
+        // the number is actually changing.
         if ($request->filled('sort_order')) {
-            $requestedOrder  = (int) $request->input('sort_order');
-            $targetSectionId = (int) ($data['section_id'] ?? $product->section_id);
-            $sectionChanged  = $targetSectionId !== (int) $product->section_id;
+            $requestedOrder = (int) $request->input('sort_order');
 
-            if ($requestedOrder !== (int) $product->sort_order || $sectionChanged) {
-                // A true swap (handing the bumped product this product's old
-                // number) only makes sense within the SAME section's
-                // ordering. If the section is also changing, that old number
-                // belongs to a different section's sequence and is
-                // meaningless in the new one — so just push the bumped
-                // product to the end of its own section instead, the same
-                // way a brand-new product would be placed.
-                [$data['sort_order'], $swapped] = $this->resolveSortOrder(
-                    $requestedOrder,
-                    $targetSectionId,
-                    $sectionChanged ? null : $product
-                );
+            if ($requestedOrder !== (int) $product->sort_order) {
+                // The product currently holding that slot takes the spot
+                // this product is leaving (a true swap).
+                [$data['sort_order'], $swapped] = $this->resolveSortOrder($requestedOrder, $product);
             } else {
                 unset($data['sort_order']);
             }
         }
 
         $product->update($data);
-        $product->load(['category', 'brand', 'section']);
+        $product->load(['category', 'brand']);
 
-        $message = match (true) {
-            $swapped && $sectionChanged => "\"{$product->name}\" moved and updated. \"{$swapped->name}\" was moved to the end of that section to make room.",
-            (bool) $swapped             => "\"{$product->name}\" updated successfully. Swapped positions with \"{$swapped->name}\" in this section.",
-            default                     => "\"{$product->name}\" updated successfully.",
-        };
+        $message = $swapped
+            ? "\"{$product->name}\" updated successfully. Swapped positions with \"{$swapped->name}\"."
+            : "\"{$product->name}\" updated successfully.";
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -309,6 +282,42 @@ class AdminInventoryController extends Controller
 
         return redirect()->route('admin.inventory')
             ->with('status', "\"{$name}\" removed from inventory.");
+    }
+
+    // ── Reset ───────────────────────────────────────────────────────────────
+
+    /**
+     * Wipe the product catalogue and everything that hangs off it:
+     * order_items, orders (including soft-deleted ones), carts, wishlists,
+     * sliders, stocks and products. Categories, brands, users and
+     * settings are left alone. Rows are deleted child-first inside one
+     * transaction so foreign keys are respected and a failure leaves the
+     * data untouched. The caller must send confirm=RESET.
+     *
+     * Only database rows are removed — uploaded product images in
+     * storage/app/public/products are intentionally left on disk.
+     */
+    public function reset(Request $request)
+    {
+        $request->validate(['confirm' => ['required', 'in:RESET']]);
+
+        DB::transaction(function () {
+            DB::table('order_items')->delete();
+            DB::table('orders')->delete();      // raw table delete also removes soft-deleted rows
+            DB::table('carts')->delete();
+            DB::table('wishlists')->delete();
+            DB::table('sliders')->delete();
+            DB::table('stocks')->delete();
+            DB::table('products')->delete();
+        });
+
+        $message = 'Inventory reset. All products, stocks, orders, order items, carts, wishlists and sliders were deleted. Product images were kept.';
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
     }
 
     // ── Categories ──────────────────────────────────────────────────────────
@@ -569,7 +578,7 @@ class AdminInventoryController extends Controller
     /**
      * Everything formatProduct() has, plus the extra fields the read-only
      * details modal shows that the inventory cards don't already carry
-     * (usage/directions, stock on hand, category & section display info,
+     * (usage/directions, stock on hand, category display info,
      * and pre-formatted price/discount strings).
      */
     private function formatProductDetails(Product $product): array
@@ -580,8 +589,6 @@ class AdminInventoryController extends Controller
             'product_usage'       => $product->product_usage,
             'category_color'      => $product->category->icon_color ?? '#6b7280',
             'category_bg'         => $product->category->bg_color ?? '#f3f4f6',
-            'section_id'          => $product->section_id,
-            'section_label'       => $product->section->label ?? null,
             'stock_quantity'      => $stock->quantity ?? 0,
             'formatted_price'     => $product->formattedPrice(),
             'formatted_old_price' => $product->formattedOldPrice(),
@@ -607,7 +614,6 @@ class AdminInventoryController extends Controller
             'price'                 => ['required', 'numeric', 'min:0'],
             'old_price'             => ['nullable', 'numeric', 'min:0'],
             'category_id'           => ['nullable', 'integer', 'exists:categories,id'],
-            'section_id'            => ['nullable', 'integer', 'exists:sections,id'],
             'brand_id'              => ['nullable', 'integer', 'exists:brands,id'],
             'origin'                => ['nullable', 'string', 'max:255'],
             'description'           => ['nullable', 'string'],
@@ -623,47 +629,21 @@ class AdminInventoryController extends Controller
             'image' => ['nullable', 'mimes:jpg,jpeg,png,webp,gif,avif', 'max:2048'],
         ]);
 
-        // image / section_id are resolved separately by the caller.
-        unset($validated['image'], $validated['section_id']);
+        // image is resolved separately by the caller.
+        unset($validated['image']);
 
         return $validated;
     }
 
     /**
-     * products.section_id is NOT NULL, so fall back to the first section and
-     * create a catch-all one if the table is still empty.
-     */
-    private function resolveSectionId($sectionId): int
-    {
-        if ($sectionId && Section::whereKey($sectionId)->exists()) {
-            return (int) $sectionId;
-        }
-
-        $section = Section::orderBy('sort_order')->first();
-
-        if (! $section) {
-            $section = Section::create([
-                'key'           => 'uncategorized',
-                'label'         => 'Uncategorized',
-                'heading_color' => 'red',
-                'sort_order'    => 0,
-                'is_active'     => true,
-            ]);
-        }
-
-        return (int) $section->id;
-    }
-
-    /**
-     * Smallest sort order (starting at 1) not already used within a section —
+     * Smallest sort order (starting at 1) not already used by any product —
      * mirrors what the Add modal suggests, so a request that skips the field
      * entirely still fills the first open gap instead of always appending to
      * the end.
      */
-    private function lowestFreeSortOrder(int $sectionId): int
+    private function lowestFreeSortOrder(): int
     {
-        $used = Product::where('section_id', $sectionId)
-            ->pluck('sort_order')
+        $used = Product::pluck('sort_order')
             ->map(fn ($value) => (int) $value)
             ->flip();
 
@@ -677,23 +657,20 @@ class AdminInventoryController extends Controller
     }
 
     /**
-     * Assign a requested sort order within a section, swapping with whoever
-     * currently holds that slot in the SAME section instead of leaving two
-     * products on the same value — sort order is scoped per section, since
-     * each section has its own independent ordering.
+     * Assign a requested sort order, swapping with whoever currently holds
+     * that slot instead of leaving two products on the same value.
      *
      * - Editing: the bumped product takes the spot the saved product is
      *   leaving (a true swap).
      * - Creating: there's no "old spot" to give away yet, so the bumped
-     *   product is moved to the next free slot at the end of that section.
+     *   product is moved to the next free slot at the end of the list.
      *
      * @return array{0: int, 1: ?Product} the resolved sort order, and the
      *         product that got bumped out of it (if any).
      */
-    private function resolveSortOrder(int $requestedOrder, int $sectionId, ?Product $forProduct): array
+    private function resolveSortOrder(int $requestedOrder, ?Product $forProduct): array
     {
         $conflict = Product::where('sort_order', $requestedOrder)
-            ->where('section_id', $sectionId)
             ->when($forProduct, fn ($query) => $query->where('id', '!=', $forProduct->id))
             ->first();
 
@@ -701,7 +678,7 @@ class AdminInventoryController extends Controller
             $conflict->update([
                 'sort_order' => $forProduct
                     ? $forProduct->sort_order
-                    : ((int) Product::where('section_id', $sectionId)->max('sort_order') + 1),
+                    : ((int) Product::max('sort_order') + 1),
             ]);
         }
 
@@ -737,7 +714,6 @@ class AdminInventoryController extends Controller
             'category_name'         => $product->category->name ?? 'Uncategorized',
             'icon_color'            => $product->category->icon_color ?? '#6b7280',
             'bg_color'              => $product->category->bg_color ?? '#f3f4f6',
-            'section_id'            => $product->section_id,
             'sort_order'            => $product->sort_order,
             'price'                 => (float) $product->price,
             'old_price'             => $product->old_price !== null ? (float) $product->old_price : null,
@@ -749,6 +725,7 @@ class AdminInventoryController extends Controller
             'height'                => $product->height,
             'depth'                 => $product->depth,
             'requires_prescription' => (bool) $product->requires_prescription,
+            'is_active'             => (bool) $product->is_active,
             'badge'                 => $product->badge,
             'badge_type'            => $product->badge_type,
             'image_url'             => $product->image ? asset('storage/' . $product->image) : null,

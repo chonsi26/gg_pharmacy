@@ -143,6 +143,35 @@ class AdminStocksController extends Controller
         return redirect()->route('admin.stocks')->with('status', 'Stock activated successfully.');
     }
 
+    // ── Reset (wipe the stocks table) ────────────────────────────────────────
+
+    /**
+     * Delete every row in the `stocks` table. Only database records are
+     * removed — no files on disk (e.g. product images) are touched, and the
+     * products table itself is left alone.
+     *
+     * Uses delete() rather than truncate() so it still works when other
+     * tables hold foreign keys pointing at stocks.
+     */
+    public function reset(Request $request): JsonResponse|RedirectResponse
+    {
+        $deleted = Stock::query()->delete();
+
+        $message = $deleted > 0
+            ? "All stock batches were deleted ({$deleted} removed)."
+            : 'There were no stock batches to delete.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => $message,
+                'stocks'   => $this->allStocksFormatted(),
+                'products' => $this->allProductsFormatted(),
+            ]);
+        }
+
+        return redirect()->route('admin.stocks')->with('status', $message);
+    }
+
     // ── Products modal feeds ─────────────────────────────────────────────────
 
     /**
@@ -261,6 +290,10 @@ class AdminStocksController extends Controller
             'stock_no'            => $stock->stockNo(),
             'product_id'          => $stock->product_id,
             'medicine'            => $stock->product->name ?? '—',
+            'product_image'       => $this->productImageUrl($stock->product->image ?? null),
+            'generic_name'        => $stock->product->generic_name ?? null,
+            'form'                => $stock->product->form ?? null,
+            'code_name'           => $stock->product->code_name ?? null,
             'supplier'            => $stock->supplier,
             'quantity'            => $stock->quantity,
             'unit_cost'           => (float) $stock->unit_cost,

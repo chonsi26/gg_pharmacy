@@ -244,10 +244,14 @@
     .hamburger { display: block; }
     .nav-inner { display: flex; align-items: center; padding: 0 16px; }
     .nav-brand { color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px; padding: 12px 0; }
-    .green-strip { padding: 6px 12px; font-size: 10px; line-height: 1.6; }
+    .green-strip { padding: 6px 8px; font-size: 9px; line-height: 1.4; display: flex; flex-wrap: nowrap; align-items: center; justify-content: center; gap: 5px; }
+    .green-strip .strip-item { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .green-strip .strip-location { flex: 1 1 auto; }
+    .green-strip .strip-sep { flex: 0 0 auto; opacity: .7; }
     footer { padding: 30px 16px 20px; }
     .footer-grid { grid-template-columns: 1fr; gap: 24px; }
     .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+    .shipping-bar { font-size: 11px; padding: 8px 12px; gap: 6px; flex-wrap: wrap; }
     .page { padding: 18px 14px 40px; }
     .page-head h1 { font-size: 23px; }
     .wl-item { grid-template-columns: 80px minmax(0, 1fr); gap: 12px 14px; padding: 16px 14px; }
@@ -286,8 +290,6 @@
   <span class="sep">|</span>
   <a href="{{ route('order.myorders') }}" class="track-order"><i class="fas fa-truck"></i> MY ORDERS</a>
   <span class="sep">|</span>
-  <a href="{{ route('wishlists.index') }}"><i class="fas fa-heart"></i> WISHLIST</a>
-  <span class="sep">|</span>
   @auth
     <form method="POST" action="{{ route('logout') }}" id="logoutForm" style="margin:0;">
       @csrf
@@ -296,10 +298,7 @@
       </a>
     </form>
   @endauth
-  <div class="social">
-    <a href="{{ $settings['facebook_url'] ?? '#' }}"><i class="fab fa-facebook-f"></i></a>
-    <a href="{{ $settings['instagram_url'] ?? '#' }}" class="insta"><i class="fab fa-instagram"></i></a>
-  </div>
+
 </div>
 
 <div class="header">
@@ -401,9 +400,11 @@
 </script>
 
 <div class="green-strip">
-  {{ $settings['location_strip'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }} &nbsp;|&nbsp;
-  <i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}
+  <span class="strip-item strip-location">{{ $settings['location_strip'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-phone-alt"></i> {{ $settings['phone'] ?? '' }}</span>
+  <span class="strip-sep">|</span>
+  <span class="strip-item"><i class="fas fa-clock"></i> {{ $settings['working_hours'] ?? '' }}</span>
 </div>
 
 <div class="wl-bg">
@@ -900,10 +901,5 @@
 })();
 </script>
 
-@if(!empty($settings['chatbase_id']))
-<script>
-(function(){if(!window.chatbase||window.chatbase("getState")!=="initialized"){window.chatbase=(...arguments)=>{if(!window.chatbase.q){window.chatbase.q=[]}window.chatbase.q.push(arguments)};window.chatbase=new Proxy(window.chatbase,{get(target,prop){if(prop==="q"){return target.q}return(...args)=>target(prop,...args)}})}const onLoad=function(){const script=document.createElement("script");script.src="https://www.chatbase.co/embed.min.js";script.id="{{ $settings['chatbase_id'] }}";script.domain="www.chatbase.co";document.body.appendChild(script)};if(document.readyState==="complete"){onLoad()}else{window.addEventListener("load",onLoad)}})();
-</script>
-@endif
 </body>
 </html>

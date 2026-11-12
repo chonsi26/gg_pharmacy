@@ -18,7 +18,7 @@ class Product extends Model
         // ── Dimensions ──────────────────────────────────────────────────
         'width', 'height', 'depth',
         // ── Relationships ────────────────────────────────────────────────
-        'category_id', 'brand_id', 'section_id',
+        'category_id', 'brand_id',
         'sort_order', 'is_active',
     ];
 
@@ -101,16 +101,16 @@ class Product extends Model
         return $this->belongsTo(Brand::class);
     }
 
-    /** The display section/carousel this product lives in. */
-    public function section(): BelongsTo
-    {
-        return $this->belongsTo(Section::class);
-    }
-
     /** The stock/inventory entries recorded for this product. */
     public function stocks(): HasMany
     {
         return $this->hasMany(Stock::class);
+    }
+
+    /** Homepage slides that promote this product. */
+    public function sliders(): HasMany
+    {
+        return $this->hasMany(Slider::class);
     }
 
     /** Wishlist entries that reference this product. */
@@ -183,7 +183,7 @@ class Product extends Model
     /**
      * Scope: only products that currently have at least one sellable stock
      * batch (active, quantity > 0, not expired). Used on the homepage to
-     * hide out-of-stock products. Search / category / brand / section
+     * hide out-of-stock products. Search / category / brand
      * filters deliberately do NOT use this, so those still show them.
      */
     public function scopeHasAvailableStock($query)
