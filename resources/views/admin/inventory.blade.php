@@ -1377,7 +1377,7 @@ tbody tr:last-child td { border-bottom: none; }
   /* ── Sort by chip + dropdown ────────────────────────── */
   .sort-chip-wrap { position: relative; }
 
-  /* ── Mobile: Reset / Sort by / Add Categories / Add brand in a tidy 2x2 grid ── */
+  /* ── Mobile: Sort by / Add Categories / Add brand in a tidy 2x2 grid ── */
   @media (max-width: 768px) {
     .card-head { padding-left: 12px; padding-right: 12px; }
     .card-head-right {
@@ -1592,18 +1592,29 @@ tbody tr:last-child td { border-bottom: none; }
   .field input[type="color"] {
     padding: 4px; cursor: pointer;
   }
-  /* ── Reset (danger) chip + modal ── */
-  .btn-chip.btn-chip-danger { color: var(--red, #CC1F1F); border-color: #fecaca; }
-  .btn-chip.btn-chip-danger:hover { border-color: var(--red, #CC1F1F); color: var(--red, #CC1F1F); background: var(--red-light, #fff5f5); }
-  [data-theme="dark"] .btn-chip.btn-chip-danger { border-color: #5f1e1e; color: #f88181; }
-  #resetModalBg { z-index: 1100; }
-  #resetModalBg .modal { max-width: 440px; width: 92vw; padding: 28px 28px 22px; border-radius: 18px; text-align: center; }
-  .reset-list { text-align: left; font-size: 12.5px; color: var(--muted); margin: 0 0 14px; padding-left: 18px; line-height: 1.7; }
-  .reset-list strong { color: var(--text); }
-  #resetConfirmInput { width: 100%; height: 40px; padding: 0 12px; margin-bottom: 18px; text-align: center; letter-spacing: 2px; font-weight: 700;
-    background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Inter', sans-serif; outline: none; }
-  #resetConfirmInput:focus { border-color: var(--red); }
   .btn-danger:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Enable / Disable all products modal ── */
+  #toggleActiveModalBg { z-index: 1100; }
+  #toggleActiveModalBg .modal { max-width: 420px; width: 92vw; padding: 24px 24px 20px; border-radius: 18px; }
+  .ta-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; text-align: center; }
+  .ta-sub   { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; text-align: center; }
+  .ta-choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .ta-choice {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--text);
+    font-family: 'Inter', sans-serif; transition: border-color .15s, background .15s;
+  }
+  .ta-choice:disabled { opacity: .5; cursor: not-allowed; }
+  .ta-choice-ico { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ta-choice-ico svg { width: 18px; height: 18px; }
+  .ta-choice strong { display: block; font-size: 14px; font-weight: 700; }
+  .ta-choice span.ta-desc { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ta-choice.enable .ta-choice-ico  { background: var(--green-light); color: var(--green); }
+  .ta-choice.enable:hover:not(:disabled)  { border-color: var(--green); background: var(--green-light); }
+  .ta-choice.disable .ta-choice-ico { background: var(--red-light); color: var(--red); }
+  .ta-choice.disable:hover:not(:disabled) { border-color: var(--red); background: var(--red-light); }
 </style>
 </head>
 <body>
@@ -1733,10 +1744,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="card-head">
       <h3>All Medicines</h3>
       <div class="card-head-right">
-        <button class="btn-chip btn-chip-danger" onclick="openResetModal()" title="Delete all products and related data">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-          Reset
-        </button>
         <div class="sort-chip-wrap" id="sortChipWrap">
           <button class="btn-chip" onclick="toggleSortMenu()" id="sortChipBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
@@ -1750,6 +1757,10 @@ tbody tr:last-child td { border-bottom: none; }
             <button class="sort-menu-item" data-by="brand" onclick="sortProducts('brand')">Brand</button>
           </div>
         </div>
+        <button class="btn-chip" onclick="openToggleActiveModal()" id="toggleActiveBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          Enable/Disable
+        </button>
         <button class="btn-chip" onclick="openCategoriesModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
           Add Categories
@@ -2269,6 +2280,29 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <!-- ════════════════════════════════════════════════════
+     ENABLE / DISABLE ALL PRODUCTS MODAL
+     ════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="toggleActiveModalBg">
+  <div class="modal">
+    <div class="ta-title">Enable / Disable Products</div>
+    <div class="ta-sub">Choose what to do with <strong>every product</strong> in the inventory.</div>
+    <div class="ta-choices">
+      <button type="button" class="ta-choice enable" onclick="setAllProductsActive(true)">
+        <span class="ta-choice-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span><strong>Enable all products</strong><span class="ta-desc">Every product becomes active again.</span></span>
+      </button>
+      <button type="button" class="ta-choice disable" onclick="setAllProductsActive(false)">
+        <span class="ta-choice-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg></span>
+        <span><strong>Disable all products</strong><span class="ta-desc">Every product is marked as disabled.</span></span>
+      </button>
+    </div>
+    <div class="delete-modal-actions">
+      <button type="button" class="btn" onclick="closeToggleActiveModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
      DELETE CONFIRM MODAL
      ════════════════════════════════════════════════════ -->
 <div class="modal-bg" id="deleteModalBg">
@@ -2512,31 +2546,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="modal-foot">
       <button class="btn" onclick="closeBrandForm()">Cancel</button>
       <button class="btn primary" onclick="saveBrand()">Save Brand</button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════════════════════════
-     RESET INVENTORY MODAL
-     ════════════════════════════════════════════════════ -->
-<div class="modal-bg" id="resetModalBg">
-  <div class="modal">
-    <div class="delete-ico-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-    </div>
-    <div class="delete-modal-title">Reset all inventory data?</div>
-    <div class="delete-modal-sub" style="margin-bottom:12px;">This will permanently delete every row in:</div>
-    <ul class="reset-list">
-      <li><strong>products</strong> (and their images)</li>
-      <li><strong>stocks</strong></li>
-      <li><strong>orders</strong> and <strong>order items</strong></li>
-      <li><strong>carts</strong>, <strong>wishlists</strong> and <strong>sliders</strong></li>
-    </ul>
-    <div class="delete-modal-sub" style="margin-bottom:10px;">This cannot be undone. Type <strong>RESET</strong> to confirm.</div>
-    <input type="text" id="resetConfirmInput" placeholder="RESET" autocomplete="off" oninput="document.getElementById('resetConfirmBtn').disabled = this.value.trim() !== 'RESET'">
-    <div class="delete-modal-actions">
-      <button class="btn" onclick="closeResetModal()">Cancel</button>
-      <button class="btn-danger" id="resetConfirmBtn" onclick="confirmReset()" disabled>Yes, Reset Everything</button>
     </div>
   </div>
 </div>
@@ -2787,8 +2796,8 @@ function previewImg(input, previewId) {
    ══════════════════════════════════════════════════════ */
 const INVENTORY_URL        = "{{ route('admin.inventory') }}";
 const INVENTORY_SEARCH_URL = "{{ route('admin.inventory.search') }}";
+const INVENTORY_SET_ACTIVE_URL = "{{ route('admin.inventory.setActive') }}";
 const INVENTORY_SORT_URL   = "{{ route('admin.inventory.sort') }}";
-const INVENTORY_RESET_URL  = "{{ route('admin.inventory.reset') }}";
 const STOCK_STORE_URL      = "{{ route('admin.stocks.store') }}";
 const CSRF_TOKEN           = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -3338,42 +3347,6 @@ function showToast(msg) {
 }
 
 /* ══════════════════════════════════════════════════════
-   RESET (wipes products, stocks, orders, order items,
-   carts, wishlists and sliders) — AdminInventoryController@reset
-   ══════════════════════════════════════════════════════ */
-function openResetModal() {
-  const input = document.getElementById('resetConfirmInput');
-  input.value = '';
-  document.getElementById('resetConfirmBtn').disabled = true;
-  document.getElementById('resetModalBg').classList.add('on');
-  setTimeout(() => input.focus(), 50);
-}
-function closeResetModal() { document.getElementById('resetModalBg').classList.remove('on'); }
-document.getElementById('resetModalBg').addEventListener('click', e => {
-  if (e.target === e.currentTarget) closeResetModal();
-});
-
-async function confirmReset() {
-  const input = document.getElementById('resetConfirmInput');
-  if (input.value.trim() !== 'RESET') return;
-
-  const btn = document.getElementById('resetConfirmBtn');
-  btn.disabled = true;
-
-  try {
-    const fd = new FormData();
-    fd.append('confirm', 'RESET');
-    const result = await sendForm(INVENTORY_RESET_URL, fd);
-    closeResetModal();
-    showToast(result.message);
-    setTimeout(() => window.location.reload(), 900);
-  } catch (err) {
-    showToast(err.message);
-    btn.disabled = false;
-  }
-}
-
-/* ══════════════════════════════════════════════════════
    ADD BADGE MODAL
    ══════════════════════════════════════════════════════ */
 let _badgeCard = null;
@@ -3686,6 +3659,48 @@ async function confirmDelete() {
     showToast(err.message);
   } finally {
     btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   ENABLE / DISABLE ALL PRODUCTS
+   Backed by AdminInventoryController@setAllActive. The server flips
+   is_active on every product; the already-rendered cards are then
+   updated in place (same class/data attribute the edit modal uses).
+   ══════════════════════════════════════════════════════ */
+function openToggleActiveModal() {
+  document.getElementById('toggleActiveModalBg').classList.add('on');
+}
+
+function closeToggleActiveModal() {
+  document.getElementById('toggleActiveModalBg').classList.remove('on');
+}
+
+document.getElementById('toggleActiveModalBg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeToggleActiveModal();
+});
+
+async function setAllProductsActive(active) {
+  const buttons = document.querySelectorAll('#toggleActiveModalBg .ta-choice');
+  buttons.forEach(b => b.disabled = true);
+
+  try {
+    const fd = new FormData();
+    fd.append('is_active', active ? '1' : '0');
+    const result = await sendForm(INVENTORY_SET_ACTIVE_URL, fd);
+
+    document.querySelectorAll('#medGrid .med-card').forEach(card => {
+      card.dataset.isActive = active ? 'true' : 'false';
+      card.classList.toggle('is-disabled', !active);
+    });
+
+    closeToggleActiveModal();
+    showToast(result.message);
+  } catch (err) {
+    closeToggleActiveModal();
+    showToast(err.message);
+  } finally {
+    buttons.forEach(b => b.disabled = false);
   }
 }
 

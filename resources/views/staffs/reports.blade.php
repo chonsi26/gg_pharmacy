@@ -333,6 +333,8 @@ tbody td { padding:12px 16px; border-bottom:1px solid var(--border); vertical-al
 tbody tr:last-child td { border-bottom:none; }
 tbody tr:hover { background:rgba(45,122,45,.04); }
 td.strong { font-weight:700; }
+.product-link { color:inherit; text-decoration:none; font-weight:700; }
+.product-link:hover, .product-link:focus-visible { color:var(--red); text-decoration:underline; }
 .pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; background:var(--blue-light); color:var(--blue); }
 .muted { color:var(--muted); }
 .empty { padding:40px 20px; text-align:center; color:var(--subtle); font-size:13px; font-weight:600; }
@@ -380,6 +382,12 @@ td.strong { font-weight:700; }
   .period-switch { flex:1; }
   .period-switch button { flex:1; padding:8px 6px; }
   .pager { justify-content:center; }
+
+  /* Table tools: search on its own row, Category + Brand side by side, Sort full width */
+  .card-tools { display:grid; grid-template-columns:1fr 1fr; gap:8px; width:100%; }
+  .card-tools input.tbl-search,
+  .card-tools #sortProducts { grid-column:1 / -1; }
+  .card-tools input.tbl-search, .card-tools select { width:100%; min-width:0; height:38px; font-size:14px; }
 }
 </style>
 </head>
@@ -561,6 +569,10 @@ td.strong { font-weight:700; }
         <input type="text" class="tbl-search" id="tableSearch" placeholder="Filter products…" aria-label="Filter products table">
         <select id="filterCategory"><option value="">All Categories</option></select>
         <select id="filterBrand"><option value="">All Brands</option></select>
+        <select id="sortProducts" aria-label="Sort products">
+          <option value="az">Sort: A-Z</option>
+          <option value="purchases">Sort: Most Total Purchases</option>
+        </select>
       </div>
     </div>
     <div class="table-wrap">
@@ -825,6 +837,7 @@ overlay.addEventListener('click', () => { sidebar.classList.remove('open'); over
 
 /* ── Data (loaded from StaffReportsController@data) ── */
 const DATA_URL = @json(route('staff.reports.data'));
+const INVENTORY_URL = @json(route('staff.inventory'));
 let period = 'all';
 let productRows = [], brandRows = [], categoryRows = [], totals = {products:0,purchases:0,unitsSold:0,sales:0}, periodLabel = 'All time';
 
@@ -904,13 +917,23 @@ function populateFilters() {
   fill(filterBrand, productRows.map(p => p.brand), 'All Brands');
 }
 
+const sortProducts = document.getElementById('sortProducts');
+
 function filteredProducts() {
   const q = searchInput.value.trim().toLowerCase();
-  return productRows.filter(p =>
+  const rows = productRows.filter(p =>
     (!filterCategory.value || p.category === filterCategory.value) &&
     (!filterBrand.value || p.brand === filterBrand.value) &&
     (!q || `${p.name} ${p.category} ${p.brand}`.toLowerCase().includes(q))
   );
+  const byName = (x, y) => String(x.name).localeCompare(String(y.name), undefined, { sensitivity:'base', numeric:true });
+  if (sortProducts.value === 'purchases') {
+    // Most total purchases first; ties fall back to A-Z
+    rows.sort((x, y) => (Number(y.totalPurchases) || 0) - (Number(x.totalPurchases) || 0) || byName(x, y));
+  } else {
+    rows.sort(byName);
+  }
+  return rows;
 }
 
 const brandSearchInput = document.getElementById('brandSearch');
@@ -939,7 +962,7 @@ const productsTable = makeTable({
   bodyId:'productsBody', pagerId:'productsPager', colSpan:7, emptyText:'No products match your search.',
   getRows: filteredProducts,
   renderRow: p => `<tr>
-    <td class="strong">${esc(p.name)}</td>
+    <td class="strong"><a class="product-link" href="${esc(INVENTORY_URL)}?open=${encodeURIComponent(p.id)}" title="View in Inventory">${esc(p.name)}</a></td>
     <td><span class="pill">${esc(p.category)}</span></td>
     <td>${esc(p.brand)}</td>
     <td class="num">${int(p.stocks)}</td>
@@ -996,7 +1019,7 @@ document.getElementById('periodSwitch').addEventListener('click', e => {
   loadData();
 });
 
-[searchInput, filterCategory, filterBrand].forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { productsTable.page = 1; productsTable.render(); }));
+[searchInput, filterCategory, filterBrand, sortProducts].forEach(el => el.addEventListener(el.tagName === 'INPUT' ? 'input' : 'change', () => { productsTable.page = 1; productsTable.render(); }));
 
 brandSearchInput.addEventListener('input', () => { brandsTable.page = 1; brandsTable.render(); });
 categorySearchInput.addEventListener('input', () => { categoriesTable.page = 1; categoriesTable.render(); });

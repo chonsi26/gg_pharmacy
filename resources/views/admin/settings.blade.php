@@ -1135,6 +1135,11 @@ tbody tr:last-child td { border-bottom: none; }
         <span style="color:var(--muted);font-size:14px;">›</span>
       </div>
 
+      <div id="resetTrigger" style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
+        <span style="font-weight:500;color:var(--text);">Reset</span>
+        <span style="color:var(--muted);font-size:14px;">›</span>
+      </div>
+
       <div id="logoutTrigger" style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;">
         <span style="font-weight:500;color:#cd0000;">Logout</span>
         <span style="color:var(--muted);font-size:14px;">›</span>
@@ -1374,6 +1379,82 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
   </div>
 </div>
+
+<!-- ═══════════════ RESET DATA MODAL ═══════════════ -->
+<div class="modal-backdrop" id="resetModal">
+  <div class="modal-window" style="max-width:460px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="resetModalTitle">Reset Data</h3>
+      <button class="modal-close" id="closeResetModal" aria-label="Close">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- View 1: choose what to reset -->
+    <div class="modal-body" id="resetChoose" style="padding:0;">
+      <div class="rs-note">Choose which data to permanently delete. Each reset only removes database records; uploaded files and images are kept. This cannot be undone.</div>
+
+      <div class="rs-row">
+        <div class="rs-info">
+          <strong>Products</strong>
+          <span>Deletes all products plus their stocks, orders, order items, carts, wishlists and sliders.</span>
+        </div>
+        <button type="button" class="rs-btn" data-reset="products">Reset</button>
+      </div>
+      <div class="rs-row">
+        <div class="rs-info">
+          <strong>Orders</strong>
+          <span>Deletes every order and order item, in all statuses.</span>
+        </div>
+        <button type="button" class="rs-btn" data-reset="orders">Reset</button>
+      </div>
+      <div class="rs-row">
+        <div class="rs-info">
+          <strong>Stocks</strong>
+          <span>Deletes every stock batch. Products are left untouched.</span>
+        </div>
+        <button type="button" class="rs-btn" data-reset="stocks">Reset</button>
+      </div>
+    </div>
+
+    <!-- View 2: confirm the selected reset -->
+    <div class="modal-body" id="resetConfirm" style="display:none;padding:20px;">
+      <div class="rs-confirm-text" id="resetConfirmText"></div>
+      <div id="resetTypeWrap" style="display:none;">
+        <div class="rs-confirm-sub">Type <strong>RESET</strong> to confirm.</div>
+        <input type="text" id="resetConfirmInput" placeholder="RESET" autocomplete="off">
+      </div>
+      <div class="rs-actions">
+        <button type="button" class="rs-cancel" id="resetBackBtn">Back</button>
+        <button type="button" class="rs-btn rs-btn-solid" id="resetConfirmBtn">Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Reset modal */
+  .rs-note { padding: 14px 20px; font-size: 12.5px; line-height: 1.5; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .rs-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .rs-row:last-child { border-bottom: none; }
+  .rs-info { min-width: 0; }
+  .rs-info strong { display: block; font-size: 14px; font-weight: 600; color: var(--text); }
+  .rs-info span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.45; }
+  .rs-btn { flex: none; font: inherit; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 8px; cursor: pointer;
+            background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); transition: background .15s, color .15s; }
+  .rs-btn:hover { background: var(--red); color: #fff; }
+  .rs-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .rs-btn-solid { background: var(--red); color: #fff; }
+  .rs-btn-solid:hover { background: var(--red-h); }
+  .rs-cancel { font: inherit; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 8px; cursor: pointer;
+               background: var(--surface2); color: var(--text); border: 1.5px solid var(--border); }
+  .rs-confirm-text { font-size: 13.5px; line-height: 1.6; color: var(--text); margin-bottom: 14px; }
+  .rs-confirm-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
+  #resetConfirmInput { width: 100%; height: 40px; padding: 0 12px; text-align: center; letter-spacing: 2px; font-weight: 700;
+                       background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border); border-radius: 8px; outline: none; margin-bottom: 4px; }
+  #resetConfirmInput:focus { border-color: var(--red); }
+  .rs-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+</style>
 
 <style>
   /* Help & Terms modals (shared document-style layout) */
@@ -1905,6 +1986,117 @@ overlay.addEventListener('click', () => {
       closeTosBtn.addEventListener('click', () => tosModal.classList.remove('active'));
       tosModal.addEventListener('click', (e) => {
         if (e.target === tosModal) tosModal.classList.remove('active');
+      });
+    }
+
+    // --- Reset Data Modal Logic ---
+    // Calls the same endpoints as the Reset buttons on the Inventory, Orders and Stocks pages.
+    const resetTrigger = document.getElementById('resetTrigger');
+    const resetModal = document.getElementById('resetModal');
+    if (resetTrigger && resetModal) {
+      const RESET_CSRF = @json(csrf_token());
+      const RESETS = {
+        products: {
+          title: 'Reset Products',
+          text: 'Delete ALL products? This also permanently deletes every stock batch, order, order item, cart, wishlist and slider. Product images are kept.',
+          url: @json(route('admin.inventory.reset')),
+          method: 'POST',                 // AdminInventoryController@reset (requires confirm=RESET)
+          needsTyping: true,
+          body: () => JSON.stringify({ confirm: 'RESET' }),
+        },
+        orders: {
+          title: 'Reset Orders',
+          text: 'Delete ALL orders? This permanently removes every record in the orders and order items tables, in all statuses. Uploaded files are kept.',
+          url: @json(route('admin.orders.reset')),
+          method: 'DELETE',               // AdminOrdersController@reset
+          needsTyping: false,
+          body: () => null,
+        },
+        stocks: {
+          title: 'Reset Stocks',
+          text: 'Delete ALL stock batches? This removes every record in the stocks table.',
+          url: @json(route('admin.stocks.reset')),
+          method: 'POST',                 // AdminStocksController@reset
+          needsTyping: false,
+          body: () => null,
+        },
+      };
+
+      const chooseView  = document.getElementById('resetChoose');
+      const confirmView = document.getElementById('resetConfirm');
+      const titleEl     = document.getElementById('resetModalTitle');
+      const textEl      = document.getElementById('resetConfirmText');
+      const typeWrap    = document.getElementById('resetTypeWrap');
+      const typeInput   = document.getElementById('resetConfirmInput');
+      const confirmBtn  = document.getElementById('resetConfirmBtn');
+      let selected = null;
+
+      const showToast = (msg) => {
+        if (!toast || !toastMsg) return;
+        toastMsg.textContent = msg;
+        toast.classList.add('on');
+        setTimeout(() => toast.classList.remove('on'), 4000);
+      };
+
+      const showChoose = () => {
+        selected = null;
+        titleEl.textContent = 'Reset Data';
+        confirmView.style.display = 'none';
+        chooseView.style.display = '';
+      };
+      const openReset = () => { showChoose(); resetModal.classList.add('active'); };
+      const closeReset = () => resetModal.classList.remove('active');
+
+      const syncConfirmBtn = () => {
+        confirmBtn.disabled = !!(selected && RESETS[selected].needsTyping && typeInput.value.trim() !== 'RESET');
+      };
+
+      resetTrigger.addEventListener('click', openReset);
+      document.getElementById('closeResetModal').addEventListener('click', closeReset);
+      resetModal.addEventListener('click', (e) => { if (e.target === resetModal) closeReset(); });
+      document.getElementById('resetBackBtn').addEventListener('click', showChoose);
+      typeInput.addEventListener('input', syncConfirmBtn);
+
+      document.querySelectorAll('[data-reset]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selected = btn.dataset.reset;
+          const cfg = RESETS[selected];
+          titleEl.textContent = cfg.title;
+          textEl.textContent = cfg.text + ' This cannot be undone.';
+          typeInput.value = '';
+          typeWrap.style.display = cfg.needsTyping ? '' : 'none';
+          chooseView.style.display = 'none';
+          confirmView.style.display = '';
+          syncConfirmBtn();
+          if (cfg.needsTyping) setTimeout(() => typeInput.focus(), 50);
+        });
+      });
+
+      confirmBtn.addEventListener('click', async () => {
+        if (!selected) return;
+        const cfg = RESETS[selected];
+        if (cfg.needsTyping && typeInput.value.trim() !== 'RESET') return;
+
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Resetting…';
+        try {
+          const headers = { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': RESET_CSRF };
+          const body = cfg.body();
+          if (body) headers['Content-Type'] = 'application/json';
+          const res = await fetch(cfg.url, { method: cfg.method, headers, body });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const firstError = data.errors ? Object.values(data.errors)[0][0] : data.message;
+            throw new Error(firstError || 'Something went wrong.');
+          }
+          closeReset();
+          showToast(data.message || 'Reset complete.');
+        } catch (err) {
+          showToast(err.message);
+        } finally {
+          confirmBtn.textContent = 'Yes, Reset';
+          syncConfirmBtn();
+        }
       });
     }
 

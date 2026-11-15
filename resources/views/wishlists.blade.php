@@ -544,55 +544,49 @@
     <div class="footer-section">
       <h4>CONTACT INFO</h4>
       <div class="label">ADDRESS:</div>
-      <p>{{ $settings['address_line1'] ?? '' }}</p>
-      <p>{{ $settings['address_line2'] ?? '' }}</p>
-      <p>{{ $settings['address_line3'] ?? '' }}</p>
+      <p>{{ $settings['address_line1'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line2'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line3'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">PHONE:</div>
-      <p>{{ $settings['phone'] ?? '' }}</p>
+      <p>{{ $settings['phone'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">EMAIL:</div>
-      <p>{{ $settings['email'] ?? '' }}</p>
+      <p>{{ $settings['email'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">WORKING DAYS/HOURS:</div>
-      <p>{{ $settings['working_hours'] ?? '' }}</p>
-      <div class="footer-social">
-        <a href="{{ $settings['facebook_url'] ?? '#' }}" class="fb"><i class="fab fa-facebook-f"></i></a>
-        <a href="{{ $settings['instagram_url'] ?? '#' }}" class="ig"><i class="fab fa-instagram"></i></a>
-      </div>
+      <p>{{ $settings['working_hours'] ?? 'N/A' }}</p>
     </div>
     <div class="footer-section">
-      <h4>ABOUT {{ $settings['site_name'] }}</h4>
-      <a href="#">About Us</a>
-      <a href="#">Careers</a>
+      <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
+      <a href="{{ route('home') }}">Home</a>
       <a href="{{ route('store.info') }}">Store Information</a>
-      <a href="#">Contact Us</a>
-      <a href="#">Terms And Conditions</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Call &amp; Pick-Up</a>
     </div>
     <div class="footer-section">
       <h4>CUSTOMER SERVICE</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Payment</a>
-      <a href="#">Shipping &amp; Delivery</a>
-      <a href="#">Returns &amp; Refunds</a>
-      <a href="#">How To Buy</a>
-      <a href="#">Question?</a>
-      <a href="{{ route('order.myorders') }}">My Orders</a>
+      {{-- These pages require login (auth middleware in web.php). Guests get the
+           login modal instead of a redirect to a login URL that doesn't exist as a page. --}}
+      @auth
+        <a href="{{ route('order.myorders') }}">My Orders</a>
+        <a href="{{ route('cart.index') }}">My Cart</a>
+        <a href="{{ route('wishlists.index') }}">My Wishlist</a>
+        <a href="{{ route('profile') }}">My Profile</a>
+      @else
+        <a href="#" class="js-login-required">My Orders</a>
+        <a href="#" class="js-login-required">My Cart</a>
+        <a href="#" class="js-login-required">My Wishlist</a>
+        <a href="#" class="js-login-required">My Profile</a>
+      @endauth
     </div>
-    <div class="footer-section newsletter">
-      <h4>SUBSCRIBE NEWSLETTER</h4>
-      <p style="margin-bottom:14px;">{{ $settings['newsletter_intro'] ?? '' }}</p>
-      <input type="email" placeholder="Email address">
-      <button class="subscribe-btn">SUBSCRIBE</button>
-      <p class="footer-note">{{ $settings['newsletter_note'] ?? '' }}</p>
+    <div class="footer-section">
+      <h4>SHOP BY CATEGORY</h4>
+      @forelse(collect($categories ?? [])->take(8) as $cat)
+        <a href="{{ route('home', ['category_id' => $cat->id]) }}">{{ $cat->name ?? '' }}</a>
+      @empty
+        <p>No categories available</p>
+      @endforelse
     </div>
   </div>
+  @include('partials.pwa-install')
   <div class="footer-bottom">
     <p>{{ $settings['copyright'] ?? '' }}</p>
-    <div class="payment-icons">
-      @foreach(explode(',', $settings['payment_methods'] ?? 'VISA,MC,GCash,PayMaya') as $method)
-        <div class="pay-icon">{{ trim($method) }}</div>
-      @endforeach
-    </div>
   </div>
 </footer>
 

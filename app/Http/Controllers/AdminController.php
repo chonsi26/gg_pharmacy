@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\RequireRegisterPassword;
 use App\Models\Admin;
 use App\Models\User;
 use App\Models\Staff;
@@ -29,6 +30,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class AdminController extends Controller
@@ -2540,6 +2542,42 @@ public function showLogin(): View
     return view('admin.login', compact('logo' ,'siteName', 'address_line1', 'address_line2'));
 }
 
+    // ── Register gate (one shared password) ──────────────────────────────────
+
+    public function showRegisterGate(Request $request): View|RedirectResponse
+    {
+        if ($request->session()->get(RequireRegisterPassword::SESSION_KEY, false)) {
+            return redirect()->route('admin.register');
+        }
+
+        $logo = Setting::get('logo');
+        $siteName = Setting::get('site_name', 'Pharmacy');
+        return view('admin.register-gate', compact('logo', 'siteName'));
+    }
+
+    public function unlockRegister(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'gate_password' => ['required', 'string'],
+        ], [
+            'gate_password.required' => 'Please enter the password.',
+        ]);
+
+        $expected = (string) config('admin.register_password');
+
+        // An empty configured password keeps registration locked for everyone.
+        if ($expected === '' || ! hash_equals($expected, (string) $request->input('gate_password'))) {
+            throw ValidationException::withMessages([
+                'gate_password' => 'Incorrect password.',
+            ]);
+        }
+
+        $request->session()->regenerate();
+        $request->session()->put(RequireRegisterPassword::SESSION_KEY, true);
+
+        return redirect()->route('admin.register');
+    }
+
     public function showRegister(): View
     {
         $logo = Setting::get('logo');
@@ -2615,6 +2653,7 @@ public function showLogin(): View
 
         Auth::guard('admin')->login($admin);
 
+        $request->session()->forget(RequireRegisterPassword::SESSION_KEY);
         $request->session()->regenerate();
 
         return redirect()->route('admin.dashboard')

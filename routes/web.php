@@ -32,6 +32,7 @@ use App\Http\Controllers\WishlistsController;
 use App\Http\Middleware\LogAdminActivity;
 use App\Http\Middleware\LogStaffActivity;
 use App\Http\Middleware\PreventBackHistory;
+use App\Http\Middleware\RequireRegisterPassword;
 use Illuminate\Support\Facades\Route;
 
 // Every route below is served with no-cache headers so a stale CSRF token
@@ -112,8 +113,16 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::get('/login',    [AdminController::class, 'showLogin'])->name('login');
         Route::post('/login',   [AdminController::class, 'login'])->name('login');
 
-        Route::get('/register', [AdminController::class, 'showRegister'])->name('register');
-        Route::post('/register',[AdminController::class, 'register'])->name('register');
+        // Register gate: one shared password must be entered before the form is reachable.
+        Route::get('/register-access',  [AdminController::class, 'showRegisterGate'])->name('register.gate');
+        Route::post('/register-access', [AdminController::class, 'unlockRegister'])
+            ->middleware('throttle:5,1')
+            ->name('register.unlock');
+
+        Route::middleware(RequireRegisterPassword::class)->group(function () {
+            Route::get('/register', [AdminController::class, 'showRegister'])->name('register');
+            Route::post('/register',[AdminController::class, 'register'])->name('register');
+        });
     });
 
     Route::post('/logout', [AdminController::class, 'logout'])
@@ -147,6 +156,8 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         Route::post('/inventory', [AdminInventoryController::class, 'store'])->name('inventory.store');
         // Wipes products + stocks + orders + order items + carts + wishlists + sliders.
         Route::post('/inventory/reset', [AdminInventoryController::class, 'reset'])->name('inventory.reset');
+        // Enable or disable every product at once (sets is_active on all products).
+        Route::post('/inventory/set-active', [AdminInventoryController::class, 'setAllActive'])->name('inventory.setActive');
         Route::put('/inventory/{product}', [AdminInventoryController::class, 'update'])->name('inventory.update');
         Route::put('/inventory/{product}/badge', [AdminInventoryController::class, 'updateBadge'])->name('inventory.badge');
         Route::delete('/inventory/{product}', [AdminInventoryController::class, 'destroy'])->name('inventory.destroy');
@@ -162,6 +173,7 @@ Route::prefix('admin')->name('admin.')->middleware(LogAdminActivity::class)->gro
         // ── Orders (AdminOrdersController) ───────────────────────────────
         Route::get('/orders/data', [AdminOrdersController::class, 'data'])->name('orders.data');
         Route::get('/orders/products', [AdminOrdersController::class, 'products'])->name('orders.products');
+        Route::get('/orders/customers', [AdminOrdersController::class, 'customers'])->name('orders.customers');
         Route::post('/orders', [AdminOrdersController::class, 'store'])->name('orders.store');
         Route::put('/orders/{order}/confirm', [AdminOrdersController::class, 'confirm'])->name('orders.confirm');
         Route::put('/orders/{order}/ready', [AdminOrdersController::class, 'ready'])->name('orders.ready');
@@ -305,6 +317,8 @@ Route::prefix('staff')->name('staff.')->middleware(LogStaffActivity::class)->gro
         Route::get('/inventory/sort', [StaffInventoryController::class, 'sort'])->name('inventory.sort');
         Route::get('/inventory/{product}', [StaffInventoryController::class, 'show'])->name('inventory.show');
         Route::post('/inventory', [StaffInventoryController::class, 'store'])->name('inventory.store');
+        // Enable or disable every product at once (sets is_active on all products).
+        Route::post('/inventory/set-active', [StaffInventoryController::class, 'setAllActive'])->name('inventory.setActive');
         Route::put('/inventory/{product}', [StaffInventoryController::class, 'update'])->name('inventory.update');
         Route::put('/inventory/{product}/badge', [StaffInventoryController::class, 'updateBadge'])->name('inventory.badge');
         Route::delete('/inventory/{product}', [StaffInventoryController::class, 'destroy'])->name('inventory.destroy');
@@ -322,6 +336,7 @@ Route::prefix('staff')->name('staff.')->middleware(LogStaffActivity::class)->gro
         Route::get('/orders', [StaffOrdersController::class, 'index'])->name('orders');
         Route::get('/orders/data', [StaffOrdersController::class, 'data'])->name('orders.data');
         Route::get('/orders/products', [StaffOrdersController::class, 'products'])->name('orders.products');
+        Route::get('/orders/customers', [StaffOrdersController::class, 'customers'])->name('orders.customers');
         Route::post('/orders', [StaffOrdersController::class, 'store'])->name('orders.store');
         Route::put('/orders/{order}/confirm', [StaffOrdersController::class, 'confirm'])->name('orders.confirm');
         Route::put('/orders/{order}/ready', [StaffOrdersController::class, 'ready'])->name('orders.ready');

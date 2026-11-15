@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Support\ResetsAutoIncrement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -284,6 +285,31 @@ class AdminInventoryController extends Controller
             ->with('status', "\"{$name}\" removed from inventory.");
     }
 
+    // ── Enable / Disable all ────────────────────────────────────────────────
+
+    /**
+     * Enable or disable every product in one go (the inventory screen's
+     * "Enable/Disable" modal). Sets products.is_active for all rows.
+     */
+    public function setAllActive(Request $request)
+    {
+        $data   = $request->validate(['is_active' => ['required', 'boolean']]);
+        $active = (bool) $data['is_active'];
+
+        // Single bulk UPDATE — no per-model events needed (code_name inputs are untouched).
+        $count = Product::query()->update(['is_active' => $active]);
+
+        $message = $active
+            ? "All products enabled ({$count} updated)."
+            : "All products disabled ({$count} updated).";
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message, 'is_active' => $active, 'count' => $count]);
+        }
+
+        return redirect()->route('admin.inventory')->with('status', $message);
+    }
+
     // ── Reset ───────────────────────────────────────────────────────────────
 
     /**
@@ -310,6 +336,11 @@ class AdminInventoryController extends Controller
             DB::table('stocks')->delete();
             DB::table('products')->delete();
         });
+
+        // Next inserted row in each wiped table starts again at id 1.
+        ResetsAutoIncrement::run([
+            'order_items', 'orders', 'carts', 'wishlists', 'sliders', 'stocks', 'products',
+        ]);
 
         $message = 'Inventory reset. All products, stocks, orders, order items, carts, wishlists and sliders were deleted. Product images were kept.';
 

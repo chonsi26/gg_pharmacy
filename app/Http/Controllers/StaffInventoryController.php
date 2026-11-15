@@ -16,9 +16,10 @@ use Illuminate\View\View;
  * Handles the staff inventory screen and all product (medicine) CRUD.
  *
  * Mirrors AdminInventoryController one-to-one so staff see and manage exactly
- * the same inventory. The only differences are the view (staffs.inventory),
- * the route names used for non-JSON redirects (staff.inventory), and that the
- * destructive "Reset inventory" action is not exposed to staff.
+ * the same inventory (including Enable/Disable all). The only differences are
+ * the view (staffs.inventory), the route names used for non-JSON redirects
+ * (staff.inventory), and that the destructive "Reset inventory" action is not
+ * exposed to staff.
  *
  * Every write method answers JSON when the request asks for it (the blade
  * uses fetch + FormData), and falls back to a redirect for plain form posts.
@@ -286,6 +287,31 @@ class StaffInventoryController extends Controller
 
         return redirect()->route('staff.inventory')
             ->with('status', "\"{$name}\" removed from inventory.");
+    }
+
+    // ── Enable / Disable all ────────────────────────────────────────────────
+
+    /**
+     * Enable or disable every product in one go (the inventory screen's
+     * "Enable/Disable" modal). Sets products.is_active for all rows.
+     */
+    public function setAllActive(Request $request)
+    {
+        $data   = $request->validate(['is_active' => ['required', 'boolean']]);
+        $active = (bool) $data['is_active'];
+
+        // Single bulk UPDATE — no per-model events needed (code_name inputs are untouched).
+        $count = Product::query()->update(['is_active' => $active]);
+
+        $message = $active
+            ? "All products enabled ({$count} updated)."
+            : "All products disabled ({$count} updated).";
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => $message, 'is_active' => $active, 'count' => $count]);
+        }
+
+        return redirect()->route('staff.inventory')->with('status', $message);
     }
 
     // ── Categories ──────────────────────────────────────────────────────────

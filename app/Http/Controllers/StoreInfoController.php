@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\Category;
 use App\Models\Media;
 use App\Models\Setting;
@@ -28,6 +29,9 @@ class StoreInfoController extends Controller
         // Validated https Google Maps embed URL, or null if missing/invalid.
         $mapEmbedUrl = Setting::mapEmbedUrl();
 
-        return view('store_info', compact('settings', 'categories', 'photos', 'videos', 'mapEmbedUrl'));
+        // Pharmacy owners = active admins (soft-deleted admins are excluded automatically).
+        $owners = Admin::where('is_active', true)->orderBy('id')->get();
+
+        return view('store_info', compact('settings', 'categories', 'photos', 'videos', 'mapEmbedUrl', 'owners'));
     }
 }

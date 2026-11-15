@@ -8,11 +8,13 @@ use App\Models\Product;
 use App\Models\Stock;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Support\ResetsAutoIncrement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AdminOrdersController extends Controller
@@ -91,8 +93,44 @@ class AdminOrdersController extends Controller
     }
 
     /**
+     * Customer suggestions for the Add Order modal: active registered users
+     * whose FIRST NAME starts with the typed text (max 8). The password is
+     * never sent — it is hashed, and the modal only shows a masked value.
+     */
+    public function customers(Request $request): JsonResponse
+    {
+        $q = trim((string) $request->query('q', ''));
+
+        if ($q === '') {
+            return response()->json(['customers' => []]);
+        }
+
+        $customers = User::where('is_active', true)
+            ->where('first_name', 'like', addcslashes($q, '\\%_') . '%')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->limit(8)
+            ->get()
+            ->map(fn (User $u) => [
+                'id'             => $u->id,
+                'first_name'     => $u->first_name,
+                'last_name'      => $u->last_name,
+                'full_name'      => $u->full_name,
+                // Walk-in placeholder emails are internal, so show them as empty.
+                'email'          => str_ends_with((string) $u->email, '@walkin.local') ? '' : (string) $u->email,
+                'contact_number' => $u->contact_number,
+                'address'        => $u->address,
+                'photo'          => $this->imageUrl($u->profile_picture),
+            ])
+            ->values();
+
+        return response()->json(['customers' => $customers]);
+    }
+
+    /**
      * Record an already-finished sale (e.g. a walk-in customer) as a
-     * COMPLETED order. The customer is matched by email, or created in the
+     * COMPLETED order. A customer picked from the suggestions (customer.id) is
+     * used as-is; otherwise the customer is matched by email, or created in the
      * users table when new, and each item's quantity is deducted from an
      * active, unexpired stock batch — all in one transaction, so a stock
      * problem leaves no half-created order or customer behind.
@@ -103,8 +141,10 @@ class AdminOrdersController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'customer.first_name'      => ['required', 'string', 'max:255'],
-            'customer.last_name'       => ['required', 'string', 'max:255'],
+            // Set only when a registered customer was picked from the suggestions.
+            'customer.id'              => ['nullable', 'integer', Rule::exists('users', 'id')->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at'))],
+            'customer.first_name'      => ['required_without:customer.id', 'nullable', 'string', 'max:255'],
+            'customer.last_name'       => ['required_without:customer.id', 'nullable', 'string', 'max:255'],
             'customer.email'           => ['nullable', 'email', 'max:255'],
             'customer.contact_number'  => ['nullable', 'string', 'max:20'],
             'customer.address'         => ['nullable', 'string', 'max:500'],
@@ -119,8 +159,9 @@ class AdminOrdersController extends Controller
             'items.*.quantity'         => ['required', 'integer', 'min:1', 'max:10000'],
             'items.*.prescription_file'=> ['nullable', 'image', 'max:5120'],
         ], [
-            'customer.first_name.required' => 'Please enter the customer\'s first name.',
-            'customer.last_name.required'  => 'Please enter the customer\'s last name.',
+            'customer.id.exists'                    => 'The selected customer is no longer available. Please pick the customer again.',
+            'customer.first_name.required_without' => 'Please enter the customer\'s first name.',
+            'customer.last_name.required_without'  => 'Please enter the customer\'s last name.',
             'customer.email.email'         => 'Please enter a valid email address.',
             'customer.password.min'        => 'The password must be at least 6 characters.',
             'payment.numeric'              => 'Enter a valid payment amount.',
@@ -246,13 +287,19 @@ class AdminOrdersController extends Controller
     }
 
     /**
-     * Find the customer by email, or create a new users row for them.
+     * A customer picked from the suggestions (id) is returned untouched: no new
+     * user is created and nothing on that account is updated.
+     * Otherwise find the customer by email, or create a new users row for them.
      * Walk-ins without an email get a unique placeholder (users.email is
      * required + unique). An existing account is reused untouched — the
      * password / photo typed in the modal only apply to a NEW customer.
      */
     private function resolveCustomer(array $input, $profilePicture = null): User
     {
+        if (! empty($input['id'])) {
+            return User::findOrFail($input['id']);
+        }
+
         $email = Str::lower(trim((string) ($input['email'] ?? '')));
 
         if ($email !== '') {
@@ -497,12 +544,44 @@ class AdminOrdersController extends Controller
             return [$orders, $items];
         });
 
+        // Next order / order item starts again at id 1.
+        ResetsAutoIncrement::run(['order_items', 'orders']);
+
         return $this->ok("Orders reset — {$orders} order(s) and {$items} order item(s) deleted.");
     }
 
     // ─────────────────────────────────────────────────────────────────────
     //  Helpers
     // ─────────────────────────────────────────────────────────────────────
+
+    /**
+     * Turns a stored image value into a browsable URL. Handles full URLs,
+     * paths already relative to /public ("storage/…", "images/…"), and bare
+     * paths that live on the public disk ("products/abc.jpg").
+     */
+    private function imageUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        if (preg_match('#^(https?:)?//|^data:#i', $path)) {
+            return $path;
+        }
+
+        $path = ltrim($path, '/');
+
+        if (file_exists(public_path($path))) {
+            return asset($path);
+        }
+
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            return asset('storage/' . $path);
+        }
+
+        // Unknown location: fall back to the path as given.
+        return asset($path);
+    }
 
     /** Shapes an Order into the object orders.blade.php's JS expects. */
     private function transform(Order $order): array
@@ -516,6 +595,8 @@ class AdminOrdersController extends Controller
             'dbId'         => $order->id,
             'id'           => $order->order_number,
             'customer'     => $order->user?->full_name ?? 'Deleted user',
+            'customerPhoto'=> $this->imageUrl($order->user?->profile_picture),
+            'customerPhone'=> $order->user?->contact_number,
             'date'         => $order->created_at->format('M j · g:i A'),
             'payment'      => $order->isOnlinePayment() ? 'online' : 'cash',
             'status'       => self::UI_STATUS[$order->status] ?? $order->status,
@@ -531,6 +612,7 @@ class AdminOrdersController extends Controller
             'dueAt'        => $dueAt?->toIso8601String(),
             'items'        => $order->items->map(fn ($item) => [
                 'name'                 => $item->product?->name ?? 'Removed product',
+                'image'                => $this->imageUrl($item->product?->image),
                 'qty'                  => $item->quantity,
                 'price'                => $item->unit_price,
                 'requiresPrescription' => $item->requiresPrescription(),

@@ -16,13 +16,26 @@ class AuthController extends Controller
 
     public function login(Request $request): RedirectResponse
     {
-        $credentials = $request->validate(
+        $request->validate(
             [
-                'email'    => ['required', 'email'],
+                'login'    => ['required', 'string'],   // phone number OR email
                 'password' => ['required'],
             ],
-            [],               // custom messages (optional)
+            [
+                'login.required' => 'Please enter your phone number or email.',
+            ],
         );
+
+        $login = trim($request->input('login'));
+
+        // An "@" means email; anything else is treated as a phone number.
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'contact_number';
+        $value = $field === 'email' ? $login : $this->normalizePhone($login);
+
+        $credentials = [
+            $field     => $value,
+            'password' => $request->input('password'),
+        ];
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
@@ -31,8 +44,8 @@ class AuthController extends Controller
         }
 
         return back()
-            ->withErrors(['email' => 'These credentials do not match our records.'], 'login')
-            ->withInput($request->only('email'))
+            ->withErrors(['login' => 'These credentials do not match our records.'], 'login')
+            ->withInput($request->only('login'))
             ->withFragment('loginModal'); // keeps the anchor so JS auto-opens the modal
     }
 
@@ -40,19 +53,27 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        // Normalise the phone first so spaces/dashes can't bypass the unique check.
+        if ($request->filled('contact_number')) {
+            $request->merge(['contact_number' => $this->normalizePhone($request->input('contact_number'))]);
+        }
+
         $data = $request->validateWithBag(
             'register',
             [
                 'first_name'      => ['required', 'string', 'max:100'],
                 'last_name'       => ['required', 'string', 'max:100'],
-                'email'           => ['required', 'email', 'max:255', 'unique:users,email'],
-                'contact_number'  => ['nullable', 'string', 'max:20'],
+                'email'           => ['nullable', 'email', 'max:255', 'unique:users,email'],
+                'contact_number'  => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/', 'max:20', 'unique:users,contact_number'],
                 'address'         => ['nullable', 'string', 'max:500'],
                 'profile_picture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,gif', 'max:2048'],
                 'password'        => ['required', 'confirmed', Password::min(8)],
             ],
             [
                 'email.unique'            => 'An account with this email already exists.',
+                'contact_number.required' => 'Phone number is required.',
+                'contact_number.regex'    => 'Please enter a valid phone number (e.g. 09XXXXXXXXX).',
+                'contact_number.unique'   => 'An account with this phone number already exists.',
                 'profile_picture.image'   => 'The profile photo must be an image.',
                 'profile_picture.max'     => 'The profile photo must not exceed 2 MB.',
                 'password.confirmed'      => 'The passwords do not match.',
@@ -86,5 +107,16 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home');
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Strip spaces, dashes, dots and brackets; keep digits and a leading "+". */
+    private function normalizePhone(string $phone): string
+    {
+        $phone = trim($phone);
+        $plus  = str_starts_with($phone, '+') ? '+' : '';
+
+        return $plus . preg_replace('/\D+/', '', $phone);
     }
 }

@@ -1034,6 +1034,12 @@ tbody tr:last-child td { border-bottom: none; }
   .btn-refund:hover { background: #ea6a0c; }
   .btn-refund:active { transform: scale(.96); }
 
+  @media (max-width: 768px) {
+    /* title on the left; Add Order on the right */
+    .card-head .oh-left h3 { margin-right: auto; }
+    .card-head .oh-left { gap: 8px !important; }
+  }
+
   /* ── Action cell ── */
   .action-cell { display: flex; gap: 6px; align-items: center; flex-wrap: nowrap; white-space: nowrap; }
   .action-cell > * { flex-shrink: 0; white-space: nowrap; }
@@ -1069,13 +1075,15 @@ tbody tr:last-child td { border-bottom: none; }
   }
   .cart-item:hover { background: var(--border, #e8eaf0); }
   .cart-item-icon {
-    width: 36px; height: 36px;
+    width: 48px; height: 48px;
     border-radius: 9px;
     background: #dbeafe;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 16px;
+    overflow: hidden;
   }
+  .cart-item-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .cart-item-info { flex: 1; min-width: 0; }
   .cart-item-name {
     font-size: 13px; font-weight: 700; color: var(--text);
@@ -1212,7 +1220,9 @@ tbody tr:last-child td { border-bottom: none; }
     font-size: 10px;
     font-weight: 700;
     display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
   }
+  .detail-customer-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .detail-customer-name {
     font-size: 12px; font-weight: 700; color: var(--text);
   }
@@ -1227,6 +1237,7 @@ tbody tr:last-child td { border-bottom: none; }
   }
   #ordersTable thead th:first-child, #ordersTable tbody td:first-child { padding-left: 14px; }
   #ordersTable .c-id      { width: 13%; }
+  #ordersTable .c-phone   { width: 10%; }
   #ordersTable .c-items   { width: 7%; }
   #ordersTable .c-total   { width: 9%; }
   #ordersTable .c-date    { width: 10%; }
@@ -1490,12 +1501,13 @@ tbody tr:last-child td { border-bottom: none; }
       @media (max-width: 380px) {
         .card-head .oh-tabs { gap: 2px !important; }
         .card-head .oh-tabs .tab-link { padding: 6px 2px; font-size: 10px !important; }
+      }
     </style>
     <!-- Order search: matches order number, customer name, or any product in the order -->
     <div class="order-search-bar">
       <div class="order-search" id="orderSearchBox">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="orderSearchInput" placeholder="Search by order number, customer or product…" maxlength="100" autocomplete="off" aria-label="Search orders by order number, customer or product">
+        <input type="text" id="orderSearchInput" placeholder="Search by order number, customer, phone or product…" maxlength="100" autocomplete="off" aria-label="Search orders by order number, customer or product">
         <button type="button" class="order-search-clear" id="orderSearchClear" aria-label="Clear search" title="Clear">&times;</button>
       </div>
       <div class="order-search-meta" id="orderSearchMeta"></div>
@@ -1507,6 +1519,7 @@ tbody tr:last-child td { border-bottom: none; }
           <tr>
             <th class="c-id">#</th>
             <th class="c-customer">Customer</th>
+            <th class="c-phone">Phone Number</th>
             <th class="c-items">Items</th>
             <th class="c-total">Total</th>
             <th class="c-date">Date</th>
@@ -1727,6 +1740,17 @@ tbody tr:last-child td { border-bottom: none; }
   .ao-row { display:grid; grid-template-columns:1fr 76px 96px 30px; gap:8px; align-items:center; }
   .ao-row select, .ao-row input { width:100%; height:38px; padding:0 10px; border:1px solid var(--border); border-radius:6px; background:var(--input-bg); color:var(--text); font-size:13px; font-family:inherit; outline:none; }
   .ao-row select:focus, .ao-row input:focus { border-color:#6b7280; box-shadow:0 0 0 3px rgba(107,114,128,.15); }
+  .ao-prod { min-width:0; }
+  .ao-prod input[type=text] { text-overflow:ellipsis; }
+  .ao-prod-panel { display:none; position:fixed; z-index:2000; background:var(--surface); border:1px solid var(--border); border-radius:6px; box-shadow:0 8px 24px rgba(0,0,0,.16); max-height:260px; overflow-y:auto; }
+  .ao-prod-item { padding:8px 12px; font-size:13px; color:var(--text); cursor:pointer; }
+  .ao-prod-item + .ao-prod-item { border-top:1px solid var(--border); }
+  .ao-prod-item:hover, .ao-prod-item.active { background:var(--surface2); }
+  .ao-prod-item.disabled { opacity:.5; cursor:not-allowed; }
+  .ao-prod-item.disabled:hover { background:transparent; }
+  .ao-prod-name { font-weight:500; }
+  .ao-prod-meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .ao-prod-empty { padding:10px 12px; font-size:13px; color:var(--muted); }
   .ao-line-total { font-size:13px; font-weight:500; text-align:right; }
   .ao-remove { width:30px; height:30px; border:none; border-radius:6px; background:transparent; color:var(--muted); cursor:pointer; font-size:18px; line-height:1; }
   .ao-remove:hover { background:var(--surface2); color:var(--text); }
@@ -1737,6 +1761,13 @@ tbody tr:last-child td { border-bottom: none; }
   .ao-add-btn:hover { background:var(--surface2); border-color:#9ca3af; }
   .ao-total { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); margin-top:14px; padding-top:12px; font-size:14px; font-weight:600; }
   .ao-hint { font-size:12px; color:var(--muted); margin:2px 0 0; line-height:1.5; }
+  #addOrderModal .field.ao-suggest-host { position:relative; }
+  .ao-suggest { display:none; position:absolute; left:0; right:0; top:100%; margin-top:4px; z-index:30; background:var(--surface); border:1px solid var(--border); border-radius:6px; box-shadow:0 8px 24px rgba(0,0,0,.16); max-height:240px; overflow-y:auto; }
+  .ao-suggest-item { display:flex; justify-content:space-between; gap:12px; align-items:center; padding:9px 12px; font-size:13px; color:var(--text); cursor:pointer; }
+  .ao-suggest-item + .ao-suggest-item { border-top:1px solid var(--border); }
+  .ao-suggest-item:hover, .ao-suggest-item.active { background:var(--surface2); }
+  .ao-suggest-phone { font-size:12px; color:var(--muted); white-space:nowrap; }
+  #addOrderModal .field input.ao-locked { background:var(--surface2); color:var(--muted); cursor:not-allowed; }
   .ao-error { display:none; font-size:12.5px; color:var(--green); background:var(--green-light); border:1px solid var(--green); border-radius:6px; padding:8px 12px; margin-top:14px; }
   .ao-btn { padding:8px 16px; font-size:13px; font-weight:500; font-family:inherit; border-radius:6px; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--text); }
   .ao-btn:hover { background:var(--surface2); border-color:#9ca3af; }
@@ -1748,6 +1779,7 @@ tbody tr:last-child td { border-bottom: none; }
   @media (max-width:560px) { .ao-grid { grid-template-columns:1fr; } .ao-row { grid-template-columns:1fr 70px 30px; } .ao-line-total { display:none; } }
 </style>
 <div class="modal-backdrop" id="addOrderModal">
+  <div class="ao-prod-panel" id="aoProdPanel" role="listbox"></div>
   <div class="modal">
     <div class="modal-header">
       <h3>Add Order (Manual)</h3>
@@ -1795,15 +1827,14 @@ tbody tr:last-child td { border-bottom: none; }
       <!-- ── CUSTOMER ── -->
       <div class="ao-section">Customer information</div>
       <div class="ao-grid">
-        <div class="field"><label for="aoFirst">First name *</label><input type="text" id="aoFirst" maxlength="255" autocomplete="off"></div>
+        <div class="field ao-suggest-host"><label for="aoFirst">First name *</label><input type="text" id="aoFirst" maxlength="255" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="aoSuggest"><div class="ao-suggest" id="aoSuggest" role="listbox"></div></div>
         <div class="field"><label for="aoLast">Last name *</label><input type="text" id="aoLast" maxlength="255" autocomplete="off"></div>
         <div class="field"><label for="aoEmail">Email</label><input type="email" id="aoEmail" maxlength="255" autocomplete="off" placeholder="Optional"></div>
         <div class="field"><label for="aoPhone">Contact number</label><input type="text" id="aoPhone" maxlength="20" autocomplete="off" placeholder="Optional"></div>
         <div class="field full"><label for="aoAddress">Address</label><input type="text" id="aoAddress" maxlength="500" autocomplete="off" placeholder="Optional"></div>
         <div class="field"><label for="aoPassword">Password</label><input type="password" id="aoPassword" maxlength="255" autocomplete="new-password" value="admin123"></div>
-        <div class="field"><label for="aoProfile">Profile picture</label><input type="file" id="aoProfile" accept="image/*" onchange="aoCheckFile(this)"></div>
+        <div class="field"><label for="aoProfile">Profile picture</label><input type="file" id="aoProfile" accept="image/*" onchange="aoCheckFile(this)"><p class="ao-hint" id="aoProfileNote" style="display:none;">The registered profile picture is kept.</p></div>
       </div>
-      <p class="ao-hint">New customers are added to the customers list automatically. If the email already belongs to a customer, that account is used as-is (its password and photo are not changed).</p>
 
       <p id="aoError" class="ao-error"></p>
     </div>
@@ -1976,6 +2007,7 @@ const ROUTES = {
   data: @json(route('staff.orders.data')),
   base: @json(url('/staff/orders')),
   products: @json(route('staff.orders.products')),
+  customers: @json(route('staff.orders.customers')),
   store: @json(route('staff.orders.store')),
 };
 
@@ -2012,23 +2044,6 @@ async function loadOrders(silent = false) {
   } catch (e) {
     if (!silent) showToast(e.message);
   }
-}
-
-/* ─── Item emoji map (fallback: 💊) ─── */
-const ITEM_ICONS = {
-  default: '💊',
-  inhaler: '🫁',
-  solution: '🧴',
-  vitamin: '💛',
-  syrup: '🍶',
-};
-function itemIcon(name) {
-  const n = name.toLowerCase();
-  if (n.includes('inhaler'))      return '🫁';
-  if (n.includes('solution') || n.includes('betadine')) return '🧴';
-  if (n.includes('vitamin'))      return '🌟';
-  if (n.includes('syrup'))        return '🍶';
-  return '💊';
 }
 
 /* helpers */
@@ -2074,7 +2089,7 @@ function renderTable(filter) {
   filtered = filtered.filter(matchesOrderSearch);
   body.innerHTML = '';
   if (!filtered.length && orderSearchTerms().length) {
-    const cols = 8 + (filter === 'approved' ? 1 : 0) + (filter === 'cancelled' ? 1 : 0);
+    const cols = 9 + (filter === 'approved' ? 1 : 0) + (filter === 'cancelled' ? 1 : 0);
     body.innerHTML = `<tr class="no-results"><td colspan="${cols}">No orders in this tab match “${esc(document.getElementById('orderSearchInput').value.trim())}”.</td></tr>`;
   }
   filtered.forEach(order => {
@@ -2092,6 +2107,7 @@ function renderTable(filter) {
     tr.innerHTML = `
       <td style="color:var(--muted);font-size:12px;" title="${esc(order.id)}">${esc(order.id)}</td>
       <td title="${esc(order.customer)}">${esc(order.customer)}</td>
+      <td style="font-size:12px;color:var(--muted);" title="${esc(order.customerPhone || '—')}">${esc(order.customerPhone || '—')}</td>
       <td>${order.items.length} item${order.items.length > 1 ? 's' : ''}</td>
       <td style="font-weight:700;">${fmt(total)}</td>
       <td style="font-size:12px;color:var(--muted);" title="${esc(order.date)}">${esc(order.date)}</td>
@@ -2149,8 +2165,8 @@ function renderTable(filter) {
 
   updateStats();
   updateTabs();
-  updateOrderSearchMeta();
   applySearch();
+  updateOrderSearchMeta();
 }
 
 function filterTable(f) { renderTable(f); }
@@ -2176,7 +2192,12 @@ function openDetail(id) {
 
   document.getElementById('dOrderId').textContent   = order.id;
   document.getElementById('dOrderMeta').textContent = order.date;
-  document.getElementById('dCustomerInitials').textContent = initials(order.customer);
+  const avatarEl = document.getElementById('dCustomerInitials');
+  if (order.customerPhoto) {
+    avatarEl.innerHTML = `<img src="${esc(order.customerPhoto)}" alt="" data-initials="${esc(initials(order.customer))}" onerror="this.parentNode.textContent=this.dataset.initials">`;
+  } else {
+    avatarEl.textContent = initials(order.customer);
+  }
   document.getElementById('dCustomerName').textContent     = order.customer;
   document.getElementById('dItemCount').textContent  = order.items.length;
 
@@ -2197,7 +2218,9 @@ function openDetail(id) {
     const div = document.createElement('div');
     div.className = 'cart-item';
     div.innerHTML = `
-      <div class="cart-item-icon">${itemIcon(item.name)}</div>
+      <div class="cart-item-icon">${item.image
+          ? `<img src="${esc(item.image)}" alt="${esc(item.name)}" onerror="this.style.visibility='hidden'">`
+          : ''}</div>
       <div class="cart-item-info">
         <div class="cart-item-name">${item.name}${item.requiresPrescription ? ' <span class="pill blue" style="font-size:9px;padding:1px 6px;vertical-align:1px;">Rx</span>' : ''}</div>
         <div class="cart-item-qty">Qty: ${item.qty} &nbsp;·&nbsp; ${fmt(item.price)} each</div>
@@ -2719,7 +2742,125 @@ let AO_PRODUCTS = [];
 let aoSubmitting = false;
 const AO_MAX_BYTES = 5 * 1024 * 1024; // keep in sync with StaffOrdersController@store
 
+/* ─── Add Order: registered-customer suggestions (by first name) ───
+   Picking a suggestion fills + locks every customer field except First name.
+   Editing / clearing First name releases the lock and empties those fields.
+   The password is hashed server-side, so a masked value is shown and it is
+   never sent; the order is attached to the existing user via customer[id]. */
+const AO_LOCKABLE = ['aoLast', 'aoEmail', 'aoPhone', 'aoAddress', 'aoPassword', 'aoProfile'];
+let aoSelectedCustomer = null;
+let aoSuggestList = [];
+let aoSuggestActive = -1;
+let aoSuggestTimer = null;
+let aoSuggestCtrl = null;
+
+function aoHideSuggest() {
+  const box = document.getElementById('aoSuggest');
+  box.style.display = 'none'; box.innerHTML = '';
+  aoSuggestList = []; aoSuggestActive = -1;
+}
+
+function aoSetLocked(locked) {
+  AO_LOCKABLE.forEach(id => {
+    const el = document.getElementById(id);
+    el.disabled = locked;
+    el.classList.toggle('ao-locked', locked);
+  });
+  document.getElementById('aoProfileNote').style.display = locked ? '' : 'none';
+}
+
+/* Back to a normal "new customer" form (First name is left as typed). */
+function aoResetCustomerLock() {
+  clearTimeout(aoSuggestTimer);
+  if (aoSuggestCtrl) aoSuggestCtrl.abort();
+  aoSelectedCustomer = null;
+  aoSetLocked(false);
+  aoHideSuggest();
+  ['aoLast', 'aoEmail', 'aoPhone', 'aoAddress'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aoPassword').value = 'admin123';
+  document.getElementById('aoProfile').value = '';
+}
+
+function aoSelectCustomer(c) {
+  aoSelectedCustomer = c;
+  document.getElementById('aoFirst').value    = c.first_name || '';
+  document.getElementById('aoLast').value     = c.last_name || '';
+  document.getElementById('aoEmail').value    = c.email || '';
+  document.getElementById('aoPhone').value    = c.contact_number || '';
+  document.getElementById('aoAddress').value  = c.address || '';
+  document.getElementById('aoPassword').value = '••••••••';   // masked; the real hash is never exposed
+  document.getElementById('aoProfile').value  = '';
+  aoSetLocked(true);
+  aoHideSuggest();
+}
+
+function aoRenderSuggest(list) {
+  const box = document.getElementById('aoSuggest');
+  aoSuggestList = list; aoSuggestActive = -1;
+  if (!list.length) { aoHideSuggest(); return; }
+  box.innerHTML = list.map((c, i) => `
+    <div class="ao-suggest-item" role="option" data-i="${i}">
+      <span>${esc(c.full_name)}</span>
+      <span class="ao-suggest-phone">${esc(c.contact_number || 'No phone')}</span>
+    </div>`).join('');
+  box.style.display = 'block';
+}
+
+async function aoFetchSuggest(q) {
+  if (aoSuggestCtrl) aoSuggestCtrl.abort();
+  aoSuggestCtrl = new AbortController();
+  try {
+    const res = await fetch(ROUTES.customers + '?q=' + encodeURIComponent(q), {
+      headers: { 'Accept': 'application/json' }, signal: aoSuggestCtrl.signal,
+    });
+    if (!res.ok) return;
+    const list = (await res.json()).customers || [];
+    // Ignore stale answers (typed on, cleared, or already picked).
+    if (aoSelectedCustomer || document.getElementById('aoFirst').value.trim() !== q) return;
+    aoRenderSuggest(list);
+  } catch (e) { /* aborted or offline: no suggestions */ }
+}
+
+(function aoInitSuggest() {
+  const first = document.getElementById('aoFirst');
+  const box   = document.getElementById('aoSuggest');
+
+  first.addEventListener('input', () => {
+    // Any edit of First name releases a previously selected customer.
+    if (aoSelectedCustomer) aoResetCustomerLock();
+    clearTimeout(aoSuggestTimer);
+    const q = first.value.trim();
+    if (!q) { aoResetCustomerLock(); return; }
+    aoSuggestTimer = setTimeout(() => aoFetchSuggest(q), 200);
+  });
+
+  first.addEventListener('keydown', e => {
+    if (box.style.display !== 'block') return;
+    const items = box.querySelectorAll('.ao-suggest-item');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      aoSuggestActive = (aoSuggestActive + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      items.forEach((el, i) => el.classList.toggle('active', i === aoSuggestActive));
+    } else if (e.key === 'Enter' && aoSuggestActive >= 0) {
+      e.preventDefault();
+      aoSelectCustomer(aoSuggestList[aoSuggestActive]);
+    } else if (e.key === 'Escape') {
+      aoHideSuggest();
+    }
+  });
+
+  first.addEventListener('blur', aoHideSuggest);
+
+  // mousedown (not click) fires before blur, so the pick isn't lost.
+  box.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const item = e.target.closest('.ao-suggest-item');
+    if (item) aoSelectCustomer(aoSuggestList[Number(item.dataset.i)]);
+  });
+})();
+
 async function openAddOrderModal() {
+  aoResetCustomerLock();
   ['aoFirst','aoLast','aoEmail','aoPhone','aoAddress'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('aoPassword').value = 'admin123';
   document.getElementById('aoProfile').value = '';
@@ -2731,6 +2872,7 @@ async function openAddOrderModal() {
   const nowLocal = now.toISOString().slice(0, 16);
   const dt = document.getElementById('aoDate');
   dt.value = nowLocal; dt.max = nowLocal;
+  aoProdHide();
   document.getElementById('aoRows').innerHTML = '';
   document.getElementById('aoError').style.display = 'none';
   aoSubmitting = false; setAoBusy(false);
@@ -2774,36 +2916,167 @@ function aoCheckFile(input) {
   document.getElementById('aoError').style.display = 'none';
 }
 
-function aoOptions(selected) {
-  return '<option value="">Select product…</option>' + AO_PRODUCTS.map(p => {
-    const out = p.stock <= 0;
-    return `<option value="${p.id}" ${String(p.id) === String(selected) ? 'selected' : ''} ${out ? 'disabled' : ''}>`
-      + `${esc(p.name)}${p.code ? ' (' + esc(p.code) + ')' : ''} — ${fmt(p.price)} · ${out ? 'out of stock' : p.stock + ' in stock'}${p.requiresPrescription ? ' · Rx' : ''}</option>`;
-  }).join('');
+/* ─── Product combobox: type to search, pick from suggestions ───
+   Each row has a text input (.ao-prod-input) and a hidden input (.ao-pid)
+   holding the chosen product id. One shared panel (#aoProdPanel) is
+   positioned under whichever input is active. */
+let aoProdInput = null;     // text input the panel is currently attached to
+let aoProdList = [];        // products currently listed in the panel
+let aoProdActive = -1;
+
+function aoProdMatches(q) {
+  const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  return AO_PRODUCTS.filter(p => {
+    const hay = (p.name + ' ' + (p.code || '')).toLowerCase();
+    return words.every(w => hay.includes(w));
+  });
 }
+
+function aoProdTakenIds(exceptInput) {
+  const ids = new Set();
+  document.querySelectorAll('#aoRows .ao-item').forEach(item => {
+    const inp = item.querySelector('.ao-prod-input');
+    const id = item.querySelector('.ao-pid').value;
+    if (id && inp !== exceptInput) ids.add(id);
+  });
+  return ids;
+}
+
+function aoProdHide() {
+  const panel = document.getElementById('aoProdPanel');
+  panel.style.display = 'none'; panel.innerHTML = '';
+  aoProdList = []; aoProdActive = -1; aoProdInput = null;
+}
+
+function aoProdPosition() {
+  if (!aoProdInput) return;
+  const panel = document.getElementById('aoProdPanel');
+  const r = aoProdInput.getBoundingClientRect();
+  const below = window.innerHeight - r.bottom;
+  panel.style.left = r.left + 'px';
+  panel.style.width = r.width + 'px';
+  if (below < 180 && r.top > below) {            // not enough room below: open upwards
+    panel.style.maxHeight = Math.min(260, r.top - 12) + 'px';
+    panel.style.top = ''; panel.style.bottom = (window.innerHeight - r.top + 4) + 'px';
+  } else {
+    panel.style.maxHeight = Math.min(260, below - 12) + 'px';
+    panel.style.bottom = ''; panel.style.top = (r.bottom + 4) + 'px';
+  }
+}
+
+function aoProdRender(input) {
+  const panel = document.getElementById('aoProdPanel');
+  aoProdInput = input;
+  const taken = aoProdTakenIds(input);
+  aoProdList = aoProdMatches(input.value.trim()).slice(0, 50);
+  aoProdActive = -1;
+  if (!AO_PRODUCTS.length) {
+    panel.innerHTML = '<div class="ao-prod-empty">No products available.</div>';
+  } else if (!aoProdList.length) {
+    panel.innerHTML = '<div class="ao-prod-empty">No products match “' + esc(input.value.trim()) + '”.</div>';
+  } else {
+    panel.innerHTML = aoProdList.map((p, i) => {
+      const out = p.stock <= 0, dup = taken.has(String(p.id));
+      const note = out ? 'out of stock' : dup ? 'already added' : p.stock + ' in stock';
+      return `<div class="ao-prod-item${out || dup ? ' disabled' : ''}" role="option" data-i="${i}">`
+        + `<div class="ao-prod-name">${esc(p.name)}${p.code ? ' <span style="font-weight:400;color:var(--muted)">(' + esc(p.code) + ')</span>' : ''}</div>`
+        + `<div class="ao-prod-meta">${fmt(p.price)} · ${note}${p.requiresPrescription ? ' · Rx' : ''}</div></div>`;
+    }).join('');
+  }
+  panel.style.display = 'block';
+  aoProdPosition();
+}
+
+function aoProdPick(p) {
+  const input = aoProdInput;
+  if (!input || !p || p.stock <= 0) return;
+  if (aoProdTakenIds(input).has(String(p.id))) return;
+  const item = input.closest('.ao-item');
+  input.value = p.name + (p.code ? ' (' + p.code + ')' : '');
+  item.querySelector('.ao-pid').value = p.id;
+  aoProdHide();
+  aoRowChanged(item);
+}
+
+function aoProdBind(input) {
+  const item = input.closest('.ao-item');
+  const pid  = item.querySelector('.ao-pid');
+
+  input.addEventListener('focus', () => { input.select(); aoProdRender(input); });
+  input.addEventListener('input', () => {
+    if (pid.value) { pid.value = ''; aoRowChanged(item); }   // editing releases the chosen product
+    aoProdRender(input);
+  });
+  input.addEventListener('keydown', e => {
+    const panel = document.getElementById('aoProdPanel');
+    const open = panel.style.display === 'block' && aoProdInput === input;
+    if (e.key === 'Escape') { if (open) { e.stopPropagation(); aoProdHide(); } return; }
+    if (!open) { if (e.key === 'ArrowDown') aoProdRender(input); return; }
+    const els = panel.querySelectorAll('.ao-prod-item');
+    if (!els.length) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const dir = e.key === 'ArrowDown' ? 1 : -1;
+      let i = aoProdActive;
+      for (let k = 0; k < els.length; k++) {           // skip disabled rows
+        i = (i + dir + els.length) % els.length;
+        if (!els[i].classList.contains('disabled')) break;
+      }
+      aoProdActive = i;
+      els.forEach((el, j) => el.classList.toggle('active', j === i));
+      els[i].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (aoProdActive >= 0) aoProdPick(aoProdList[aoProdActive]);
+      else {                                            // Enter with one pickable match selects it
+        const ok = aoProdList.filter(p => p.stock > 0 && !aoProdTakenIds(input).has(String(p.id)));
+        if (ok.length === 1) aoProdPick(ok[0]);
+      }
+    }
+  });
+  input.addEventListener('blur', () => {
+    if (aoProdInput === input) aoProdHide();
+    if (!pid.value) input.value = '';                   // free text that wasn't picked is discarded
+  });
+}
+
+(function aoInitProdPanel() {
+  const panel = document.getElementById('aoProdPanel');
+  // mousedown (not click) fires before blur, so the pick isn't lost.
+  panel.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const el = e.target.closest('.ao-prod-item');
+    if (el && !el.classList.contains('disabled')) aoProdPick(aoProdList[Number(el.dataset.i)]);
+  });
+  window.addEventListener('resize', aoProdHide);
+  document.querySelector('#addOrderModal .modal-body').addEventListener('scroll', aoProdHide);
+})();
 
 function addOrderRow() {
   const item = document.createElement('div');
   item.className = 'ao-item';
   item.innerHTML = `
     <div class="ao-row">
-      <select onchange="aoRowChanged(this)">${aoOptions('')}</select>
-      <input type="number" min="1" step="1" value="1" oninput="aoRecalc()">
+      <div class="ao-prod">
+        <input type="text" class="ao-prod-input" placeholder="Search product by name or code…" autocomplete="off" aria-label="Product" role="combobox" aria-autocomplete="list">
+        <input type="hidden" class="ao-pid" value="">
+      </div>
+      <input type="number" class="ao-qty" min="1" step="1" value="1" oninput="aoRecalc()">
       <div class="ao-line-total">₱0.00</div>
-      <button type="button" class="ao-remove" title="Remove" onclick="this.closest('.ao-item').remove(); aoRecalc();">×</button>
+      <button type="button" class="ao-remove" title="Remove" onclick="aoProdHide(); this.closest('.ao-item').remove(); aoRecalc();">×</button>
     </div>
     <div class="ao-upload ao-rx" style="display:none;">
       <label>Prescription * (required for this product — image, max 5 MB)</label>
       <input type="file" accept="image/*" onchange="aoCheckFile(this)">
     </div>`;
   document.getElementById('aoRows').appendChild(item);
+  aoProdBind(item.querySelector('.ao-prod-input'));
   aoRecalc();
 }
 
 /* Show the prescription upload only when the chosen product needs one. */
-function aoRowChanged(select) {
-  const item = select.closest('.ao-item');
-  const p = AO_PRODUCTS.find(x => String(x.id) === select.value);
+function aoRowChanged(item) {
+  const p = AO_PRODUCTS.find(x => String(x.id) === item.querySelector('.ao-pid').value);
   const rx = item.querySelector('.ao-rx');
   rx.style.display = p && p.requiresPrescription ? '' : 'none';
   if (!(p && p.requiresPrescription)) rx.querySelector('input').value = '';
@@ -2813,8 +3086,8 @@ function aoRowChanged(select) {
 function aoRecalc() {
   let total = 0;
   document.querySelectorAll('#aoRows .ao-item').forEach(item => {
-    const p   = AO_PRODUCTS.find(x => String(x.id) === item.querySelector('select').value);
-    const qty = parseInt(item.querySelector('.ao-row input').value, 10) || 0;
+    const p   = AO_PRODUCTS.find(x => String(x.id) === item.querySelector('.ao-pid').value);
+    const qty = parseInt(item.querySelector('.ao-qty').value, 10) || 0;
     const line = p ? p.price * qty : 0;
     item.querySelector('.ao-line-total').textContent = fmt(line);
     total += line;
@@ -2858,9 +3131,9 @@ async function submitAddOrder() {
   let n = 0;
 
   for (const item of document.querySelectorAll('#aoRows .ao-item')) {
-    const pid = item.querySelector('select').value;
+    const pid = item.querySelector('.ao-pid').value;
     if (!pid) continue;
-    const qty = parseInt(item.querySelector('.ao-row input').value, 10);
+    const qty = parseInt(item.querySelector('.ao-qty').value, 10);
     const p   = AO_PRODUCTS.find(x => String(x.id) === pid);
     if (!qty || qty < 1)  { showAoError('Quantities must be at least 1.'); return; }
     if (seen.has(pid))    { showAoError('The same product is listed more than once.'); return; }
@@ -2880,14 +3153,20 @@ async function submitAddOrder() {
     showAoError('Payment is less than the order total (' + fmt(aoTotalValue) + ').'); return;
   }
 
-  form.append('customer[first_name]', val('aoFirst'));
-  form.append('customer[last_name]',  val('aoLast'));
-  if (val('aoEmail'))   form.append('customer[email]', val('aoEmail'));
-  if (val('aoPhone'))   form.append('customer[contact_number]', val('aoPhone'));
-  if (val('aoAddress')) form.append('customer[address]', val('aoAddress'));
-  form.append('customer[password]', document.getElementById('aoPassword').value || 'admin123');
-  const photo = document.getElementById('aoProfile').files[0];
-  if (photo) form.append('customer[profile_picture]', photo);
+  if (aoSelectedCustomer) {
+    // Registered customer picked from the suggestions: send only the id, so
+    // the server reuses that account and creates / updates nothing.
+    form.append('customer[id]', aoSelectedCustomer.id);
+  } else {
+    form.append('customer[first_name]', val('aoFirst'));
+    form.append('customer[last_name]',  val('aoLast'));
+    if (val('aoEmail'))   form.append('customer[email]', val('aoEmail'));
+    if (val('aoPhone'))   form.append('customer[contact_number]', val('aoPhone'));
+    if (val('aoAddress')) form.append('customer[address]', val('aoAddress'));
+    form.append('customer[password]', document.getElementById('aoPassword').value || 'admin123');
+    const photo = document.getElementById('aoProfile').files[0];
+    if (photo) form.append('customer[profile_picture]', photo);
+  }
 
   form.append('payment_method', payment);
   if (payment === 'cash') form.append('payment', paidAmount);
@@ -2932,6 +3211,7 @@ function matchesOrderSearch(order, terms = orderSearchTerms()) {
   const hay = [
     order.id,
     order.customer,
+    order.customerPhone,
     ...order.items.map(i => i.name),
   ].join(' ').toLowerCase();
   return terms.every(t => hay.includes(t));

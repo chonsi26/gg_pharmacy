@@ -996,7 +996,7 @@ tbody tr:last-child td { border-bottom: none; }
       padding: 10px 12px;
       font-size: 14px;
     }
-    /* Reset + Products buttons share the first cell of the second row */
+    /* Products button shares the first cell of the second row */
     .card-head .filter-row .filter-actions {
       grid-row: 2;
       grid-column: 1;
@@ -1095,6 +1095,20 @@ tbody tr:last-child td { border-bottom: none; }
     border-color: #a5b4fc;
   }
 
+  /* ── Searchable medicine combobox ── */
+  .combo { position: relative; }
+  .combo-list {
+    display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+    max-height: 220px; overflow-y: auto; z-index: 50;
+    background: var(--card, #fff); border: 1.5px solid var(--border, #e2e8f0);
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  }
+  .combo.open .combo-list { display: block; }
+  .combo-opt { padding: 9px 12px; font-size: 13px; color: var(--text); cursor: pointer; }
+  .combo-opt.active, .combo-opt:hover { background: var(--bg, #f3f4f6); }
+  .combo-opt mark { background: transparent; color: inherit; font-weight: 700; text-decoration: underline; }
+  .combo-empty { padding: 9px 12px; font-size: 13px; color: var(--muted, #888); }
+
   /* ── Wider modal variant (Products modal) ── */
   .modal.modal-lg { max-width: 560px; }
 
@@ -1178,6 +1192,15 @@ tbody tr:last-child td { border-bottom: none; }
   .pick-chevron { color: var(--subtle); flex-shrink: 0; }
   .pick-chevron svg { width: 16px; height: 16px; }
   .pick-empty { text-align: center; padding: 30px 10px; color: var(--muted); font-size: 13px; }
+
+  /* Products modal pager (50 per page) — reuses .pager-btn styles */
+  .pick-pager {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    padding: 10px 0 0; margin-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .pick-pager[hidden] { display: none; }
+  .pick-pager .pager-btn { min-width: 28px; height: 28px; padding: 0 8px; }
 
   /* ── Row action buttons in the batch table ── */
   .row-actions { display: flex; gap: 6px; white-space: nowrap; }
@@ -1329,12 +1352,11 @@ tbody tr:last-child td { border-bottom: none; }
 
     <div class="form-group">
       <label>Medicine *</label>
-      <select id="modalMedicine">
-        <option value="">— Select medicine —</option>
-        @foreach($products as $product)
-          <option value="{{ $product->id }}">{{ $product->name }}</option>
-        @endforeach
-      </select>
+      <div class="combo" id="medCombo">
+        <input type="text" id="modalMedicineSearch" class="combo-input" placeholder="Type to search medicine…" autocomplete="off">
+        <div class="combo-list" id="medComboList"></div>
+      </div>
+      <input type="hidden" id="modalMedicine" value="">
     </div>
     <div class="form-group">
       <label>Supplier</label>
@@ -1440,6 +1462,10 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="pick-list" id="productsList">
       <div class="pick-empty">Loading products…</div>
+    </div>
+    <div class="pick-pager" id="productsPager" hidden>
+      <div class="pager-info" id="productsPagerInfo"></div>
+      <div class="pager-controls" id="productsPagerControls"></div>
     </div>
   </div>
 </div>
@@ -1869,10 +1895,78 @@ document.getElementById("pagerControls").addEventListener("click", e => {
   document.getElementById("batchTableBody").closest(".card").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
+// ── Searchable medicine combobox ───────────────────────────────────────────
+const medCombo = (() => {
+  const select = document.getElementById("modalMedicine"); // hidden input holding product id
+  const input  = document.getElementById("modalMedicineSearch");
+  const list   = document.getElementById("medComboList");
+  const wrap   = document.getElementById("medCombo");
+  const options = @json(collect($products)->map(fn($p) => ['value' => (string) $p->id, 'label' => $p->name])->values());
+  let active = -1, shown = [];
+
+  const esc = t => t.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  function render(q) {
+    const term = q.trim().toLowerCase();
+    shown = options.filter(o => o.label.toLowerCase().includes(term));
+    active = shown.length ? 0 : -1;
+    if (!shown.length) { list.innerHTML = '<div class="combo-empty">No medicines found</div>'; return; }
+    list.innerHTML = shown.map((o, i) => {
+      let label = esc(o.label);
+      if (term) {
+        const idx = o.label.toLowerCase().indexOf(term);
+        label = esc(o.label.slice(0, idx)) + "<mark>" + esc(o.label.slice(idx, idx + term.length)) + "</mark>" + esc(o.label.slice(idx + term.length));
+      }
+      return `<div class="combo-opt${i === active ? " active" : ""}" data-i="${i}">${label}</div>`;
+    }).join("");
+  }
+  function open()  { render(input.value === selectedLabel() ? "" : input.value); wrap.classList.add("open"); }
+  function close() { wrap.classList.remove("open"); sync(); }
+  function selectedLabel() {
+    const o = options.find(x => x.value === String(select.value));
+    return o ? o.label : "";
+  }
+  function choose(i) {
+    const o = shown[i]; if (!o) return;
+    select.value = o.value;
+    input.value = o.label;
+    wrap.classList.remove("open");
+  }
+  function setActive(n) {
+    const items = list.querySelectorAll(".combo-opt");
+    if (!items.length) return;
+    active = (n + items.length) % items.length;
+    items.forEach((el, i) => el.classList.toggle("active", i === active));
+    items[active].scrollIntoView({ block: "nearest" });
+  }
+  // Re-sync text box from the hidden id input (call after setting its value in code)
+  function sync() { input.value = selectedLabel(); }
+
+  input.addEventListener("focus", () => { input.select(); open(); });
+  input.addEventListener("input", () => {
+    select.value = "";            // typing clears previous choice until one is picked
+    render(input.value);
+    wrap.classList.add("open");
+  });
+  input.addEventListener("keydown", e => {
+    if (e.key === "ArrowDown") { e.preventDefault(); wrap.classList.contains("open") ? setActive(active + 1) : open(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(active - 1); }
+    else if (e.key === "Enter") { if (wrap.classList.contains("open")) { e.preventDefault(); choose(active); } }
+    else if (e.key === "Escape") { if (wrap.classList.contains("open")) { e.stopPropagation(); close(); } }
+  });
+  list.addEventListener("mousedown", e => {   // mousedown fires before input blur
+    const el = e.target.closest(".combo-opt");
+    if (el) { e.preventDefault(); choose(+el.dataset.i); }
+  });
+  input.addEventListener("blur", close);
+
+  return { sync };
+})();
+
 // ── Add / Edit Stock Modal ─────────────────────────────────────────────────
 let stockModalMode = "add"; // "add" | "edit"
 
-function openStockAddModal() {
+function openStockAddModal(productId = null) {
   stockModalMode = "add";
   document.getElementById("stockModalTitle").textContent = "Add Medicine Stock";
   document.getElementById("stockModalSub").textContent = "Fill in the details to log a new batch entry.";
@@ -1883,7 +1977,19 @@ function openStockAddModal() {
     .forEach(id => document.getElementById(id).value = "");
   document.getElementById("modalStatus").value = "1";
   document.getElementById("modalStatusHint").style.display = "none";
+  // Preselect a product when opened from the Products modal (ignore click events)
+  if (typeof productId === "number" || (typeof productId === "string" && productId !== "")) {
+    document.getElementById("modalMedicine").value = productId;
+  }
+  medCombo.sync();
   document.getElementById("addStockModal").classList.add("open");
+}
+
+// Open the Add Stock modal with a product already selected (from the Products modal)
+function openStockAddForProduct(productId) {
+  hideProductsModal();
+  hideAvailableStocksModal();
+  openStockAddModal(productId);
 }
 
 function openEditStock(id) {
@@ -1904,6 +2010,7 @@ function openEditStock(id) {
   document.getElementById("modalExpiry").value = b.expiry_date || "";
   document.getElementById("modalStatus").value = b.is_active ? "1" : "0";
   document.getElementById("modalStatusHint").style.display = "none";
+  medCombo.sync();
   document.getElementById("addStockModal").classList.add("open");
 }
 
@@ -1911,7 +2018,7 @@ function closeModal() {
   document.getElementById("addStockModal").classList.remove("open");
 }
 
-document.getElementById("openAddStock").addEventListener("click", openStockAddModal);
+document.getElementById("openAddStock").addEventListener("click", () => openStockAddModal());
 document.getElementById("closeModal").addEventListener("click", closeModal);
 document.getElementById("cancelModal").addEventListener("click", closeModal);
 document.getElementById("addStockModal").addEventListener("click", e => { if (e.target === e.currentTarget) closeModal(); });
@@ -2098,10 +2205,13 @@ document.getElementById("filterStatus").addEventListener("change", () => { curre
 
 // ── Products modal (status overview) ────────────────────────────────────────
 let allProducts = [];
+const PRODUCTS_PAGE_SIZE = 50;
+let productsPage = 1;
 function showProductsModal() {
   document.getElementById("productsModal").classList.add("open");
   document.getElementById("productsSearch").value = "";
   document.getElementById("productsSearchWrap").classList.remove("has-value");
+  productsPage = 1;
   loadProducts();
 }
 function hideProductsModal() {
@@ -2109,6 +2219,7 @@ function hideProductsModal() {
 }
 function loadProducts() {
   const list = document.getElementById("productsList");
+  document.getElementById("productsPager").hidden = true;
   list.innerHTML = `<div class="pick-empty">Loading products…</div>`;
   apiFetch(ROUTES.products, { method: "GET" })
     .then(data => { allProducts = data.products || []; applyProductsFilter(); })
@@ -2125,10 +2236,20 @@ function renderProductsList(products, query = "") {
   const list = document.getElementById("productsList");
   if (!products.length) {
     list.innerHTML = `<div class="pick-empty">${query ? "No products match your search." : "No products yet."}</div>`;
+    document.getElementById("productsPager").hidden = true;
     return;
   }
-  list.innerHTML = products.map(p => {
-    const clickable = p.status === "Out of Stock";
+  const totalPages = Math.max(1, Math.ceil(products.length / PRODUCTS_PAGE_SIZE));
+  if (productsPage > totalPages) productsPage = totalPages;
+  if (productsPage < 1) productsPage = 1;
+  const startIdx = (productsPage - 1) * PRODUCTS_PAGE_SIZE;
+  const pageItems = products.slice(startIdx, startIdx + PRODUCTS_PAGE_SIZE);
+  renderProductsPager(products.length, totalPages, startIdx, pageItems.length);
+  list.innerHTML = pageItems.map(p => {
+    const outOfStock = p.status === "Out of Stock";
+    // No batches to activate: use available_count from the API if provided, else fall back to batch_count
+    const noBatches = outOfStock && (p.available_count !== undefined ? p.available_count === 0 : p.batch_count === 0);
+    const clickable = outOfStock && !noBatches;
     const pillCls = p.status === "In Stock" ? "ok" : "warning";
     const initial = p.name ? p.name.charAt(0).toUpperCase() : "?";
     const safeName = p.name.replace(/'/g, "\\'");
@@ -2142,19 +2263,50 @@ function renderProductsList(products, query = "") {
         <div class="pick-sub">${p.batch_count} batch${p.batch_count === 1 ? "" : "es"} recorded</div>
       </div>
       <span class="pill ${pillCls}">${p.status}</span>
+      ${noBatches ? `<button type="button" class="btn-sm primary" style="padding:5px 10px;font-size:11px;white-space:nowrap;" onclick="event.stopPropagation(); openStockAddForProduct(${p.id})">+ Add Stock</button>` : ""}
       ${clickable ? `<span class="pick-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>` : ""}
     </div>`;
   }).join("");
+  list.scrollTop = 0;
 }
+
+function renderProductsPager(total, totalPages, startIdx, shown) {
+  const pager = document.getElementById("productsPager");
+  if (!total || totalPages <= 1) { pager.hidden = true; return; }
+  pager.hidden = false;
+
+  document.getElementById("productsPagerInfo").innerHTML =
+    `Showing <strong>${(startIdx + 1).toLocaleString()}–${(startIdx + shown).toLocaleString()}</strong> of <strong>${total.toLocaleString()}</strong> products`;
+
+  // Show at most 5 page numbers. Pages 1–5 show as-is; once the current page
+  // reaches the 5th, the window slides forward (e.g. 2–6, 3–7 …) and stops at the last page.
+  const MAX_VISIBLE = 5;
+  const winSize = Math.min(MAX_VISIBLE, totalPages);
+  let winStart = Math.max(1, productsPage - (MAX_VISIBLE - 2));
+  winStart = Math.min(winStart, totalPages - winSize + 1);
+  const pages = Array.from({ length: winSize }, (_, i) => winStart + i);
+  document.getElementById("productsPagerControls").innerHTML =
+    `<button class="pager-btn" type="button" data-page="${productsPage - 1}" ${productsPage === 1 ? "disabled" : ""}>‹ Prev</button>` +
+    pages.map(p => `<button class="pager-btn ${p === productsPage ? "active" : ""}" type="button" data-page="${p}">${p}</button>`).join("") +
+    `<button class="pager-btn" type="button" data-page="${productsPage + 1}" ${productsPage === totalPages ? "disabled" : ""}>Next ›</button>`;
+}
+document.getElementById("productsPagerControls").addEventListener("click", e => {
+  const btn = e.target.closest(".pager-btn");
+  if (!btn || btn.disabled || btn.classList.contains("active")) return;
+  productsPage = parseInt(btn.dataset.page, 10);
+  applyProductsFilter();
+});
 
 document.getElementById("productsSearch").addEventListener("input", e => {
   document.getElementById("productsSearchWrap").classList.toggle("has-value", !!e.target.value);
+  productsPage = 1;
   applyProductsFilter();
 });
 document.getElementById("productsSearchClear").addEventListener("click", () => {
   const input = document.getElementById("productsSearch");
   input.value = "";
   document.getElementById("productsSearchWrap").classList.remove("has-value");
+  productsPage = 1;
   applyProductsFilter();
   input.focus();
 });
@@ -2163,7 +2315,9 @@ document.getElementById("closeProductsModal").addEventListener("click", hideProd
 document.getElementById("productsModal").addEventListener("click", e => { if (e.target === e.currentTarget) hideProductsModal(); });
 
 // ── Available stocks modal (per out-of-stock product) ───────────────────────
+let availableStocksProductId = null;
 function openAvailableStocks(productId, productName) {
+  availableStocksProductId = productId;
   document.getElementById("productsModal").classList.remove("open");
   document.getElementById("availableStocksModal").classList.add("open");
   document.getElementById("availableStocksTitle").textContent = `Available Batches — ${productName}`;
@@ -2180,7 +2334,8 @@ function hideAvailableStocksModal() {
 function renderAvailableStocksList(stocks) {
   const list = document.getElementById("availableStocksList");
   if (!stocks.length) {
-    list.innerHTML = `<div class="pick-empty">No available batches for this product yet. Try adding a new stock batch instead.</div>`;
+    list.innerHTML = `<div class="pick-empty">No available batches for this product yet. Try adding a new stock batch instead.
+      <div style="margin-top:12px;"><button type="button" class="btn-sm primary" onclick="openStockAddForProduct(${availableStocksProductId})">+ Add Stock</button></div></div>`;
     return;
   }
   list.innerHTML = stocks.map(s => `

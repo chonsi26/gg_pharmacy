@@ -82,10 +82,12 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 16px;
+  height: var(--header-h);
+  padding: 0 16px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   text-decoration: none;
+  box-sizing: border-box;
 }
 .sidebar-logo-icon {
   width: 36px; height: 36px;
@@ -168,6 +170,12 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.user-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .user-info { flex: 1; min-width: 0; }
 .user-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

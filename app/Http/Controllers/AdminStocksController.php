@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Stock;
+use App\Support\ResetsAutoIncrement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -156,6 +157,9 @@ class AdminStocksController extends Controller
     public function reset(Request $request): JsonResponse|RedirectResponse
     {
         $deleted = Stock::query()->delete();
+
+        // Next stock batch starts again at id 1 (STK-00001).
+        ResetsAutoIncrement::run('stocks');
 
         $message = $deleted > 0
             ? "All stock batches were deleted ({$deleted} removed)."

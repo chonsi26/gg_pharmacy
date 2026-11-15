@@ -189,6 +189,14 @@
   .see-all-btn { background: var(--green); color: #fff; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; padding: 10px 24px; border-radius: 6px; white-space: nowrap; }
   .see-all-btn:hover { background: var(--dark-green); }
 
+  /* PAGINATION (All Products listing) */
+  nav.pager { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 32px; flex-wrap: wrap; background: #fff; border: 0; border-bottom: 0; padding: 0; }
+  .pager a, .pager span { min-width: 38px; height: 38px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d9d9d9; border-radius: 4px; font-family: 'Open Sans', sans-serif; font-size: 13px; font-weight: 600; color: #444; background: #fff; transition: border-color .15s, color .15s; }
+  .pager a:hover { border-color: #222; color: #222; background: #fff; }
+  .pager .active { background: #fff; border-color: #222; color: #222; font-weight: 700; box-shadow: inset 0 -2px 0 #222; }
+  .pager .disabled { color: #c4c4c4; background: #fff; border-color: #ececec; cursor: not-allowed; }
+  .pager-info { text-align: center; color: #777; font-size: 12px; margin-top: 12px; }
+
   /* PRODUCT SECTION WRAPPER */
   .product-section { padding: 0 40px 40px; }
   .dual-row-wrap { padding: 0 40px 40px; }
@@ -594,6 +602,31 @@
 @endphp
 
 @if(isset($searchResults))
+  @php
+    // ── 50 products per page ────────────────────────────────────────────
+    // Works whether the controller passes a paginator or a plain collection.
+    $perPage = 50;
+    if ($searchResults instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+      $totalItems  = $searchResults->total();
+      $currentPage = $searchResults->currentPage();
+      $lastPage    = $searchResults->lastPage();
+      $pageItems   = $searchResults->getCollection();
+    } else {
+      $all         = collect($searchResults);
+      $totalItems  = $all->count();
+      $lastPage    = max(1, (int) ceil($totalItems / $perPage));
+      $currentPage = min(max(1, (int) request('page', 1)), $lastPage);
+      $pageItems   = $all->forPage($currentPage, $perPage)->values();
+    }
+
+    // Number window: always 5 numbers, no "...". It stays on 1-5 until the
+    // 5th page is reached, then moves to 5-9, then 9-13, and so on.
+    $windowStart = (int) (floor(($currentPage - 1) / 4) * 4) + 1;
+    $windowStart = max(1, min($windowStart, $lastPage - 4));
+    $windowEnd   = min($lastPage, $windowStart + 4);
+    $pageUrl     = fn (int $n) => request()->fullUrlWithQuery(['page' => $n]);
+  @endphp
+
   <div class="section-header">
     @if(request()->filled('query'))
       <h2>Search Results for "{{ $searchQuery }}"</h2>
@@ -606,11 +639,11 @@
     @else
       <h2>All Products</h2>
     @endif
-    <p>Found {{ $searchResults->count() ?? 0 }} matching items</p>
+    <p>Found {{ $totalItems }} matching items</p>
   </div>
 
   <div style="padding: 0 40px 40px;">
-    @if(($searchResults ?? collect())->isEmpty())
+    @if($totalItems === 0)
       <div style="text-align: center; padding: 60px 20px; color: var(--gray);">
         <i class="fas fa-search" style="font-size: 48px; margin-bottom: 15px; color: #ccc;"></i>
         <p style="font-size: 16px; font-weight: 600;">No medicines found under this view.</p>
@@ -619,10 +652,37 @@
       </div>
     @else
       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
-        @foreach($searchResults as $product)
+        @foreach($pageItems as $product)
           @include('partials.product-card', ['product' => $product])
         @endforeach
       </div>
+
+      @if($lastPage > 1)
+        <nav class="pager" aria-label="Product pages">
+          @if($currentPage > 1)
+            <a href="{{ $pageUrl($currentPage - 1) }}" aria-label="Previous page"><i class="fas fa-chevron-left"></i></a>
+          @else
+            <span class="disabled"><i class="fas fa-chevron-left"></i></span>
+          @endif
+
+          @for($i = $windowStart; $i <= $windowEnd; $i++)
+            @if($i === $currentPage)
+              <span class="active" aria-current="page">{{ $i }}</span>
+            @else
+              <a href="{{ $pageUrl($i) }}">{{ $i }}</a>
+            @endif
+          @endfor
+
+          @if($currentPage < $lastPage)
+            <a href="{{ $pageUrl($currentPage + 1) }}" aria-label="Next page"><i class="fas fa-chevron-right"></i></a>
+          @else
+            <span class="disabled"><i class="fas fa-chevron-right"></i></span>
+          @endif
+        </nav>
+        <p class="pager-info">
+          Showing {{ (($currentPage - 1) * $perPage) + 1 }}–{{ min($currentPage * $perPage, $totalItems) }} of {{ $totalItems }} products
+        </p>
+      @endif
     @endif
   </div>
 @else
@@ -1096,47 +1156,40 @@ showSlide(currentIndex); autoplay();
       <p>{{ $settings['email'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">WORKING DAYS/HOURS:</div>
       <p>{{ $settings['working_hours'] ?? 'N/A' }}</p>
-      <div class="footer-social">
-        <a href="{{ $settings['facebook_url'] ?? '#' }}" class="fb"><i class="fab fa-facebook-f"></i></a>
-        <a href="{{ $settings['instagram_url'] ?? '#' }}" class="ig"><i class="fab fa-instagram"></i></a>
-      </div>
     </div>
     <div class="footer-section">
       <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
-      <a href="#">About Us</a>
-      <a href="#">Careers</a>
+      <a href="{{ route('home') }}">Home</a>
       <a href="{{ route('store.info') }}">Store Information</a>
-      <a href="#">Contact Us</a>
-      <a href="#">Terms And Conditions</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Call &amp; Pick-Up</a>
     </div>
     <div class="footer-section">
       <h4>CUSTOMER SERVICE</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Payment</a>
-      <a href="#">Shipping &amp; Delivery</a>
-      <a href="#">Returns &amp; Refunds</a>
-      <a href="#">How To Buy</a>
-      <a href="#">Question?</a>
-      <a href="{{ route('order.myorders') }}">My Orders</a>
+      {{-- These pages require login (auth middleware in web.php). Guests get the
+           login modal instead of a redirect to a login URL that doesn't exist as a page. --}}
+      @auth
+        <a href="{{ route('order.myorders') }}">My Orders</a>
+        <a href="{{ route('cart.index') }}">My Cart</a>
+        <a href="{{ route('wishlists.index') }}">My Wishlist</a>
+        <a href="{{ route('profile') }}">My Profile</a>
+      @else
+        <a href="#" class="js-login-required">My Orders</a>
+        <a href="#" class="js-login-required">My Cart</a>
+        <a href="#" class="js-login-required">My Wishlist</a>
+        <a href="#" class="js-login-required">My Profile</a>
+      @endauth
     </div>
-    <div class="footer-section newsletter">
-      <h4>SUBSCRIBE NEWSLETTER</h4>
-      <p style="margin-bottom:14px;">{{ $settings['newsletter_intro'] ?? '' }}</p>
-      <input type="email" placeholder="Email address">
-      <button class="subscribe-btn">SUBSCRIBE</button>
-      <p class="footer-note">{{ $settings['newsletter_note'] ?? '' }}</p>
+    <div class="footer-section">
+      <h4>SHOP BY CATEGORY</h4>
+      @forelse(collect($categories ?? [])->take(8) as $cat)
+        <a href="{{ route('home', ['category_id' => $cat->id]) }}">{{ $cat->name ?? '' }}</a>
+      @empty
+        <p>No categories available</p>
+      @endforelse
     </div>
   </div>
   @include('partials.pwa-install')
   <div class="footer-bottom">
     <p>{{ $settings['copyright'] ?? '' }}</p>
-    <div class="payment-icons">
-      @foreach(explode(',', $settings['payment_methods'] ?? 'VISA,MC,GCash,PayMaya') as $method)
-        <div class="pay-icon">{{ trim($method) }}</div>
-      @endforeach
-    </div>
   </div>
 </footer>
 
@@ -1159,11 +1212,12 @@ showSlide(currentIndex); autoplay();
     <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
       @csrf
       <div class="modal-field">
-        <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" name="email"
-               placeholder="Enter your email address"
-               value="{{ old('email') }}"
-               class="{{ $errors->getBag('login')->has('email') ? 'input-error' : '' }}">
+        <label for="loginEmail">Phone Number or Email</label>
+        <input type="text" id="loginEmail" name="login"
+               placeholder="09XXXXXXXXX or you@example.com"
+               autocomplete="username"
+               value="{{ old('login') }}"
+               class="{{ $errors->getBag('login')->has('login') ? 'input-error' : '' }}">
       </div>
       <div class="modal-field">
         <label for="loginPassword">Password</label>
@@ -1171,7 +1225,7 @@ showSlide(currentIndex); autoplay();
                placeholder="Enter your password"
                class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
       </div>
-      <div class="modal-forgot"><a href="#">Forgot Password?</a></div>
+      <!--<div class="modal-forgot"><a href="#">Forgot Password?</a></div> -->
       <button type="submit" class="modal-login-btn">LOG IN</button>
     </form>
 
@@ -1239,23 +1293,23 @@ showSlide(currentIndex); autoplay();
 
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regEmail">Email Address</label>
+          <label for="regContact">Phone Number <span style="color:var(--red);">*</span></label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-phone-alt"></i>
+            <input type="tel" id="regContact" name="contact_number"
+                   placeholder="09XXXXXXXXX" required
+                   value="{{ old('contact_number') }}"
+                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="regEmail">Email Address <span style="color:#999;font-weight:400;">(optional)</span></label>
           <div class="input-icon-wrap">
             <i class="fas fa-envelope"></i>
             <input type="email" id="regEmail" name="email"
                    placeholder="you@example.com"
                    value="{{ old('email') }}"
                    class="{{ $errors->getBag('register')->has('email') ? 'input-error' : '' }}">
-          </div>
-        </div>
-        <div class="modal-field">
-          <label for="regContact">Contact Number</label>
-          <div class="input-icon-wrap">
-            <i class="fas fa-phone-alt"></i>
-            <input type="tel" id="regContact" name="contact_number"
-                   placeholder="09XXXXXXXXX"
-                   value="{{ old('contact_number') }}"
-                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
           </div>
         </div>
       </div>
@@ -1359,6 +1413,11 @@ showSlide(currentIndex); autoplay();
   if (loginBtn)         loginBtn.addEventListener('click',         e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); });
   if (registerBtn)      registerBtn.addEventListener('click',      e => { e.preventDefault(); clearPendingCartItem(); openModal(registerModal); });
   if (userIconLoginBtn) userIconLoginBtn.addEventListener('click', e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); });
+
+  // Footer links that need an account: guests see the login modal.
+  document.querySelectorAll('.js-login-required').forEach(a =>
+    a.addEventListener('click', e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); })
+  );
 
   // Close buttons
   const modalClose         = document.getElementById('modalClose');

@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             'last_name'        => 'Edulan',
             'email'            => 'chaunceyedulan2020@gmail.com',
             'username'         => 'cedulan',
-            'phone_number'     => '+639973666290',
+            'phone_number'     => '09973666290',
             'password'         => '$2y$12$MSVt47dkbARniImcC5JeIOoSz8ndlWyfKVgOJ3NC9LX.2cepXv6Se',
             'profile_picture'  => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
             'is_active'        => 1,
@@ -46,22 +46,22 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // ── 0b. Users ────────────────────────────────────────────────────────
-        // Note: the users table has no middle_name / username columns, and uses
-        // contact_number instead of phone_number, so those are mapped/omitted.
         DB::table('users')->truncate();
         DB::table('users')->insert([
-            'id'               => 1,
-            'first_name'       => 'Chauncey',
-            'last_name'        => 'Edulan',
-            'email'            => 'chaunceyedulan2020@gmail.com',
-            'contact_number'   => '+639973666290',
-            'password'         => '$2y$12$MSVt47dkbARniImcC5JeIOoSz8ndlWyfKVgOJ3NC9LX.2cepXv6Se',
-            'profile_picture'  => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
-            'is_active'        => 1,
-            'remember_token'   => null,
-            'created_at'       => '2026-09-10 10:35:13',
-            'updated_at'       => '2026-09-10 10:35:13',
-            'deleted_at'       => null,
+            'id'                => 1,
+            'first_name'        => 'Chauncey',
+            'last_name'         => 'Edulan',
+            'email'             => 'chaunceyedulan2020@gmail.com',
+            'contact_number'    => '+639973666290',
+            'address'           => 'Brgy.Rizal Sogod Southern Leyte',
+            'profile_picture'   => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
+            'email_verified_at' => null,
+            'password'          => '$2y$12$MSVt47dkbARniImcC5JeIOoSz8ndlWyfKVgOJ3NC9LX.2cepXv6Se',
+            'is_active'         => 1,
+            'remember_token'    => null,
+            'created_at'        => '2026-09-10 10:35:13',
+            'updated_at'        => '2026-11-14 17:27:03',
+            'deleted_at'        => null,
         ]);
 
         // ── 1. Settings ──────────────────────────────────────────────────────
@@ -87,6 +87,7 @@ class DatabaseSeeder extends Seeder
             'payment_methods'  => 'VISA,MC,GCash,PayMaya',
             'footer_top_text'  => 'Your Trusted Pharmacy',
             'chatbase_id'      => 'eDdta8JbEpQawG9yqfKqb',
+            'map_link'         => 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3924.477005243957!2d124.9791196!3d10.383636999999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x330711003a8752d3%3A0xd1071976d4de1a36!2sGG%20Pharmacy!5e0!3m2!1sen!2sph!4v1794646010814!5m2!1sen!2sph',
         ] as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
         }
@@ -502,64 +503,86 @@ class DatabaseSeeder extends Seeder
 
         // ── 7. Promo Banners ─────────────────────────────────────────────────
         PromoBanner::truncate();
-        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/C01A1A/fff?text=GET+50+OFF',    'alt'=>'promo_1',        'type'=>'red',  'sort_order'=>1]);
-        PromoBanner::create(['image'=>'https://via.placeholder.com/400x200/fff3e0/333?text=FREE+DELIVERY','alt'=>'promo_2','type'=>'beige','sort_order'=>2]);
+        DB::table('promo_banners')->insert([
+            ['id'=>1, 'image'=>'storage/promo_banners/Ix8L44C8Jc7d02k3KFg91zyE7ED8LPLVpFdvZhcK.jpg', 'alt'=>'promo_1', 'type'=>'red',   'sort_order'=>1, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 17:03:55'],
+            ['id'=>2, 'image'=>'storage/promo_banners/krhgTOFRhT23C0vpyIglPfVr6W2nEMBVzleeEHb4.jpg', 'alt'=>'promo_2', 'type'=>'beige', 'sort_order'=>2, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 17:04:16'],
+            ['id'=>3, 'image'=>'storage/promo_banners/RVdNKG9aSS4anuCfrOSD5F4LnXnDRBunzHBXM7YX.jpg', 'alt'=>null,      'type'=>'red',   'sort_order'=>3, 'is_active'=>1, 'created_at'=>'2026-11-14 17:04:39', 'updated_at'=>'2026-11-14 17:04:39'],
+        ]);
 
         // ── 8. Full-Width Banners ────────────────────────────────────────────
         FullWidthBanner::truncate();
-        FullWidthBanner::create(['sort_order'=>1, 'image'=>'https://via.placeholder.com/800x220/0d47a1/fff?text=OMRON+Banner',         'alt'=>'OMRON']);
-        FullWidthBanner::create(['sort_order'=>2, 'image'=>'https://via.placeholder.com/800x220/f5f5f5/1a237e?text=RiteMED+Banner',    'alt'=>'RiteMED']);
-        FullWidthBanner::create(['sort_order'=>3, 'image'=>'https://via.placeholder.com/800x200/e65100/ffd600?text=ALAXAN+XTRA+Banner','alt'=>'ALAXAN XTRA']);
+        DB::table('full_width_banners')->insert([
+            ['id'=>1, 'section_key'=>'fbanner_1', 'sort_order'=>1, 'image'=>'storage/full_width_banners/r8nXxQGYEZLdvXDsBLOu9D5vhqiXCInV0jjxyAp0.jpg', 'alt'=>'OMRON',        'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:53:43'],
+            ['id'=>2, 'section_key'=>'fbanner_2', 'sort_order'=>2, 'image'=>'storage/full_width_banners/tTJQcRAcU0QlvWcUoVhyLOOk5vr0qogqrBiqtrzK.jpg', 'alt'=>'RiteMED',       'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:54:05'],
+            ['id'=>3, 'section_key'=>'fbanner_3', 'sort_order'=>3, 'image'=>'storage/full_width_banners/zfbUVcVH4x0pcEcSQmlipy1PcAaTyGAribhwKTPH.jpg', 'alt'=>'ALAXAN XTRA',   'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:54:21'],
+        ]);
+
+        // ── 8b. Card Images ──────────────────────────────────────────────────
+        DB::table('card_images')->truncate();
+        DB::table('card_images')->insert([
+            ['id'=>1, 'section_key'=>'card_image_1', 'sort_order'=>1, 'image'=>'storage/card_images/p1vS4jMsplzJxWofr0HCavvupdcvpb1zSbqiEG91.jpg', 'alt'=>null, 'is_active'=>1, 'created_at'=>'2026-11-14 17:01:13', 'updated_at'=>'2026-11-14 17:01:44'],
+            ['id'=>2, 'section_key'=>'card_image_2', 'sort_order'=>2, 'image'=>'storage/card_images/xpd9sDmMdIPq4mhwZ0QasW85USeozSozGbk16MnA.jpg', 'alt'=>null, 'is_active'=>1, 'created_at'=>'2026-11-14 17:01:59', 'updated_at'=>'2026-11-14 17:01:59'],
+        ]);
+
+        // ── 8c. Media ────────────────────────────────────────────────────────
+        DB::table('media')->truncate();
+        DB::table('media')->insert([
+            ['id'=>1, 'type'=>'photo', 'file'=>'storage/media/cvVen7tpoLiDTL2zXWYvy9cuYdp25HK8CNhvZ63p.png', 'title'=>null, 'sort_order'=>1, 'is_active'=>1, 'created_at'=>'2026-11-14 17:06:38', 'updated_at'=>'2026-11-14 17:06:38'],
+        ]);
+
+        // ── 8d. Payment Accounts ─────────────────────────────────────────────
+        DB::table('payment_accounts')->truncate();
+        DB::table('payment_accounts')->insert([
+            ['id'=>1, 'payment_app'=>'GCash', 'account_name'=>'Chauncey Edulan', 'account_number'=>'09973666290', 'image'=>'payment_accounts/pfVtyhTv8S20X8lIiMzvQUXYnkZKOcWRs0lNii1W.jpg', 'sort_order'=>1, 'is_active'=>1, 'created_at'=>'2026-11-14 17:08:31', 'updated_at'=>'2026-11-14 17:08:31'],
+        ]);
 
         // ── 9. Staff ────────────────────────────────────────────────────────
+        // Inserted via the query builder so the already-hashed passwords are kept as-is
+        // (Staff::create() could hash them a second time if the model casts password to 'hashed').
         Staff::truncate();
-        foreach ([
+        DB::table('staff')->insert([
             [
-                'first_name'     => 'Admin',
-                'last_name'      => 'User',
-                'email'          => 'admin@ggpharmacy.com.ph',
-                'contact_number' => '09188887673',
-                'address'        => 'Zone 2, Sogod, Southern Leyte, Philippines',
-                'password'       => 'password',
-                'is_active'      => true,
+                'id'              => 5,
+                'first_name'      => 'Jennit',
+                'last_name'       => 'Dagaas',
+                'email'           => 'jennitdagaas2@gmail.com',
+                'contact_number'  => '09354939351',
+                'address'         => 'Libagon Southern Leyte',
+                'profile_picture' => 'storage/staff_profile_pictures/TbBPpXb9n2rR21rMWvDZg6K2JyXXSQDwu4gbxjlv.jpg',
+                'password'        => '$2y$12$oRoh4X3N2i5/3sGZN4NRhebKI7L4qh7G0iVDDAWpqp0z2QyRoh8fW',
+                'is_active'       => 1,
+                'status'          => 'registered',
+                'remember_token'  => null,
+                'created_at'      => '2026-11-14 17:14:49',
+                'updated_at'      => '2026-11-14 17:14:49',
+                'deleted_at'      => null,
             ],
             [
-                'first_name'     => 'Maria',
-                'last_name'      => 'Santos',
-                'email'          => 'maria.santos@ggpharmacy.com.ph',
-                'contact_number' => '09171234567',
-                'address'        => 'Zone 2, Sogod, Southern Leyte, Philippines',
-                'password'       => 'password',
-                'is_active'      => true,
+                'id'              => 6,
+                'first_name'      => 'Rey Mark',
+                'last_name'       => 'Sumalinog',
+                'email'           => 'reymarksumalinog06@gmail.com',
+                'contact_number'  => '09973666290',
+                'address'         => 'Bato Leyte',
+                'profile_picture' => 'storage/staff_profile_pictures/NPE1s8JtH28KizYHdLT7Xvj2B9Q45HeRSCoaT5nC.jpg',
+                'password'        => '$2y$12$0hnOdcmifjjepltMGgKhseozqhjqh7SyCKOnomV03u8qEW441ZKG6',
+                'is_active'       => 1,
+                'status'          => 'registered',
+                'remember_token'  => null,
+                'created_at'      => '2026-11-14 17:16:46',
+                'updated_at'      => '2026-11-14 17:16:46',
+                'deleted_at'      => null,
             ],
-            [
-                'first_name'     => 'Juan',
-                'last_name'      => 'Dela Cruz',
-                'email'          => 'juan.delacruz@ggpharmacy.com.ph',
-                'contact_number' => '09192345678',
-                'address'        => 'Poblacion, Sogod, Southern Leyte, Philippines',
-                'password'       => 'password',
-                'is_active'      => true,
-            ],
-            [
-                'first_name'     => 'Angelica',
-                'last_name'      => 'Reyes',
-                'email'          => 'angelica.reyes@ggpharmacy.com.ph',
-                'contact_number' => '09203456789',
-                'address'        => 'Zone 5, Sogod, Southern Leyte, Philippines',
-                'password'       => 'password',
-                'is_active'      => false,
-            ],
-        ] as $row) {
-            Staff::create($row);
-        }
+        ]);
 
         // ── 10. Blog Posts ───────────────────────────────────────────────────
         Blog::truncate();
-        Blog::create(['title'=>'New Branch Opening Sogod City',        'excerpt'=>'GG Pharmacy is pleased to announce the opening of its newest branch located at Zone 2, Sogod, Southern Leyte...', 'day'=>7,  'month'=>'SEP','comment_count'=>0]);
-        Blog::create(['title'=>'GG Pharmacy Community Health Day',      'excerpt'=>'GG Pharmacy is pleased to announce a free health check-up event for residents of Sogod and surrounding areas...',  'day'=>7,  'month'=>'SEP','comment_count'=>0]);
-        Blog::create(['title'=>'Sprains and Strains: What You Need to Know', 'excerpt'=>'What is the difference between sprains and strains? Sprains and muscle strains are common injuries which share similar signs...','icon_class'=>'fas fa-running','icon_color'=>'#2E7D32','icon_bg'=>'#e8f5e9','day'=>19,'month'=>'OCT','comment_count'=>0,'category_id'=>$catHealthcare->id]);
-        Blog::create(['title'=>'All You Need To Know About Allergies',   'excerpt'=>'"Eeew, go away, I\'m allergic to you!" – does this sound familiar? A term often used when teasing...','icon_class'=>'fas fa-allergies','icon_color'=>'#6a1b9a','icon_bg'=>'#f3e5f5','day'=>19,'month'=>'OCT','comment_count'=>0,'category_id'=>$catAllergy->id]);
+        DB::table('blogs')->insert([
+            ['id'=>1, 'title'=>'New Branch Opening Sogod City', 'excerpt'=>'GG Pharmacy is pleased to announce the opening of its newest branch located at Zone 2, Sogod, Southern Leyte...', 'image'=>'storage/blogs/Gu9hre01Vi3oERadeCUHEbe0h3Kt651AiiPdUhGJ.png', 'icon_class'=>null, 'icon_color'=>null, 'icon_bg'=>null, 'day'=>7, 'month'=>'SEP', 'comment_count'=>0, 'category_id'=>null, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:56:12'],
+            ['id'=>2, 'title'=>'GG Pharmacy Community Health Day', 'excerpt'=>'GG Pharmacy is pleased to announce a free health check-up event for residents of Sogod and surrounding areas...', 'image'=>'storage/blogs/7q7SXoLwejrC229hlCb6YEG01nvE15V0TNxCkQb6.jpg', 'icon_class'=>null, 'icon_color'=>null, 'icon_bg'=>null, 'day'=>7, 'month'=>'SEP', 'comment_count'=>0, 'category_id'=>null, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:57:49'],
+            ['id'=>3, 'title'=>'Sprains and Strains: What You Need to Know', 'excerpt'=>'What is the difference between sprains and strains? Sprains and muscle strains are common injuries which share similar signs...', 'image'=>'storage/blogs/NByFgwBiH96fxeJalV9gIsugEHyRpQbbwjD64F6O.jpg', 'icon_class'=>'fas fa-running', 'icon_color'=>'#2E7D32', 'icon_bg'=>'#e8f5e9', 'day'=>19, 'month'=>'OCT', 'comment_count'=>0, 'category_id'=>$catHealthcare->id, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:58:44'],
+            ['id'=>4, 'title'=>'All You Need To Know About Allergies', 'excerpt'=>'"Eeew, go away, I\'m allergic to you!" – does this sound familiar? A term often used when teasing...', 'image'=>'storage/blogs/QMumtZobteKw8ShNNU7id8d2OuARDP7f3FsOdBxD.jpg', 'icon_class'=>'fas fa-allergies', 'icon_color'=>'#6a1b9a', 'icon_bg'=>'#f3e5f5', 'day'=>19, 'month'=>'OCT', 'comment_count'=>0, 'category_id'=>$catAllergy->id, 'is_active'=>1, 'created_at'=>'2026-11-14 09:03:22', 'updated_at'=>'2026-11-14 16:59:31'],
+        ]);
 
         // Re-enable FK checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');

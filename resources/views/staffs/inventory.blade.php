@@ -1381,6 +1381,45 @@ tbody tr:last-child td { border-bottom: none; }
 
   /* ── Sort by chip + dropdown ────────────────────────── */
   .sort-chip-wrap { position: relative; }
+
+  /* ── Mobile: Sort by / Add Categories / Add brand in a tidy 2x2 grid ── */
+  @media (max-width: 768px) {
+    .card-head { padding-left: 12px; padding-right: 12px; }
+    .card-head-right {
+      flex: 1 1 100%; min-width: 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .card-head-right .sort-chip-wrap { min-width: 0; }
+    .card-head-right .btn-chip {
+      width: 100%; min-width: 0; height: 36px;
+      justify-content: center; padding: 0 10px; gap: 6px;
+      font-size: 12px;
+    }
+    .card-head-right .btn-chip svg { width: 13px; height: 13px; }
+    /* keep the sort dropdown inside the screen (Sort sits in the right column) */
+    .sort-menu { left: auto; right: 0; }
+  }
+  /* ── Mobile: 'All Medicines' search sits on the far right of the title row ── */
+  @media (max-width: 768px) {
+    .card .card-head { position: relative; padding-top: 14px; }
+    .card .card-head h3 { display: flex; align-items: center; min-height: 32px; white-space: nowrap; }
+    .card .card-head-right > .header-search {
+      display: flex;
+      position: absolute;
+      top: 14px; right: 12px;
+      left: 128px;            /* starts just after the 'All Medicines' text, stretches to the right edge */
+      width: auto; max-width: none;
+      height: 32px;
+      padding: 0 10px;
+      gap: 6px;
+    }
+    .card .card-head-right > .header-search input { width: 100% !important; min-width: 0; font-size: 13px; }
+  }
+  @media (max-width: 360px) {
+    .card .card-head-right > .header-search { left: 122px; }
+    .card-head-right { gap: 6px; }
+    .card-head-right .btn-chip { padding: 0 6px; gap: 4px; font-size: 11.5px; }
+  }
   .btn-chip.active { border-color: var(--primary, #d9534f); color: var(--primary, #d9534f); }
   .sort-menu {
     display: none; position: absolute; top: calc(100% + 6px); left: 0;
@@ -1553,6 +1592,30 @@ tbody tr:last-child td { border-bottom: none; }
   .med-card.is-disabled .disabled-tag { display: inline-block; }
   .med-card.is-disabled .med-img-wrap,
   .med-card.is-disabled .med-body { opacity: .55; }
+  /* (staff theme swaps --red/--green, so 'enable' uses --red = green and 'disable' uses --green = red) */
+  .btn-danger:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Enable / Disable all products modal ── */
+  #toggleActiveModalBg { z-index: 1100; }
+  #toggleActiveModalBg .modal { max-width: 420px; width: 92vw; padding: 24px 24px 20px; border-radius: 18px; }
+  .ta-title { font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; text-align: center; }
+  .ta-sub   { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; text-align: center; }
+  .ta-choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .ta-choice {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    background: var(--surface); border: 1.5px solid var(--border); color: var(--text);
+    font-family: 'Inter', sans-serif; transition: border-color .15s, background .15s;
+  }
+  .ta-choice:disabled { opacity: .5; cursor: not-allowed; }
+  .ta-choice-ico { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ta-choice-ico svg { width: 18px; height: 18px; }
+  .ta-choice strong { display: block; font-size: 14px; font-weight: 700; }
+  .ta-choice span.ta-desc { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ta-choice.enable .ta-choice-ico  { background: var(--red-light); color: var(--red); }
+  .ta-choice.enable:hover:not(:disabled)  { border-color: var(--red); background: var(--red-light); }
+  .ta-choice.disable .ta-choice-ico { background: var(--green-light); color: var(--green); }
+  .ta-choice.disable:hover:not(:disabled) { border-color: var(--green); background: var(--green-light); }
 
   /* Color picker input */
   .field input[type="color"] {
@@ -1703,6 +1766,10 @@ tbody tr:last-child td { border-bottom: none; }
             <button class="sort-menu-item" data-by="brand" onclick="sortProducts('brand')">Brand</button>
           </div>
         </div>
+        <button class="btn-chip" onclick="openToggleActiveModal()" id="toggleActiveBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          Enable/Disable
+        </button>
         <button class="btn-chip" onclick="openCategoriesModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
           Add Categories
@@ -2185,6 +2252,29 @@ tbody tr:last-child td { border-bottom: none; }
           <button class="btn primary" onclick="saveEdit()">Save Changes</button>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ENABLE / DISABLE ALL PRODUCTS MODAL
+     ════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="toggleActiveModalBg">
+  <div class="modal">
+    <div class="ta-title">Enable / Disable Products</div>
+    <div class="ta-sub">Choose what to do with <strong>every product</strong> in the inventory.</div>
+    <div class="ta-choices">
+      <button type="button" class="ta-choice enable" onclick="setAllProductsActive(true)">
+        <span class="ta-choice-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        <span><strong>Enable all products</strong><span class="ta-desc">Every product becomes active again.</span></span>
+      </button>
+      <button type="button" class="ta-choice disable" onclick="setAllProductsActive(false)">
+        <span class="ta-choice-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg></span>
+        <span><strong>Disable all products</strong><span class="ta-desc">Every product is marked as disabled.</span></span>
+      </button>
+    </div>
+    <div class="delete-modal-actions">
+      <button type="button" class="btn" onclick="closeToggleActiveModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -2740,6 +2830,7 @@ function previewImg(input, previewId) {
    ══════════════════════════════════════════════════════ */
 const INVENTORY_URL        = "{{ route('staff.inventory') }}";
 const INVENTORY_SEARCH_URL = "{{ route('staff.inventory.search') }}";
+const INVENTORY_SET_ACTIVE_URL = "{{ route('staff.inventory.setActive') }}";
 const INVENTORY_SORT_URL   = "{{ route('staff.inventory.sort') }}";
 const STOCK_STORE_URL      = "{{ route('staff.stocks.store') }}";
 const CSRF_TOKEN           = document.querySelector('meta[name="csrf-token"]').content;
@@ -3602,6 +3693,48 @@ async function confirmDelete() {
     showToast(err.message);
   } finally {
     btn.disabled = false;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   ENABLE / DISABLE ALL PRODUCTS
+   Backed by StaffInventoryController@setAllActive. The server flips
+   is_active on every product; the already-rendered cards are then
+   updated in place (same class/data attribute the edit modal uses).
+   ══════════════════════════════════════════════════════ */
+function openToggleActiveModal() {
+  document.getElementById('toggleActiveModalBg').classList.add('on');
+}
+
+function closeToggleActiveModal() {
+  document.getElementById('toggleActiveModalBg').classList.remove('on');
+}
+
+document.getElementById('toggleActiveModalBg').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeToggleActiveModal();
+});
+
+async function setAllProductsActive(active) {
+  const buttons = document.querySelectorAll('#toggleActiveModalBg .ta-choice');
+  buttons.forEach(b => b.disabled = true);
+
+  try {
+    const fd = new FormData();
+    fd.append('is_active', active ? '1' : '0');
+    const result = await sendForm(INVENTORY_SET_ACTIVE_URL, fd);
+
+    document.querySelectorAll('#medGrid .med-card').forEach(card => {
+      card.dataset.isActive = active ? 'true' : 'false';
+      card.classList.toggle('is-disabled', !active);
+    });
+
+    closeToggleActiveModal();
+    showToast(result.message);
+  } catch (err) {
+    closeToggleActiveModal();
+    showToast(err.message);
+  } finally {
+    buttons.forEach(b => b.disabled = false);
   }
 }
 

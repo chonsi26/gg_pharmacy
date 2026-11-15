@@ -186,6 +186,9 @@
   .textarea-icon-wrap { position: relative; }
   .textarea-icon-wrap i { position: absolute; left: 12px; top: 12px; color: #bbb; font-size: 13px; pointer-events: none; }
   .textarea-icon-wrap textarea { padding-left: 36px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; letter-spacing: 0.3px; }
+  @media (max-width: 560px) { .modal-fields-row { grid-template-columns: 1fr; } }
   .input-error { border-color: var(--red) !important; background: #fff5f5 !important; }
   .modal-alert-error { background: #fff0f0; border: 1px solid #ffc5c5; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: var(--red); display: flex; flex-direction: column; gap: 4px; }
   .modal-alert-error i { margin-right: 5px; }
@@ -985,55 +988,49 @@
     <div class="footer-section">
       <h4>CONTACT INFO</h4>
       <div class="label">ADDRESS:</div>
-      <p>{{ $settings['address_line1'] ?? '' }}</p>
-      <p>{{ $settings['address_line2'] ?? '' }}</p>
-      <p>{{ $settings['address_line3'] ?? '' }}</p>
+      <p>{{ $settings['address_line1'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line2'] ?? 'N/A' }}</p>
+      <p>{{ $settings['address_line3'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">PHONE:</div>
-      <p>{{ $settings['phone'] ?? '' }}</p>
+      <p>{{ $settings['phone'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">EMAIL:</div>
-      <p>{{ $settings['email'] ?? '' }}</p>
+      <p>{{ $settings['email'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">WORKING DAYS/HOURS:</div>
-      <p>{{ $settings['working_hours'] ?? '' }}</p>
-      <div class="footer-social">
-        <a href="{{ $settings['facebook_url'] ?? '#' }}" class="fb"><i class="fab fa-facebook-f"></i></a>
-        <a href="{{ $settings['instagram_url'] ?? '#' }}" class="ig"><i class="fab fa-instagram"></i></a>
-      </div>
+      <p>{{ $settings['working_hours'] ?? 'N/A' }}</p>
     </div>
     <div class="footer-section">
-      <h4>ABOUT {{ $settings['site_name'] ?? 'GG Pharmacy' }}</h4>
-      <a href="#">About Us</a>
-      <a href="#">Careers</a>
-      <a href="{{ route('store.info') }}">Store Info</a>
-      <a href="#">Contact Us</a>
-      <a href="#">Terms And Conditions</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Call &amp; Pick-Up</a>
+      <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
+      <a href="{{ route('home') }}">Home</a>
+      <a href="{{ route('store.info') }}">Store Information</a>
     </div>
     <div class="footer-section">
       <h4>CUSTOMER SERVICE</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Payment</a>
-      <a href="#">Shipping &amp; Delivery</a>
-      <a href="#">Returns &amp; Refunds</a>
-      <a href="#">How To Buy</a>
-      <a href="#">Question?</a>
-      <a href="{{ route('order.myorders') }}">My Orders</a>
+      {{-- These pages require login (auth middleware in web.php). Guests get the
+           login modal instead of a redirect to a login URL that doesn't exist as a page. --}}
+      @auth
+        <a href="{{ route('order.myorders') }}">My Orders</a>
+        <a href="{{ route('cart.index') }}">My Cart</a>
+        <a href="{{ route('wishlists.index') }}">My Wishlist</a>
+        <a href="{{ route('profile') }}">My Profile</a>
+      @else
+        <a href="#" class="js-login-required">My Orders</a>
+        <a href="#" class="js-login-required">My Cart</a>
+        <a href="#" class="js-login-required">My Wishlist</a>
+        <a href="#" class="js-login-required">My Profile</a>
+      @endauth
     </div>
-    <div class="footer-section newsletter">
-      <h4>SUBSCRIBE NEWSLETTER</h4>
-      <p style="margin-bottom:14px;">{{ $settings['newsletter_intro'] ?? '' }}</p>
-      <input type="email" placeholder="Email address">
-      <button class="subscribe-btn">SUBSCRIBE</button>
-      <p class="footer-note">{{ $settings['newsletter_note'] ?? '' }}</p>
+    <div class="footer-section">
+      <h4>SHOP BY CATEGORY</h4>
+      @forelse(collect($categories ?? [])->take(8) as $cat)
+        <a href="{{ route('home', ['category_id' => $cat->id]) }}">{{ $cat->name ?? '' }}</a>
+      @empty
+        <p>No categories available</p>
+      @endforelse
     </div>
   </div>
+  @include('partials.pwa-install')
   <div class="footer-bottom">
     <p>{{ $settings['copyright'] ?? '' }}</p>
-    <div class="payment-icons">
-      @foreach(explode(',', $settings['payment_methods'] ?? 'VISA,MC,GCash,PayMaya') as $method)
-        <div class="pay-icon">{{ trim($method) }}</div>
-      @endforeach
-    </div>
   </div>
 </footer>
 
@@ -1054,14 +1051,20 @@
     <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
       @csrf
       <div class="modal-field">
-        <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" name="email" placeholder="Enter your email address" value="{{ old('email') }}" class="{{ $errors->getBag('login')->has('email') ? 'input-error' : '' }}">
+        <label for="loginEmail">Phone Number or Email</label>
+        <input type="text" id="loginEmail" name="login"
+               placeholder="09XXXXXXXXX or you@example.com"
+               autocomplete="username"
+               value="{{ old('login') }}"
+               class="{{ $errors->getBag('login')->has('login') ? 'input-error' : '' }}">
       </div>
       <div class="modal-field">
         <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" name="password" placeholder="Enter your password" class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
+        <input type="password" id="loginPassword" name="password"
+               placeholder="Enter your password"
+               class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
       </div>
-      <div class="modal-forgot"><a href="#">Forgot Password?</a></div>
+      <!-- <div class="modal-forgot"><a href="#">Forgot Password?</a></div> -->
       <button type="submit" class="modal-login-btn">LOG IN</button>
     </form>
     <div class="modal-divider"><hr><span>Don't have an account?</span><hr></div>
@@ -1116,17 +1119,23 @@
       </div>
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regEmail">Email Address</label>
+          <label for="regContact">Phone Number <span style="color:var(--red);">*</span></label>
           <div class="input-icon-wrap">
-            <i class="fas fa-envelope"></i>
-            <input type="email" id="regEmail" name="email" placeholder="you@example.com" value="{{ old('email') }}" class="{{ $errors->getBag('register')->has('email') ? 'input-error' : '' }}">
+            <i class="fas fa-phone-alt"></i>
+            <input type="tel" id="regContact" name="contact_number"
+                   placeholder="09XXXXXXXXX" required
+                   value="{{ old('contact_number') }}"
+                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
           </div>
         </div>
         <div class="modal-field">
-          <label for="regContact">Contact Number</label>
+          <label for="regEmail">Email Address <span style="color:#999;font-weight:400;">(optional)</span></label>
           <div class="input-icon-wrap">
-            <i class="fas fa-phone-alt"></i>
-            <input type="tel" id="regContact" name="contact_number" placeholder="09XXXXXXXXX" value="{{ old('contact_number') }}" class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="regEmail" name="email"
+                   placeholder="you@example.com"
+                   value="{{ old('email') }}"
+                   class="{{ $errors->getBag('register')->has('email') ? 'input-error' : '' }}">
           </div>
         </div>
       </div>

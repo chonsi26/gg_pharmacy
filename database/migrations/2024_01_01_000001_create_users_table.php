@@ -12,8 +12,10 @@ return new class extends Migration
             $table->id();
             $table->string('first_name');
             $table->string('last_name');
-            $table->string('email')->unique();
-            $table->string('contact_number', 20)->nullable();
+            // Phone number is the main identifier (required, unique);
+            // email is optional (nullable, still unique when provided).
+            $table->string('email')->nullable()->unique();
+            $table->string('contact_number', 20)->unique();
             $table->text('address')->nullable();
             $table->string('profile_picture')->nullable();
             $table->timestamp('email_verified_at')->nullable();

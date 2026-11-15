@@ -53,15 +53,24 @@ class StaffOrdersController extends Controller
 
     // ── Manual order entry ("Add Order" button) ──────────────────────────────
 
-    /** Product picker feed for the Add Order modal. */
+    /** Product picker feed for the Add Order modal (searchable product combobox). */
     public function products(): JsonResponse
     {
         return $this->admin()->products();
     }
 
     /**
-     * Record an already-finished walk-in sale as a COMPLETED order (matches
-     * customer by email or creates them, deducts stock, stores uploads).
+     * Registered-customer suggestions for the Add Order modal (typed first
+     * name → matching active customers; the password is never sent).
+     */
+    public function customers(Request $request): JsonResponse
+    {
+        return $this->admin()->customers($request);
+    }
+
+    /**
+     * Record an already-finished walk-in sale as a COMPLETED order (uses the customer picked from
+     * the suggestions, else matches by email or creates them; deducts stock, stores uploads).
      */
     public function store(Request $request): JsonResponse
     {

@@ -444,6 +444,15 @@
   .si-map-empty { height: 100%; min-height: 260px; border: 1px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; text-align: center; color: var(--gray); padding: 24px; line-height: 1.6; background: var(--gray-light); }
   .si-map-empty i { font-size: 24px; display: block; margin-bottom: 8px; color: #aaa; }
 
+
+  /* Pharmacy owners */
+  .si-owners { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+  .si-owner { border: 1px solid var(--border); border-radius: 4px; background: #fff; padding: 20px 16px; text-align: center; }
+  .si-owner-photo { width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 12px; overflow: hidden; background: var(--gray-light); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 36px; }
+  .si-owner-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .si-owner-name { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px; color: var(--text); line-height: 1.4; }
+  .si-owner-role { margin-top: 4px; font-size: 11px; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; color: var(--red); }
+
   /* Gallery */
   .si-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
   .si-tab { border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: transparent; padding: 9px 18px; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 13px; color: var(--gray); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
@@ -824,6 +833,32 @@
     @endif
   </section>
   </div>
+
+  {{-- ===== PHARMACY OWNERS ===== --}}
+  @if($owners->count())
+  <section class="si-section" aria-label="Pharmacy owners">
+    <div class="si-section-head"><h2>Pharmacy {{ $owners->count() > 1 ? 'Owners' : 'Owner' }}</h2></div>
+    <div class="si-owners">
+      @foreach($owners as $owner)
+        @php
+          $pic = $owner->profile_picture;
+          $picUrl = $pic ? (preg_match('#^https?://#i', $pic) ? $pic : asset($pic)) : null;
+        @endphp
+        <div class="si-owner">
+          <div class="si-owner-photo">
+            @if($picUrl)
+              <img src="{{ $picUrl }}" alt="Photo of {{ $owner->full_name }}" loading="lazy">
+            @else
+              <i class="fas fa-user" aria-hidden="true"></i>
+            @endif
+          </div>
+          <div class="si-owner-name">{{ $owner->full_name }}</div>
+          <div class="si-owner-role">Pharmacy Owner</div>
+        </div>
+      @endforeach
+    </div>
+  </section>
+  @endif
 </main>
 
 <div class="si-lightbox" id="siLightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
@@ -970,46 +1005,40 @@
       <p>{{ $settings['email'] ?? 'N/A' }}</p>
       <div class="label" style="margin-top:10px;">WORKING DAYS/HOURS:</div>
       <p>{{ $settings['working_hours'] ?? 'N/A' }}</p>
-      <div class="footer-social">
-        <a href="{{ $settings['facebook_url'] ?? '#' }}" class="fb"><i class="fab fa-facebook-f"></i></a>
-        <a href="{{ $settings['instagram_url'] ?? '#' }}" class="ig"><i class="fab fa-instagram"></i></a>
-      </div>
     </div>
     <div class="footer-section">
       <h4>ABOUT {{ $settings['site_name'] ?? 'No Pharmacy Name' }}</h4>
-      <a href="#">About Us</a>
-      <a href="#">Careers</a>
+      <a href="{{ route('home') }}">Home</a>
       <a href="{{ route('store.info') }}">Store Information</a>
-      <a href="#">Contact Us</a>
-      <a href="#">Terms And Conditions</a>
-      <a href="#">Privacy Policy</a>
-      <a href="#">Call &amp; Pick-Up</a>
     </div>
     <div class="footer-section">
       <h4>CUSTOMER SERVICE</h4>
-      <a href="#">Help Center</a>
-      <a href="#">Payment</a>
-      <a href="#">Shipping &amp; Delivery</a>
-      <a href="#">Returns &amp; Refunds</a>
-      <a href="#">How To Buy</a>
-      <a href="#">Question?</a>
-      <a href="{{ route('order.myorders') }}">My Orders</a>
+      {{-- These pages require login (auth middleware in web.php). Guests get the
+           login modal instead of a redirect to a login URL that doesn't exist as a page. --}}
+      @auth
+        <a href="{{ route('order.myorders') }}">My Orders</a>
+        <a href="{{ route('cart.index') }}">My Cart</a>
+        <a href="{{ route('wishlists.index') }}">My Wishlist</a>
+        <a href="{{ route('profile') }}">My Profile</a>
+      @else
+        <a href="#" class="js-login-required">My Orders</a>
+        <a href="#" class="js-login-required">My Cart</a>
+        <a href="#" class="js-login-required">My Wishlist</a>
+        <a href="#" class="js-login-required">My Profile</a>
+      @endauth
     </div>
-    <div class="footer-section newsletter">
-      <h4>SUBSCRIBE NEWSLETTER</h4>
-      <p style="margin-bottom:14px;">{{ $settings['newsletter_intro'] ?? '' }}</p>
-      <input type="email" placeholder="Email address">
-      <button class="subscribe-btn">SUBSCRIBE</button>
-      <p class="footer-note">{{ $settings['newsletter_note'] ?? '' }}</p>
+    <div class="footer-section">
+      <h4>SHOP BY CATEGORY</h4>
+      @forelse(collect($categories ?? [])->take(8) as $cat)
+        <a href="{{ route('home', ['category_id' => $cat->id]) }}">{{ $cat->name ?? '' }}</a>
+      @empty
+        <p>No categories available</p>
+      @endforelse
     </div>
   </div>
+  @include('partials.pwa-install')
   <div class="footer-bottom">
     <p>{{ $settings['copyright'] ?? '' }}</p>
-    <div class="payment-icons">
-      @foreach(explode(',', $settings['payment_methods'] ?? 'VISA,MC,GCash,PayMaya') as $method)
-        <div class="pay-icon">{{ trim($method) }}</div>
-      @endforeach
-    </div>
   </div>
 </footer>
 
@@ -1032,11 +1061,12 @@
     <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
       @csrf
       <div class="modal-field">
-        <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" name="email"
-               placeholder="Enter your email address"
-               value="{{ old('email') }}"
-               class="{{ $errors->getBag('login')->has('email') ? 'input-error' : '' }}">
+        <label for="loginEmail">Phone Number or Email</label>
+        <input type="text" id="loginEmail" name="login"
+               placeholder="09XXXXXXXXX or you@example.com"
+               autocomplete="username"
+               value="{{ old('login') }}"
+               class="{{ $errors->getBag('login')->has('login') ? 'input-error' : '' }}">
       </div>
       <div class="modal-field">
         <label for="loginPassword">Password</label>
@@ -1044,7 +1074,7 @@
                placeholder="Enter your password"
                class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
       </div>
-      <div class="modal-forgot"><a href="#">Forgot Password?</a></div>
+      <!-- <div class="modal-forgot"><a href="#">Forgot Password?</a></div> -->
       <button type="submit" class="modal-login-btn">LOG IN</button>
     </form>
 
@@ -1112,23 +1142,23 @@
 
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regEmail">Email Address</label>
+          <label for="regContact">Phone Number <span style="color:var(--red);">*</span></label>
+          <div class="input-icon-wrap">
+            <i class="fas fa-phone-alt"></i>
+            <input type="tel" id="regContact" name="contact_number"
+                   placeholder="09XXXXXXXXX" required
+                   value="{{ old('contact_number') }}"
+                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="regEmail">Email Address <span style="color:#999;font-weight:400;">(optional)</span></label>
           <div class="input-icon-wrap">
             <i class="fas fa-envelope"></i>
             <input type="email" id="regEmail" name="email"
                    placeholder="you@example.com"
                    value="{{ old('email') }}"
                    class="{{ $errors->getBag('register')->has('email') ? 'input-error' : '' }}">
-          </div>
-        </div>
-        <div class="modal-field">
-          <label for="regContact">Contact Number</label>
-          <div class="input-icon-wrap">
-            <i class="fas fa-phone-alt"></i>
-            <input type="tel" id="regContact" name="contact_number"
-                   placeholder="09XXXXXXXXX"
-                   value="{{ old('contact_number') }}"
-                   class="{{ $errors->getBag('register')->has('contact_number') ? 'input-error' : '' }}">
           </div>
         </div>
       </div>
@@ -1232,6 +1262,11 @@
   if (loginBtn)         loginBtn.addEventListener('click',         e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); });
   if (registerBtn)      registerBtn.addEventListener('click',      e => { e.preventDefault(); clearPendingCartItem(); openModal(registerModal); });
   if (userIconLoginBtn) userIconLoginBtn.addEventListener('click', e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); });
+
+  // Footer links that need an account: guests see the login modal.
+  document.querySelectorAll('.js-login-required').forEach(a =>
+    a.addEventListener('click', e => { e.preventDefault(); clearPendingCartItem(); openModal(loginModal); })
+  );
 
   // Close buttons
   const modalClose         = document.getElementById('modalClose');
