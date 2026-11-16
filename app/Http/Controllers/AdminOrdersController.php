@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Stock;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\SmsService;
 use App\Support\ResetsAutoIncrement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -405,7 +406,43 @@ class AdminOrdersController extends Controller
 
         $order->markReady();
 
+        $this->notifyReadyForPickup($order);
+
         return $this->ok("Order {$order->order_number} is now ready for pick up.", $order);
+    }
+
+    /**
+     * Texts the customer that their order is ready for pick up. Sent only
+     * after the status change is saved, and never allowed to break it: an
+     * SMS problem is logged, but the order stays "ready".
+     *
+     * The idempotency key is built from the order, so a double click or a
+     * retry can never send the customer the same text twice.
+     */
+    private function notifyReadyForPickup(Order $order): void
+    {
+        $customer = $order->user; // null when the account was deleted: nobody to text
+
+        if (! $customer) {
+            return;
+        }
+
+        $message = "Hi {$customer->first_name}, your order {$order->order_number} is ready for pick up.";
+
+        $message .= $order->hasPickupTimer()
+            ? ' Please pick it up within ' . self::PICKUP_WINDOW_HOURS . ' hours or it will be cancelled.'
+            : ' It is already paid and will be held for you.';
+
+        try {
+            SmsService::send(
+                $customer,
+                $message,
+                'Order Update',
+                "order-{$order->id}-ready"
+            );
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     /**

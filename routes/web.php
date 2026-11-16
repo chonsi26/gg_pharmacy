@@ -34,6 +34,8 @@ use App\Http\Middleware\LogStaffActivity;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\RequireRegisterPassword;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\OrderSmsController;
+
 
 // Every route below is served with no-cache headers so a stale CSRF token
 // is never shown after login/logout (prevents "419 Page Expired").
@@ -369,6 +371,10 @@ Route::prefix('staff')->name('staff.')->middleware(LogStaffActivity::class)->gro
         // ── Activity Log feed (StaffSettingsController, JSON) ─────────────
         Route::get('/settings/logs', [StaffSettingsController::class, 'logs'])->name('settings.logs');
     });
+    Route::middleware(['auth', 'throttle:10,1'])->group(function () {
+    Route::post('/orders/{order}/sms', [OrderSmsController::class, 'store']);
+    Route::get('/orders/{order}/sms', [OrderSmsController::class, 'show']);
+});
 });
 
 });

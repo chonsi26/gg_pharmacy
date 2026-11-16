@@ -13,7 +13,11 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+     'relay' => [
+        'base_url' => env('RELAY_BASE_URL'),
+        'api_key' => env('RELAY_API_KEY'),
+    ],
+    
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),

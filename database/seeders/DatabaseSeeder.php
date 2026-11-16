@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
             'first_name'        => 'Chauncey',
             'last_name'         => 'Edulan',
             'email'             => 'chaunceyedulan2020@gmail.com',
-            'contact_number'    => '+639973666290',
+            'contact_number'    => '09973666290',
             'address'           => 'Brgy.Rizal Sogod Southern Leyte',
             'profile_picture'   => 'storage/admin_profile_pictures/PcA8wFaq08doaK3DNiZ7uWb37LTRAdYjLZUenvUE.jpg',
             'email_verified_at' => null,
