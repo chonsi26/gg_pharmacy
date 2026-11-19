@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -61,8 +62,9 @@ class AuthController extends Controller
         $data = $request->validateWithBag(
             'register',
             [
-                'first_name'      => ['required', 'string', 'max:100'],
-                'last_name'       => ['required', 'string', 'max:100'],
+                // Names are optional: blank ones become "Customer" / the user's id below.
+                'first_name'      => ['nullable', 'string', 'max:100'],
+                'last_name'       => ['nullable', 'string', 'max:100'],
                 'email'           => ['nullable', 'email', 'max:255', 'unique:users,email'],
                 'contact_number'  => ['required', 'string', 'regex:/^\+?[0-9]{7,15}$/', 'max:20', 'unique:users,contact_number'],
                 'address'         => ['nullable', 'string', 'max:500'],
@@ -89,7 +91,21 @@ class AuthController extends Controller
 
         $data['password'] = Hash::make($data['password']);
 
-        $user = User::create($data);
+        // Blank names fall back to "Customer" + the new user's id (e.g. "Customer 9").
+        // The id only exists after the insert, so a blank last name is filled in afterwards.
+        $data['first_name'] = trim((string) ($data['first_name'] ?? '')) ?: 'Customer';
+        $needsIdAsLastName  = trim((string) ($data['last_name'] ?? '')) === '';
+        $data['last_name']  = $needsIdAsLastName ? '' : trim($data['last_name']);
+
+        $user = DB::transaction(function () use ($data, $needsIdAsLastName) {
+            $user = User::create($data);
+
+            if ($needsIdAsLastName) {
+                $user->update(['last_name' => (string) $user->id]);
+            }
+
+            return $user;
+        });
 
         Auth::login($user);
 

@@ -299,6 +299,15 @@
   .input-icon-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 13px; pointer-events: none; }
   .input-icon-wrap input { width: 100%; padding: 10px 14px 10px 36px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.2s; font-family: 'Open Sans', sans-serif; background: #fafafa; }
   .input-icon-wrap input:focus { border-color: var(--red); background: #fff; }
+  /* SHOW / HIDE PASSWORD TOGGLE */
+  .pw-wrap { position: relative; }
+  .pw-wrap input, .input-icon-wrap input.has-pw-toggle { padding-right: 42px !important; }
+  .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; padding: 0; }
+  .pw-toggle:hover { background: rgba(0,0,0,0.05); }
+  .pw-toggle:focus-visible { outline: 2px solid var(--red); outline-offset: 1px; }
+  /* override the left-aligned decorative icon rule inside .input-icon-wrap */
+  .input-icon-wrap .pw-toggle i, .pw-toggle i { position: static; transform: none; left: auto; top: auto; color: #999; font-size: 14px; pointer-events: none; }
+  .pw-toggle:hover i, .pw-toggle.active i { color: var(--red); }
   .modal-field textarea { width: 100%; padding: 10px 14px 10px 36px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; resize: none; font-family: 'Open Sans', sans-serif; background: #fafafa; transition: border-color 0.2s; }
   .modal-field textarea:focus { border-color: var(--red); background: #fff; }
   .textarea-icon-wrap { position: relative; }
@@ -1231,9 +1240,15 @@
       </div>
       <div class="modal-field">
         <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" name="password"
-               placeholder="Enter your password"
-               class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" name="password"
+                 placeholder="Enter your password"
+                 autocomplete="current-password"
+                 class="{{ $errors->getBag('login')->has('password') ? 'input-error' : '' }}">
+          <button type="button" class="pw-toggle" data-target="loginPassword" aria-label="Show password" aria-pressed="false" title="Show password">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
       </div>
       <!-- <div class="modal-forgot"><a href="#">Forgot Password?</a></div> -->
       <button type="submit" class="modal-login-btn">LOG IN</button>
@@ -1343,7 +1358,11 @@
             <i class="fas fa-lock"></i>
             <input type="password" id="regPassword" name="password"
                    placeholder="Create a strong password"
-                   class="{{ $errors->getBag('register')->has('password') ? 'input-error' : '' }}">
+                   autocomplete="new-password"
+                   class="has-pw-toggle {{ $errors->getBag('register')->has('password') ? 'input-error' : '' }}">
+            <button type="button" class="pw-toggle" data-target="regPassword" aria-label="Show password" aria-pressed="false" title="Show password">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
         <div class="modal-field">
@@ -1351,7 +1370,12 @@
           <div class="input-icon-wrap">
             <i class="fas fa-lock"></i>
             <input type="password" id="regPasswordConfirm" name="password_confirmation"
-                   placeholder="Repeat your password">
+                   placeholder="Repeat your password"
+                   autocomplete="new-password"
+                   class="has-pw-toggle">
+            <button type="button" class="pw-toggle" data-target="regPasswordConfirm" aria-label="Show password" aria-pressed="false" title="Show password">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -1911,6 +1935,40 @@
   @elseif($errors->hasBag('register') && $errors->getBag('register')->any())
     document.addEventListener('DOMContentLoaded', () => openModal(registerModal));
   @endif
+
+  // ── Show / hide password toggles (login + register modals) ────────────────
+  function setPasswordVisibility(btn, visible) {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    input.type = visible ? 'text' : 'password';
+    const icon = btn.querySelector('i');
+    if (icon) icon.className = visible ? 'fas fa-eye-slash' : 'fas fa-eye';
+    const label = visible ? 'Hide password' : 'Show password';
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    btn.title = label;
+    btn.classList.toggle('active', visible);
+  }
+
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    // keep focus/caret in the input when the toggle is clicked
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      setPasswordVisibility(btn, input.type === 'password');
+    });
+  });
+
+  // Hide passwords again whenever a modal is closed, so they aren't left exposed.
+  [loginModal, registerModal].forEach(modal => {
+    if (!modal) return;
+    new MutationObserver(() => {
+      if (!modal.classList.contains('open')) {
+        modal.querySelectorAll('.pw-toggle').forEach(b => setPasswordVisibility(b, false));
+      }
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  });
 
   // Profile picture preview (register modal)
   const profilePicInput = document.getElementById('profilePicInput');

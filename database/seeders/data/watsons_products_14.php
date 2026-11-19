@@ -18,9 +18,9 @@
  * same numbering as batch 13, whose last row #1300 is Watsons Scented Nourishing Lily and Jasmine Conditioner 1L).
  * #1301 = Cetaphil Moisturizing Lotion Body and Face 118ml ... #1400 = Muconase Sodium Chloride 0.65% Nasal Spray 60ml.
  *
- * Every price is a 0.00 placeholder (live prices could not be read), origin and dimensions are null, and all image
+ * Prices are the Watsons PH prices supplied by the user, origin and dimensions are null, and all image
  * URLs are UNVERIFIED (usual WTCPH-<product code>-front-zoom.jpg pattern). Usage, ingredients and warnings are
- * general wording unless the link itself gives more. Edit the prices in the admin (or here) afterwards.
+ * general wording unless the link itself gives more.
  *
  * Rx flags ("prescription required" in the links, 'healthcare' category): #1307 Co-Ivyzar, #1308 Escivex, #1309 Ritemed
  * Sitagliptin, #1310 Duobloc, #1316 Ator, #1317 Norizec, #1318 Duodart, #1319 Fixcom, #1327 AndroGel, #1329 Luseco,
@@ -61,13 +61,13 @@ return [
 
     // ── Batch 14 (links 1301–1400) ────────────────────────────────────────
 
-    [   // 1301 · BP_50010870  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1301 · BP_50010870  (UNVERIFIED image URL)
         'name'          => 'Cetaphil Moisturizing Lotion Body and Face 118ml',
         'generic_name'  => 'Moisturizing Lotion',
         'form'          => 'Lotion',
         'brand'         => 'Cetaphil',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 305.40,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50010870-front-zoom.jpg',
         'description'   => 'Cetaphil moisturizing lotion for body and face, formulated for dry, sensitive skin. 118ml.',
@@ -80,13 +80,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1302 · BP_10074846  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1302 · BP_10074846  (UNVERIFIED image URL)
         'name'          => 'Ensure Gold Vanilla 400g Powdered Milk Adult Supplement',
         'generic_name'  => 'Adult Nutritional Supplement',
         'form'          => 'Powdered Milk',
         'brand'         => 'Ensure',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 940.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10074846-front-zoom.jpg',
         'description'   => 'Ensure Gold vanilla-flavored powdered milk, a complete and balanced adult nutritional supplement. 400g.',
@@ -99,13 +99,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1303 · BP_10042377  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1303 · BP_10042377  (UNVERIFIED image URL)
         'name'          => 'Charmee Feminine Pads Cottony with Wings 8+1 Free Pad',
         'generic_name'  => 'Sanitary Napkin',
         'form'          => 'Sanitary Napkin',
         'brand'         => 'Charmee',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 35.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10042377-front-zoom.jpg',
         'description'   => 'Charmee cottony feminine pads with wings for soft, comfortable day-to-day protection. 8 pads + 1 free pad.',
@@ -118,13 +118,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1304 · BP_10003406  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1304 · BP_10003406  (UNVERIFIED image URL)
         'name'          => 'Clean & Clear Oil Control Film 60s',
         'generic_name'  => 'Oil-Absorbing Blotting Film',
         'form'          => 'Blotting Film',
         'brand'         => 'Clean & Clear',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 184.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10003406-front-zoom.jpg',
         'description'   => 'Clean & Clear oil control film sheets that absorb excess facial oil on the go without disturbing makeup. 60 sheets.',
@@ -137,13 +137,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1305 · BP_10090543  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1305 · BP_10090543  (UNVERIFIED image URL)
         'name'          => 'Mosbeau Placenta White Advanced Tablet 650mg x120 Tablets',
         'generic_name'  => 'Placenta Extract Food Supplement',
         'form'          => 'Tablet',
         'brand'         => 'Mosbeau',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 3000.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10090543-front-zoom.jpg',
         'description'   => 'Mosbeau Placenta White Advanced 650mg tablets, a placenta-based skin-whitening food supplement. Pack of 120 tablets.',
@@ -156,13 +156,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1306 · BP_50054652  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1306 · BP_50054652  (UNVERIFIED image URL)
         'name'          => 'Pure Form Ultra Micronized Creatine Monohydrate Unflavored Powder 300g',
         'generic_name'  => 'Creatine Monohydrate',
         'form'          => 'Powder',
         'brand'         => 'Pure Form',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 711.55,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50054652-front-zoom.jpg',
         'description'   => 'Pure Form ultra-micronized creatine monohydrate in an unflavored powder that mixes easily into drinks. 300g.',
@@ -175,13 +175,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1307 · BP_50053054  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1307 · BP_50053054  (UNVERIFIED image URL)
         'name'          => 'Co-Ivyzar Irbesartan + Hydrochlorothiazide 300mg/12.5mg (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Irbesartan + Hydrochlorothiazide',
         'form'          => 'Tablet',
         'brand'         => 'Co-Ivyzar',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 35.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50053054-front-zoom.jpg',
         'description'   => 'Co-Ivyzar combination tablet with irbesartan 300 mg and hydrochlorothiazide 12.5 mg for the treatment of high blood pressure. Sold per piece. Prescription required.',
@@ -194,13 +194,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1308 · BP_50037975  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1308 · BP_50037975  (UNVERIFIED image URL)
         'name'          => 'Escivex 5mg (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Escivex',
         'form'          => 'Tablet',
         'brand'         => 'Escivex',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 21.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50037975-front-zoom.jpg',
         'description'   => 'Escivex 5 mg, sold per piece. The active ingredient and form are not stated in the product link. Prescription required.',
@@ -213,13 +213,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1309 · BP_50046716  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1309 · BP_50046716  (UNVERIFIED image URL)
         'name'          => 'Ritemed Sitagliptin 50mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Sitagliptin',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 21.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50046716-front-zoom.jpg',
         'description'   => 'Ritemed sitagliptin 50 mg tablet, used with diet and exercise to improve blood sugar control in adults with type 2 diabetes. Sold per tablet. Prescription required.',
@@ -232,13 +232,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1310 · BP_50004496  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1310 · BP_50004496  (UNVERIFIED image URL)
         'name'          => 'Duobloc Carvedilol 25mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Carvedilol',
         'form'          => 'Tablet',
         'brand'         => 'Duobloc',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 16.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50004496-front-zoom.jpg',
         'description'   => 'Duobloc carvedilol 25 mg tablet, a beta-blocker used for high blood pressure and heart failure. Sold per tablet. Prescription required.',
@@ -251,13 +251,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1311 · BP_50016780  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1311 · BP_50016780  (UNVERIFIED image URL)
         'name'          => 'Nuwhite S-Acetyl Glutathione with Marine Collagen, Sodium Ascorbate and Vitamin E Food Supplement 30 Capsules',
         'generic_name'  => 'S-Acetyl Glutathione + Marine Collagen + Sodium Ascorbate + Vitamin E',
         'form'          => 'Capsule',
         'brand'         => 'Nuwhite',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 2100.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50016780-front-zoom.jpg',
         'description'   => 'Nuwhite food supplement with S-acetyl glutathione, marine collagen, sodium ascorbate (vitamin C) and vitamin E for skin health. Pack of 30 capsules.',
@@ -270,13 +270,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1312 · BP_10086497  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1312 · BP_10086497  (UNVERIFIED image URL)
         'name'          => 'Cetaphil Pro AD Derma Skin Restoring Wash 295ml for Eczema-Prone Skin / Atopic Dermatitis',
         'generic_name'  => 'Skin Restoring Body Wash',
         'form'          => 'Body Wash',
         'brand'         => 'Cetaphil',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 704.40,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10086497-front-zoom.jpg',
         'description'   => 'Cetaphil Pro AD Derma skin-restoring wash for eczema-prone skin and atopic dermatitis. Gently cleanses dry, itchy skin. 295ml.',
@@ -289,13 +289,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1313 · BP_10101051  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1313 · BP_10101051  (UNVERIFIED image URL)
         'name'          => 'Betadine Feminine Wash Lavender Mist 250ml',
         'generic_name'  => 'Feminine Wash',
         'form'          => 'Feminine Wash',
         'brand'         => 'Betadine',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 188.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10101051-front-zoom.jpg',
         'description'   => 'Betadine feminine wash in a lavender mist scent for gentle daily intimate hygiene. 250ml.',
@@ -308,13 +308,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1314 · BP_10003672  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1314 · BP_10003672  (UNVERIFIED image URL)
         'name'          => 'Modess Maternity Extra Long Sanitary Napkin 7s Med-Heavy Flow (Post-Partum)',
         'generic_name'  => 'Maternity Sanitary Napkin',
         'form'          => 'Sanitary Napkin',
         'brand'         => 'Modess',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 126.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10003672-front-zoom.jpg',
         'description'   => 'Modess maternity extra-long sanitary napkins for medium to heavy flow, suited to post-partum bleeding. Pack of 7.',
@@ -327,13 +327,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1315 · BP_50011804  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1315 · BP_50011804  (UNVERIFIED image URL)
         'name'          => 'Lifecaps Mangosteen and Ampalaya 400mg Food Supplement (Sold Per Piece)',
         'generic_name'  => 'Mangosteen + Ampalaya (Bitter Melon)',
         'form'          => 'Capsule',
         'brand'         => 'Lifecaps',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 4.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50011804-front-zoom.jpg',
         'description'   => 'Lifecaps food supplement combining mangosteen and ampalaya (bitter melon), 400 mg. Sold per piece.',
@@ -346,13 +346,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1316 · BP_50006516  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1316 · BP_50006516  (UNVERIFIED image URL)
         'name'          => 'Ator Atorvastatin Calcium 10mg 1 Film-Coated Tablet (Prescription Required)',
         'generic_name'  => 'Atorvastatin Calcium',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Ator',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 12.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50006516-front-zoom.jpg',
         'description'   => 'Ator atorvastatin calcium 10 mg film-coated tablet, a statin used to lower cholesterol and reduce cardiovascular risk. Sold per tablet. Prescription required.',
@@ -365,13 +365,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1317 · BP_10042653  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1317 · BP_10042653  (UNVERIFIED image URL)
         'name'          => 'Norizec Glimepiride 2mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Glimepiride',
         'form'          => 'Tablet',
         'brand'         => 'Norizec',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 24.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10042653-front-zoom.jpg',
         'description'   => 'Norizec glimepiride 2 mg tablet, a sulfonylurea used with diet and exercise to control blood sugar in type 2 diabetes. Sold per tablet. Prescription required.',
@@ -384,13 +384,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1318 · BP_10087928  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1318 · BP_10087928  (UNVERIFIED image URL)
         'name'          => 'Duodart Dutasteride 0.5mg + Tamsulosin Hydrochloride 0.4mg 1 Capsule (Prescription Required)',
         'generic_name'  => 'Dutasteride + Tamsulosin Hydrochloride',
         'form'          => 'Capsule',
         'brand'         => 'Duodart',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 93.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10087928-front-zoom.jpg',
         'description'   => 'Duodart capsule combining dutasteride 0.5 mg and tamsulosin hydrochloride 0.4 mg for the treatment of benign prostatic hyperplasia (enlarged prostate) in men. Sold per capsule. Prescription required.',
@@ -403,13 +403,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1319 · BP_10064414  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1319 · BP_10064414  (UNVERIFIED image URL)
         'name'          => 'Fixcom Rifampicin 150mg + Isoniazid 75mg + Pyrazinamide 400mg + Ethambutol 275mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Rifampicin + Isoniazid + Pyrazinamide + Ethambutol',
         'form'          => 'Tablet',
         'brand'         => 'Fixcom',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 14.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10064414-front-zoom.jpg',
         'description'   => 'Fixcom fixed-dose combination tablet (rifampicin 150 mg, isoniazid 75 mg, pyrazinamide 400 mg, ethambutol 275 mg) for the treatment of tuberculosis. Sold per tablet. Prescription required.',
@@ -422,13 +422,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1320 · BP_10000955  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1320 · BP_10000955  (UNVERIFIED image URL)
         'name'          => 'Trihemic Multivitamins + Iron + Docusate Sodium 1 Tablet',
         'generic_name'  => 'Multivitamins + Iron + Docusate Sodium',
         'form'          => 'Tablet',
         'brand'         => 'Trihemic',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 25.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10000955-front-zoom.jpg',
         'description'   => 'Trihemic tablet with multivitamins, iron and docusate sodium (a stool softener) for iron-deficiency anemia. Sold per tablet.',
@@ -441,13 +441,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1321 · BP_50025756  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1321 · BP_50025756  (UNVERIFIED image URL)
         'name'          => 'Vaseline Lip Therapy Rosy Lips with Petroleum Jelly 4.6g',
         'generic_name'  => 'Lip Balm',
         'form'          => 'Lip Balm',
         'brand'         => 'Vaseline',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 134.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50025756-front-zoom.jpg',
         'description'   => 'Vaseline Lip Therapy Rosy Lips with petroleum jelly to moisturize and protect dry lips with a hint of rosy tint. 4.6g.',
@@ -460,13 +460,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1322 · BP_50010151  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1322 · BP_50010151  (UNVERIFIED image URL)
         'name'          => 'Watsons Sweet Dream Baby Bath 850ml',
         'generic_name'  => 'Baby Bath',
         'form'          => 'Baby Bath',
         'brand'         => 'Watsons',
         'category'      => 'baby',
-        'price'         => 0.00,
+        'price'         => 359.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50010151-front-zoom.jpg',
         'description'   => 'Watsons Sweet Dream baby bath, a gentle wash for baby\'s skin and hair. 850ml.',
@@ -479,13 +479,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1323 · BP_50000266  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1323 · BP_50000266  (UNVERIFIED image URL)
         'name'          => 'Watsons Nourish and Repair Jojoba and Shea Butter Conditioner 1L',
         'generic_name'  => 'Hair Conditioner',
         'form'          => 'Conditioner',
         'brand'         => 'Watsons',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 299.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50000266-front-zoom.jpg',
         'description'   => 'Watsons nourishing and repairing conditioner with jojoba and shea butter to soften and smooth dry, damaged hair. 1 litre.',
@@ -498,13 +498,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1324 · BP_10092697  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1324 · BP_10092697  (UNVERIFIED image URL)
         'name'          => 'Body Treats Wild Orchid Hand Soap 750ml',
         'generic_name'  => 'Liquid Hand Soap',
         'form'          => 'Hand Soap',
         'brand'         => 'Body Treats',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 199.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10092697-front-zoom.jpg',
         'description'   => 'Body Treats wild orchid liquid hand soap that cleanses hands with a floral fragrance. 750ml.',
@@ -517,13 +517,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1325 · BP_50052641  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1325 · BP_50052641  (UNVERIFIED image URL)
         'name'          => 'Fino Premium Touch Hair Mask 230g',
         'generic_name'  => 'Hair Mask',
         'form'          => 'Hair Mask',
         'brand'         => 'Fino',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 599.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50052641-front-zoom.jpg',
         'description'   => 'Fino Premium Touch hair mask that nourishes and smooths dry, damaged hair. 230g.',
@@ -536,13 +536,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1326 · BP_50052619  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1326 · BP_50052619  (UNVERIFIED image URL)
         'name'          => 'Belo Dewy Essence Sunscreen SPF50 PA 30ml (Buy 1 Take 1)',
         'generic_name'  => 'Sunscreen',
         'form'          => 'Sunscreen',
         'brand'         => 'Belo',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 270.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50052619-front-zoom.jpg',
         'description'   => 'Belo dewy essence sunscreen with SPF 50 broad-spectrum protection and a lightweight, dewy finish. 30ml, Buy 1 Take 1 promo pack.',
@@ -555,13 +555,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1327 · BP_50051140  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1327 · BP_50051140  (UNVERIFIED image URL)
         'name'          => 'AndroGel Testosterone 16.2mg/g (1.62% w/w) Transdermal Gel 88g (Prescription Required)',
         'generic_name'  => 'Testosterone',
         'form'          => 'Transdermal Gel',
         'brand'         => 'AndroGel',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 2588.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50051140-front-zoom.jpg',
         'description'   => 'AndroGel testosterone 1.62% (16.2 mg/g) transdermal gel, used as testosterone replacement therapy in adult men with low testosterone. 88g. Prescription required.',
@@ -574,13 +574,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1328 · BP_50050925  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1328 · BP_50050925  (UNVERIFIED image URL)
         'name'          => 'Nivea Pearl Radiant Micellar Water 200ml',
         'generic_name'  => 'Micellar Water',
         'form'          => 'Micellar Water',
         'brand'         => 'Nivea',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 238.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50050925-front-zoom.jpg',
         'description'   => 'Nivea Pearl Radiant micellar water that cleanses skin and removes makeup in one step. 200ml.',
@@ -593,13 +593,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1329 · BP_50042229  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1329 · BP_50042229  (UNVERIFIED image URL)
         'name'          => 'Luseco Luseogliflozin 2.5mg 1 Film-Coated Tablet (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Luseogliflozin',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Luseco',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 29.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50042229-front-zoom.jpg',
         'description'   => 'Luseco luseogliflozin 2.5 mg film-coated tablet, an SGLT2 inhibitor used to improve blood sugar control in type 2 diabetes. Sold per piece. Prescription required.',
@@ -612,13 +612,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1330 · BP_10091152  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1330 · BP_10091152  (UNVERIFIED image URL)
         'name'          => 'Efficascent Oil Extreme 25ml',
         'generic_name'  => 'Topical Analgesic Oil',
         'form'          => 'Oil',
         'brand'         => 'Efficasent',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 44.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10091152-front-zoom.jpg',
         'description'   => 'Efficascent Oil Extreme, a topical oil for the temporary relief of muscle pains, aches, sprains and joint pain. 25ml.',
@@ -631,13 +631,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1331 · BP_50026625  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1331 · BP_50026625  (UNVERIFIED image URL)
         'name'          => 'EQ Dry Disposable Baby Diapers S 40s',
         'generic_name'  => 'Baby Diapers',
         'form'          => 'Diaper',
         'brand'         => 'EQ',
         'category'      => 'baby',
-        'price'         => 0.00,
+        'price'         => 327.60,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50026625-front-zoom.jpg',
         'description'   => 'EQ Dry disposable baby diapers in size small, with absorbent core for dry comfort. Pack of 40.',
@@ -650,13 +650,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1332 · BP_50012874  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1332 · BP_50012874  (UNVERIFIED image URL)
         'name'          => 'Dr. Sensitive All Day No Sebum Blur Powder 25g',
         'generic_name'  => 'Oil-Control Face Powder',
         'form'          => 'Powder',
         'brand'         => 'Dr. Sensitive',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 169.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50012874-front-zoom.jpg',
         'description'   => 'Dr. Sensitive all-day no-sebum blur powder that controls oil and softly blurs the look of pores. 25g.',
@@ -669,13 +669,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1333 · BP_50000003  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1333 · BP_50000003  (UNVERIFIED image URL)
         'name'          => 'Imodium 2mg 4s Diarrhea Medicine (Loperamide)',
         'generic_name'  => 'Loperamide Hydrochloride',
         'form'          => 'Capsule',
         'brand'         => 'Imodium',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 81.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50000003-front-zoom.jpg',
         'description'   => 'Imodium loperamide 2 mg for the fast relief of acute diarrhea. Pack of 4.',
@@ -688,13 +688,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1334 · BP_10029039  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1334 · BP_10029039  (UNVERIFIED image URL)
         'name'          => 'I-Max Metformin Hydrochloride 500mg 1 Caplet (Prescription Required)',
         'generic_name'  => 'Metformin Hydrochloride',
         'form'          => 'Caplet',
         'brand'         => 'I-Max',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 7.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10029039-front-zoom.jpg',
         'description'   => 'I-Max metformin hydrochloride 500 mg caplet, used with diet and exercise to control blood sugar in type 2 diabetes. Sold per caplet. Prescription required.',
@@ -707,13 +707,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1335 · BP_10030303  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1335 · BP_10030303  (UNVERIFIED image URL)
         'name'          => 'Ritemed Amoxicillin 500mg (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Amoxicillin',
         'form'          => 'Capsule',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 7.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10030303-front-zoom.jpg',
         'description'   => 'Ritemed amoxicillin 500 mg, a penicillin-type antibiotic for bacterial infections. Sold per piece. Prescription required.',
@@ -726,13 +726,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1336 · BP_50018609  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1336 · BP_50018609  (UNVERIFIED image URL)
         'name'          => 'Durex Condoms Invisible Extra Sensitive 3s',
         'generic_name'  => 'Condom',
         'form'          => 'Condom',
         'brand'         => 'Durex',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 224.10,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50018609-front-zoom.jpg',
         'description'   => 'Durex Invisible Extra Sensitive ultra-thin latex condoms for natural feeling and protection. Pack of 3.',
@@ -745,13 +745,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1337 · BP_10090312  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1337 · BP_10090312  (UNVERIFIED image URL)
         'name'          => 'Watsons Honey and Milk Cream Hand Soap 500ml',
         'generic_name'  => 'Liquid Hand Soap',
         'form'          => 'Hand Soap',
         'brand'         => 'Watsons',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 189.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10090312-front-zoom.jpg',
         'description'   => 'Watsons honey and milk cream hand soap that cleanses and softens hands. 500ml.',
@@ -764,13 +764,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1338 · BP_50060200  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1338 · BP_50060200  (UNVERIFIED image URL)
         'name'          => 'Safeguard Derm Protect Face & Body Wash Dry Itchy Skin Relief 570g',
         'generic_name'  => 'Face & Body Wash',
         'form'          => 'Body Wash',
         'brand'         => 'Safeguard',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 459.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50060200-front-zoom.jpg',
         'description'   => 'Safeguard Derm Protect face and body wash that cleanses and helps relieve dry, itchy skin. 570g.',
@@ -783,13 +783,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1339 · BP_50052965  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1339 · BP_50052965  (UNVERIFIED image URL)
         'name'          => 'Xerevo Clopidogrel 75mg Film-Coated Tablet 100s (Prescription Required)',
         'generic_name'  => 'Clopidogrel',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Xerevo',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 14.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50052965-front-zoom.jpg',
         'description'   => 'Xerevo clopidogrel 75 mg film-coated tablets, an antiplatelet medicine that helps prevent blood clots, heart attack and stroke. Pack of 100. Prescription required.',
@@ -802,13 +802,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1340 · BP_50047895  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1340 · BP_50047895  (UNVERIFIED image URL)
         'name'          => 'Systane Hydration Preservative-Free',
         'generic_name'  => 'Lubricant Eye Drops',
         'form'          => 'Lubricant Eye Drops',
         'brand'         => 'Systane',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 699.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50047895-front-zoom.jpg',
         'description'   => 'Systane Hydration preservative-free lubricant eye drops for the relief of dry, irritated eyes. Pack size is not stated in the product link.',
@@ -821,13 +821,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1341 · BP_50036523  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1341 · BP_50036523  (UNVERIFIED image URL)
         'name'          => 'The Collagen Collagen Peptides Powder 300g Unflavored',
         'generic_name'  => 'Collagen Peptides',
         'form'          => 'Powder',
         'brand'         => 'The Collagen',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 899.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50036523-front-zoom.jpg',
         'description'   => 'The Collagen unflavored collagen peptides powder that dissolves easily in drinks. 300g.',
@@ -840,13 +840,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1342 · BP_10065206  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1342 · BP_10065206  (UNVERIFIED image URL)
         'name'          => 'Garnier Bright Complete Brightening Scrub 100ml',
         'generic_name'  => 'Brightening Facial Scrub',
         'form'          => 'Scrub',
         'brand'         => 'Garnier',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 199.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10065206-front-zoom.jpg',
         'description'   => 'Garnier Bright Complete brightening scrub that exfoliates dull skin for a brighter look. 100ml.',
@@ -859,13 +859,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1343 · BP_50011188  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1343 · BP_50011188  (UNVERIFIED image URL)
         'name'          => 'Cetaphil Daily Exfoliating Cleanser 178ml',
         'generic_name'  => 'Exfoliating Cleanser',
         'form'          => 'Cleanser',
         'brand'         => 'Cetaphil',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 369.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50011188-front-zoom.jpg',
         'description'   => 'Cetaphil daily exfoliating cleanser that gently removes dead skin cells and cleanses the face. 178ml.',
@@ -878,13 +878,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1344 · BP_10100762  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1344 · BP_10100762  (UNVERIFIED image URL)
         'name'          => 'Mepresone Methylprednisolone 4mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Methylprednisolone',
         'form'          => 'Tablet',
         'brand'         => 'Mepresone',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 11.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10100762-front-zoom.jpg',
         'description'   => 'Mepresone methylprednisolone 4 mg tablet, a corticosteroid used to reduce inflammation in allergic, rheumatic and other conditions. Sold per tablet. Prescription required.',
@@ -897,13 +897,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1345 · BP_10099204  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1345 · BP_10099204  (UNVERIFIED image URL)
         'name'          => 'Co-Ax Co-Amoxiclav 625mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Amoxicillin + Clavulanic Acid (Co-Amoxiclav)',
         'form'          => 'Tablet',
         'brand'         => 'Co-Ax',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 41.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099204-front-zoom.jpg',
         'description'   => 'Co-Ax co-amoxiclav 625 mg tablet, a penicillin-type antibiotic combined with a beta-lactamase inhibitor for bacterial infections. Sold per tablet. Prescription required.',
@@ -916,13 +916,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1346 · BP_10001026  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1346 · BP_10001026  (UNVERIFIED image URL)
         'name'          => 'Tergecef Cefixime 200mg 1 Capsule (Prescription Required)',
         'generic_name'  => 'Cefixime',
         'form'          => 'Capsule',
         'brand'         => 'Tergecef',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 171.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10001026-front-zoom.jpg',
         'description'   => 'Tergecef cefixime 200 mg capsule, a cephalosporin antibiotic for bacterial infections. Sold per capsule. Prescription required.',
@@ -935,13 +935,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1347 · BP_50007454  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1347 · BP_50007454  (UNVERIFIED image URL)
         'name'          => 'E-Z Lubricating Jelly 76g Tube',
         'generic_name'  => 'Lubricating Jelly',
         'form'          => 'Lubricating Jelly',
         'brand'         => 'E-Z',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 231.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50007454-front-zoom.jpg',
         'description'   => 'E-Z water-based lubricating jelly in a 76g tube for personal and medical lubrication.',
@@ -954,13 +954,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1348 · BP_10000157  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1348 · BP_10000157  (UNVERIFIED image URL)
         'name'          => 'Ceelin Ascorbic Acid Drops 30ml',
         'generic_name'  => 'Ascorbic Acid (Vitamin C)',
         'form'          => 'Oral Drops',
         'brand'         => 'Ceelin',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 152.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10000157-front-zoom.jpg',
         'description'   => 'Ceelin vitamin C (ascorbic acid) oral drops for infants and young children to support the immune system. 30ml.',
@@ -973,13 +973,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1349 · BP_50008327  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1349 · BP_50008327  (UNVERIFIED image URL)
         'name'          => 'IVI Ready-to-Drink Collagen Apple 1000mg',
         'generic_name'  => 'Collagen',
         'form'          => 'Ready-to-Drink',
         'brand'         => 'IVI',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 220.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50008327-front-zoom.jpg',
         'description'   => 'IVI ready-to-drink collagen supplement drink, 1000 mg collagen, in apple flavor. Sold per piece.',
@@ -992,13 +992,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1350 · BP_10099001  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1350 · BP_10099001  (UNVERIFIED image URL)
         'name'          => 'Watsons Invigorating Wet Wipes Lavender Scented 3x10 Sheets',
         'generic_name'  => 'Wet Wipes',
         'form'          => 'Wet Wipes',
         'brand'         => 'Watsons',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 119.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099001-front-zoom.jpg',
         'description'   => 'Watsons invigorating wet wipes with a lavender scent for refreshing hands and face. 3 packs of 10 sheets.',
@@ -1011,13 +1011,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1351 · BP_10087629  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1351 · BP_10087629  (UNVERIFIED image URL)
         'name'          => 'Deo-Nat Natural Mineral Deodorant Spray 100ml',
         'generic_name'  => 'Natural Mineral Deodorant',
         'form'          => 'Spray',
         'brand'         => 'Deo-Nat',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 192.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10087629-front-zoom.jpg',
         'description'   => 'Deo-Nat natural mineral deodorant spray that helps control body odor. 100ml.',
@@ -1030,13 +1030,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1352 · BP_10088543  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1352 · BP_10088543  (UNVERIFIED image URL)
         'name'          => 'Celeteque DermoScience Brightening Power Cream 50ml',
         'generic_name'  => 'Brightening Cream',
         'form'          => 'Face Cream',
         'brand'         => 'Celeteque',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 661.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10088543-front-zoom.jpg',
         'description'   => 'Celeteque DermoScience brightening power cream that helps even skin tone and brighten the look of the complexion. 50ml.',
@@ -1049,13 +1049,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1353 · BP_50053258  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1353 · BP_50053258  (UNVERIFIED image URL)
         'name'          => 'CeraVe Facial Moisturizing Lotion 52ml',
         'generic_name'  => 'Facial Moisturizing Lotion',
         'form'          => 'Lotion',
         'brand'         => 'CeraVe',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 995.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50053258-front-zoom.jpg',
         'description'   => 'CeraVe facial moisturizing lotion that hydrates and helps restore the skin barrier. 52ml.',
@@ -1068,13 +1068,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1354 · BP_50045003  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1354 · BP_50045003  (UNVERIFIED image URL)
         'name'          => 'Ming\'s Pei Pa Koa Candy 60g',
         'generic_name'  => 'Herbal Cough Candy',
         'form'          => 'Lozenge Candy',
         'brand'         => 'Ming\'s',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 62.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50045003-front-zoom.jpg',
         'description'   => 'Ming\'s Pei Pa Koa herbal candy that soothes the throat and helps relieve cough. 60g.',
@@ -1087,13 +1087,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1355 · BP_50039336  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1355 · BP_50039336  (UNVERIFIED image URL)
         'name'          => 'Garnier Bright Complete Salicylic Acid Anti-Acne Serum 30ml',
         'generic_name'  => 'Salicylic Acid Anti-Acne Serum',
         'form'          => 'Serum',
         'brand'         => 'Garnier',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 559.20,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50039336-front-zoom.jpg',
         'description'   => 'Garnier Bright Complete anti-acne serum with salicylic acid that helps clear breakouts and brighten skin. 30ml.',
@@ -1106,13 +1106,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1356 · BP_50037281  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1356 · BP_50037281  (UNVERIFIED image URL)
         'name'          => 'Eco Bath Mild & Gentle Extra Sensitive Bathing Wipes 10 Extra Large Wipes',
         'generic_name'  => 'Bathing Wipes',
         'form'          => 'Wipes',
         'brand'         => 'Eco Bath',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 470.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50037281-front-zoom.jpg',
         'description'   => 'Eco Bath mild and gentle bathing wipes for extra-sensitive skin, extra large for a head-to-toe refresh without water. Pack of 10.',
@@ -1125,13 +1125,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1357 · BP_50033747  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1357 · BP_50033747  (UNVERIFIED image URL)
         'name'          => 'Milk Essence Soothing Baby Lotion 850ml',
         'generic_name'  => 'Baby Lotion',
         'form'          => 'Lotion',
         'brand'         => 'Milk Essence',
         'category'      => 'baby',
-        'price'         => 0.00,
+        'price'         => 180.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50033747-front-zoom.jpg',
         'description'   => 'Milk Essence soothing baby lotion that moisturizes and softens baby\'s delicate skin. 850ml.',
@@ -1144,13 +1144,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1358 · BP_50003149  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1358 · BP_50003149  (UNVERIFIED image URL)
         'name'          => 'Oral-B Precision Clean Refill 2s',
         'generic_name'  => 'Replacement Toothbrush Heads',
         'form'          => 'Toothbrush Heads',
         'brand'         => 'Oral-B',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 375.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50003149-front-zoom.jpg',
         'description'   => 'Oral-B Precision Clean replacement brush heads for compatible Oral-B electric toothbrushes. Pack of 2.',
@@ -1163,13 +1163,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1359 · BP_10090008  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1359 · BP_10090008  (UNVERIFIED image URL)
         'name'          => 'Ritemed Sildenafil 100mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Sildenafil',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 250.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10090008-front-zoom.jpg',
         'description'   => 'Ritemed sildenafil 100 mg tablet, used for the treatment of erectile dysfunction in men. Sold per tablet. Prescription required.',
@@ -1182,13 +1182,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1360 · BP_10059101  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1360 · BP_10059101  (UNVERIFIED image URL)
         'name'          => 'Imigran Sumatriptan 50mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Sumatriptan',
         'form'          => 'Tablet',
         'brand'         => 'Imigran',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 217.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10059101-front-zoom.jpg',
         'description'   => 'Imigran sumatriptan 50 mg tablet for the acute treatment of migraine attacks with or without aura. Sold per tablet. Prescription required.',
@@ -1201,13 +1201,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1361 · BP_10075319  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1361 · BP_10075319  (UNVERIFIED image URL)
         'name'          => 'Sunburst Saw Palmetto 160mg (Sold Per Piece)',
         'generic_name'  => 'Saw Palmetto Extract',
         'form'          => 'Capsule',
         'brand'         => 'Sunburst',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 22.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10075319-front-zoom.jpg',
         'description'   => 'Sunburst saw palmetto 160 mg food supplement that supports prostate health in men. Sold per piece.',
@@ -1220,13 +1220,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1362 · BP_10000158  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1362 · BP_10000158  (UNVERIFIED image URL)
         'name'          => 'Ceelin Ascorbic Acid Syrup 120ml',
         'generic_name'  => 'Ascorbic Acid (Vitamin C)',
         'form'          => 'Syrup',
         'brand'         => 'Ceelin',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 154.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10000158-front-zoom.jpg',
         'description'   => 'Ceelin vitamin C (ascorbic acid) syrup for children to support the immune system. 120ml.',
@@ -1239,13 +1239,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1363 · BP_10088248  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1363 · BP_10088248  (UNVERIFIED image URL)
         'name'          => 'Silka Papaya Soap 90g',
         'generic_name'  => 'Papaya Skin Soap',
         'form'          => 'Bar Soap',
         'brand'         => 'Silka',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 57.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10088248-front-zoom.jpg',
         'description'   => 'Silka papaya soap that gently cleanses and helps lighten and smooth the skin. 90g.',
@@ -1258,13 +1258,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1364 · BP_50059965  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1364 · BP_50059965  (UNVERIFIED image URL)
         'name'          => 'Garnier Micellar Water for Acne Twin Pack',
         'generic_name'  => 'Micellar Water',
         'form'          => 'Micellar Water',
         'brand'         => 'Garnier',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 399.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50059965-front-zoom.jpg',
         'description'   => 'Garnier micellar water formulated for acne-prone skin that cleanses and removes makeup. Twin pack; the bottle size is not stated in the product link.',
@@ -1277,13 +1277,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1365 · BP_50045720  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1365 · BP_50045720  (UNVERIFIED image URL)
         'name'          => 'Myox Tablet 90mg (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Myox',
         'form'          => 'Tablet',
         'brand'         => 'Myox',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 46.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50045720-front-zoom.jpg',
         'description'   => 'Myox 90 mg tablet, sold per piece. The active ingredient is not stated in the product link. Prescription required.',
@@ -1296,13 +1296,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1366 · BP_50046452  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1366 · BP_50046452  (UNVERIFIED image URL)
         'name'          => 'Biogesic MLN 250mg Syrup 1 Bottle 60ml',
         'generic_name'  => 'Paracetamol',
         'form'          => 'Syrup',
         'brand'         => 'Biogesic',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 173.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50046452-front-zoom.jpg',
         'description'   => 'Biogesic paracetamol 250 mg syrup for the relief of fever and mild to moderate pain in children. 60ml bottle.',
@@ -1315,13 +1315,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1367 · BP_50040227  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1367 · BP_50040227  (UNVERIFIED image URL)
         'name'          => 'Oral-B Floss Pick 75s',
         'generic_name'  => 'Dental Floss Picks',
         'form'          => 'Floss Pick',
         'brand'         => 'Oral-B',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 159.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50040227-front-zoom.jpg',
         'description'   => 'Oral-B floss picks for easy, convenient cleaning between teeth. Pack of 75.',
@@ -1334,13 +1334,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1368 · BP_50036655  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1368 · BP_50036655  (UNVERIFIED image URL)
         'name'          => 'ClearSight Food Supplement with Lutein + DHA (Sold Per Piece)',
         'generic_name'  => 'Lutein + DHA',
         'form'          => 'Capsule',
         'brand'         => 'ClearSight',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 19.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50036655-front-zoom.jpg',
         'description'   => 'ClearSight food supplement with lutein and DHA to support eye health. Sold per piece.',
@@ -1353,13 +1353,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1369 · BP_50010223  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1369 · BP_50010223  (UNVERIFIED image URL)
         'name'          => 'Efficascent Oil Efficascent Ointment 10g',
         'generic_name'  => 'Topical Analgesic Ointment',
         'form'          => 'Ointment',
         'brand'         => 'Efficasent',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 26.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50010223-front-zoom.jpg',
         'description'   => 'Efficascent ointment for the temporary relief of muscle pains, aches and joint pain. 10g.',
@@ -1372,13 +1372,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1370 · BP_50033293  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1370 · BP_50033293  (UNVERIFIED image URL)
         'name'          => 'K-Glow Collagen Bright Whitening Soap 3x60g',
         'generic_name'  => 'Whitening Soap',
         'form'          => 'Bar Soap',
         'brand'         => 'K-Glow',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 189.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50033293-front-zoom.jpg',
         'description'   => 'K-Glow collagen bright whitening soap that cleanses and brightens the skin. 3 bars of 60g.',
@@ -1391,13 +1391,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1371 · BP_50005506  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1371 · BP_50005506  (UNVERIFIED image URL)
         'name'          => 'Rabegen Rabeprazole Sodium + Itopride Hydrochloride 20mg/150mg 1 Modified-Release Tablet (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Rabeprazole Sodium + Itopride Hydrochloride',
         'form'          => 'Modified-Release Tablet',
         'brand'         => 'Rabegen',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 69.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50005506-front-zoom.jpg',
         'description'   => 'Rabegen modified-release tablet with rabeprazole sodium 20 mg and itopride hydrochloride 150 mg for acid reflux (GERD) and related stomach symptoms. Sold per piece. Prescription required.',
@@ -1410,13 +1410,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1372 · BP_50009815  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1372 · BP_50009815  (UNVERIFIED image URL)
         'name'          => 'Difflam Lozenge Mint 8s',
         'generic_name'  => 'Benzydamine Hydrochloride',
         'form'          => 'Lozenge',
         'brand'         => 'Difflam',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 299.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50009815-front-zoom.jpg',
         'description'   => 'Difflam mint lozenges that soothe and relieve sore throat pain and inflammation. Pack of 8.',
@@ -1429,13 +1429,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1373 · BP_50026804  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1373 · BP_50026804  (UNVERIFIED image URL)
         'name'          => 'Cetaphil Bright Healthy Radiance Brightening Night Comfort Cream',
         'generic_name'  => 'Brightening Night Cream',
         'form'          => 'Face Cream',
         'brand'         => 'Cetaphil',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 793.80,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50026804-front-zoom.jpg',
         'description'   => 'Cetaphil Bright Healthy Radiance brightening night comfort cream that hydrates and brightens skin overnight. The jar size is not stated in the product link.',
@@ -1448,13 +1448,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1374 · BP_10084776  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1374 · BP_10084776  (UNVERIFIED image URL)
         'name'          => 'Diovan Valsartan 320mg 1 Capsule (Prescription Required)',
         'generic_name'  => 'Valsartan',
         'form'          => 'Capsule',
         'brand'         => 'Diovan',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 64.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10084776-front-zoom.jpg',
         'description'   => 'Diovan valsartan 320 mg, used to treat high blood pressure and heart failure. Sold per piece (listed as a capsule in the product link). Prescription required.',
@@ -1467,13 +1467,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1375 · BP_10101078  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1375 · BP_10101078  (UNVERIFIED image URL)
         'name'          => 'Watsons Generics Cefuroxime Antibacterial Film-Coated Tablet 500mg (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Cefuroxime',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Watsons Generics',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 56.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10101078-front-zoom.jpg',
         'description'   => 'Watsons Generics cefuroxime 500 mg antibacterial film-coated tablet for bacterial infections. Sold per piece. Prescription required.',
@@ -1486,13 +1486,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1376 · BP_10092730  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1376 · BP_10092730  (UNVERIFIED image URL)
         'name'          => 'Liza Drospirenone + Ethinylestradiol 3mg/30mcg 21 Pills Box (Prescription Required)',
         'generic_name'  => 'Drospirenone + Ethinylestradiol',
         'form'          => 'Tablet',
         'brand'         => 'Liza',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 789.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10092730-front-zoom.jpg',
         'description'   => 'Liza combined oral contraceptive with drospirenone 3 mg and ethinylestradiol 30 mcg. Box of 21 pills. Prescription required.',
@@ -1505,13 +1505,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1377 · BP_10072860  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1377 · BP_10072860  (UNVERIFIED image URL)
         'name'          => 'Augmentin Amoxicillin 500mg + Clavulanic Acid 125mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Amoxicillin + Clavulanic Acid',
         'form'          => 'Tablet',
         'brand'         => 'Augmentin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 832.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10072860-front-zoom.jpg',
         'description'   => 'Augmentin tablet with amoxicillin 500 mg and clavulanic acid 125 mg, an antibiotic for bacterial infections. Sold per tablet. Prescription required.',
@@ -1524,13 +1524,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1378 · BP_10001923  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1378 · BP_10001923  (UNVERIFIED image URL)
         'name'          => 'Cataflam Diclofenac Potassium 50mg Sugar-Coated Tablet 1 Tablet (Prescription Required)',
         'generic_name'  => 'Diclofenac Potassium',
         'form'          => 'Sugar-Coated Tablet',
         'brand'         => 'Cataflam',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 43.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10001923-front-zoom.jpg',
         'description'   => 'Cataflam diclofenac potassium 50 mg sugar-coated tablet, an NSAID for pain and inflammation. Sold per tablet. Prescription required.',
@@ -1543,13 +1543,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1379 · BP_10000971  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1379 · BP_10000971  (UNVERIFIED image URL)
         'name'          => 'Carnicor L-Carnitine 330mg Tablet 1 Tablet (Prescription Required)',
         'generic_name'  => 'L-Carnitine',
         'form'          => 'Tablet',
         'brand'         => 'Carnicor',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 27.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10000971-front-zoom.jpg',
         'description'   => 'Carnicor L-carnitine 330 mg tablet used for carnitine deficiency. Sold per tablet. Prescription required.',
@@ -1562,13 +1562,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1380 · BP_10054978  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1380 · BP_10054978  (UNVERIFIED image URL)
         'name'          => 'Save Our Skin Clindamycin with Vitamin E 1 (Prescription Required)',
         'generic_name'  => 'Clindamycin + Vitamin E',
         'form'          => 'Topical',
         'brand'         => 'Save Our Skin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 126.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10054978-front-zoom.jpg',
         'description'   => 'Save Our Skin topical product with clindamycin and vitamin E, used for acne. The strength and pack size are not stated in the product link. Prescription required.',
@@ -1581,13 +1581,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1381 · BP_10001062  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1381 · BP_10001062  (UNVERIFIED image URL)
         'name'          => 'Cherifer Drops 30ml',
         'generic_name'  => 'Cherifer',
         'form'          => 'Oral Drops',
         'brand'         => 'Cherifer',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 175.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10001062-front-zoom.jpg',
         'description'   => 'Cherifer oral drops, a children\'s nutritional supplement. The composition is not stated in the product link. 30ml.',
@@ -1600,13 +1600,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1382 · BP_10101687  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1382 · BP_10101687  (UNVERIFIED image URL)
         'name'          => 'Trust Ultra Thin Shower Fresh 3s',
         'generic_name'  => 'Condom',
         'form'          => 'Condom',
         'brand'         => 'Trust',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 53.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10101687-front-zoom.jpg',
         'description'   => 'Trust ultra-thin condoms in the Shower Fresh variant for sensitive, comfortable protection. Pack of 3.',
@@ -1619,13 +1619,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1383 · BP_10099399  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1383 · BP_10099399  (UNVERIFIED image URL)
         'name'          => 'Body Treats Firming Hydrogel Eye Patch 3 Sheets',
         'generic_name'  => 'Hydrogel Eye Patch',
         'form'          => 'Eye Patch',
         'brand'         => 'Body Treats',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 99.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099399-front-zoom.jpg',
         'description'   => 'Body Treats firming hydrogel eye patches that hydrate and help firm the delicate under-eye area. 3 sheets.',
@@ -1638,13 +1638,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1384 · BP_10080559  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1384 · BP_10080559  (UNVERIFIED image URL)
         'name'          => 'Listerine Cool Mint Mouthwash 750ml',
         'generic_name'  => 'Antiseptic Mouthwash',
         'form'          => 'Mouthwash',
         'brand'         => 'Listerine',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 399.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10080559-front-zoom.jpg',
         'description'   => 'Listerine Cool Mint antiseptic mouthwash that kills germs, helps fight bad breath and supports a healthy toothbrush routine. 750ml.',
@@ -1657,13 +1657,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1385 · BP_10046389  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1385 · BP_10046389  (UNVERIFIED image URL)
         'name'          => 'Watsons Sugar-Free Mint Breathe Strips',
         'generic_name'  => 'Breath Freshening Strips',
         'form'          => 'Breath Strips',
         'brand'         => 'Watsons',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 99.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10046389-front-zoom.jpg',
         'description'   => 'Watsons sugar-free mint breath strips that dissolve on the tongue for quick fresh breath. The pack size is not stated in the product link.',
@@ -1676,13 +1676,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1386 · BP_10038245  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1386 · BP_10038245  (UNVERIFIED image URL)
         'name'          => 'Physiogel Daily Moisture Therapy Cream 75ml',
         'generic_name'  => 'Moisturizing Cream',
         'form'          => 'Cream',
         'brand'         => 'Physiogel',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 499.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10038245-front-zoom.jpg',
         'description'   => 'Physiogel Daily Moisture Therapy cream that intensely hydrates and helps restore the skin barrier of dry, sensitive skin. 75ml.',
@@ -1695,13 +1695,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1387 · BP_50062758  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1387 · BP_50062758  (UNVERIFIED image URL)
         'name'          => 'Luxe Organix Bio-Niacinamide TXA Boost Dark Spot Correcting Serum Treatment Hydrogel Mask 25g',
         'generic_name'  => 'Dark Spot Correcting Hydrogel Mask',
         'form'          => 'Hydrogel Mask',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 89.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50062758-front-zoom.jpg',
         'description'   => 'Luxe Organix hydrogel mask with niacinamide and tranexamic acid (TXA) that helps correct dark spots. 25g.',
@@ -1714,13 +1714,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1388 · BP_50062864  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1388 · BP_50062864  (UNVERIFIED image URL)
         'name'          => 'Vaseline Gluta-Hya PDRN Serum Burst Lotion 300ml',
         'generic_name'  => 'Serum Body Lotion',
         'form'          => 'Body Lotion',
         'brand'         => 'Vaseline',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 412.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50062864-front-zoom.jpg',
         'description'   => 'Vaseline Gluta-Hya serum burst lotion with glutathione, hyaluronic acid and PDRN for brighter, more hydrated skin. 300ml.',
@@ -1733,13 +1733,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1389 · BP_50054386  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1389 · BP_50054386  (UNVERIFIED image URL)
         'name'          => 'Luxe Organix Fragrances Golden Hour Eau de Toilette 100ml',
         'generic_name'  => 'Eau de Toilette',
         'form'          => 'Eau de Toilette',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 319.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50054386-front-zoom.jpg',
         'description'   => 'Luxe Organix Fragrances Golden Hour eau de toilette. 100ml.',
@@ -1752,13 +1752,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1390 · BP_50049631  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1390 · BP_50049631  (UNVERIFIED image URL)
         'name'          => 'Luxe Organix Premium Keratin Curl Define Essence 250ml',
         'generic_name'  => 'Curl Defining Hair Essence',
         'form'          => 'Hair Treatment',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 219.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50049631-front-zoom.jpg',
         'description'   => 'Luxe Organix premium keratin curl-define essence that enhances curls and reduces frizz. 250ml.',
@@ -1771,13 +1771,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1391 · BP_50043252  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1391 · BP_50043252  (UNVERIFIED image URL)
         'name'          => 'Luxe Organix Advanced Retinol + Bakuchiol Deep Wrinkle Eye Contour Overnight Cream 12g',
         'generic_name'  => 'Eye Contour Overnight Cream',
         'form'          => 'Eye Cream',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 299.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50043252-front-zoom.jpg',
         'description'   => 'Luxe Organix overnight eye contour cream with retinol and bakuchiol that targets deep wrinkles around the eyes. 12g.',
@@ -1790,13 +1790,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1392 · BP_50035904  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1392 · BP_50035904  (UNVERIFIED image URL)
         'name'          => 'Mucoprotec FC Rebamipide 100mg Film-Coated Tablet (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Rebamipide',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Mucoprotec',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 18.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50035904-front-zoom.jpg',
         'description'   => 'Mucoprotec FC rebamipide 100 mg film-coated tablet, a stomach-lining protective used in gastritis and gastric ulcers. Sold per piece. Prescription required.',
@@ -1809,13 +1809,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1393 · BP_50024154  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1393 · BP_50024154  (UNVERIFIED image URL)
         'name'          => 'Babyflo Gentle Buds Plastic White 200s (2+1)',
         'generic_name'  => 'Cotton Buds',
         'form'          => 'Cotton Buds',
         'brand'         => 'Babyflo',
         'category'      => 'baby',
-        'price'         => 0.00,
+        'price'         => 89.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50024154-front-zoom.jpg',
         'description'   => 'Babyflo gentle cotton buds with white plastic sticks for baby care and everyday use. 200 buds per pack, 2+1 promo.',
@@ -1828,13 +1828,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1394 · BP_50004870  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1394 · BP_50004870  (UNVERIFIED image URL)
         'name'          => 'Dermazole Ketoconazole 20mg/ml (2% w/v) Shampoo 50ml',
         'generic_name'  => 'Ketoconazole',
         'form'          => 'Medicated Shampoo',
         'brand'         => 'Dermazole',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 275.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50004870-front-zoom.jpg',
         'description'   => 'Dermazole ketoconazole 2% w/v (20 mg/ml) medicated shampoo for dandruff and seborrheic dermatitis of the scalp. 50ml.',
@@ -1847,13 +1847,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1395 · BP_10002941  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1395 · BP_10002941  (UNVERIFIED image URL)
         'name'          => 'Ventolin Salbutamol Sulfate 100mcg Inhaler 200 Doses (Prescription Required)',
         'generic_name'  => 'Salbutamol Sulfate',
         'form'          => 'Metered Dose Inhaler',
         'brand'         => 'Ventolin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 560.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10002941-front-zoom.jpg',
         'description'   => 'Ventolin salbutamol sulfate 100 mcg per dose inhaler (200 doses), a quick-relief bronchodilator for asthma and other airway diseases. Prescription required.',
@@ -1866,13 +1866,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1396 · BP_10090916  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1396 · BP_10090916  (UNVERIFIED image URL)
         'name'          => 'Ritemed Metoprolol 50mg 1 Tablet (Prescription Required)',
         'generic_name'  => 'Metoprolol',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 3.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10090916-front-zoom.jpg',
         'description'   => 'Ritemed metoprolol 50 mg tablet, a beta-blocker used for high blood pressure, angina and heart rhythm problems. Sold per tablet. Prescription required.',
@@ -1885,13 +1885,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1397 · BP_10089967  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1397 · BP_10089967  (UNVERIFIED image URL)
         'name'          => 'Cardiosel Metoprolol Succinate 47.5mg 1 Extended-Release Tablet (Prescription Required)',
         'generic_name'  => 'Metoprolol Succinate',
         'form'          => 'Extended-Release Tablet',
         'brand'         => 'Cardiosel',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 8.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10089967-front-zoom.jpg',
         'description'   => 'Cardiosel metoprolol succinate 47.5 mg extended-release tablet, a beta-blocker used for high blood pressure, angina and heart failure. Sold per tablet. Prescription required.',
@@ -1904,13 +1904,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1398 · BP_10101425  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1398 · BP_10101425  (UNVERIFIED image URL)
         'name'          => 'Inspra Eplerenone 50mg 1 Film-Coated Tablet (Sold Per Piece) (Prescription Required)',
         'generic_name'  => 'Eplerenone',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Inspra',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 58.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10101425-front-zoom.jpg',
         'description'   => 'Inspra 50 mg film-coated tablet (eplerenone), used for heart failure after a heart attack and for high blood pressure. Sold per piece. Prescription required.',
@@ -1923,13 +1923,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1399 · BP_50006817  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1399 · BP_50006817  (UNVERIFIED image URL)
         'name'          => 'Durex Condoms Extra Safe 3s',
         'generic_name'  => 'Condom',
         'form'          => 'Condom',
         'brand'         => 'Durex',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 85.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50006817-front-zoom.jpg',
         'description'   => 'Durex Extra Safe thicker condoms for extra reassurance and protection. Pack of 3.',
@@ -1942,13 +1942,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 1400 · BP_10100363  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 1400 · BP_10100363  (UNVERIFIED image URL)
         'name'          => 'Muconase Sodium Chloride 0.65% Nasal Spray 60ml',
         'generic_name'  => 'Sodium Chloride 0.65%',
         'form'          => 'Nasal Spray',
         'brand'         => 'Muconase',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 137.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10100363-front-zoom.jpg',
         'description'   => 'Muconase sodium chloride 0.65% saline nasal spray that moistens and clears blocked nasal passages. 60ml.',

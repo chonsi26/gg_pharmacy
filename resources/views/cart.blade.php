@@ -645,10 +645,10 @@
       <img src="{{ asset($settings['logo'] ?? 'images/logo.png') }}" alt="{{ $settings['site_name'] ?? 'GG Pharmacy' }}">
     </a>
   </div>
-  <div class="search-bar">
-    <input type="text" placeholder="Search for Generic and Branded Medicine">
-    <button><i class="fas fa-search"></i></button>
-  </div>
+  <form action="{{ route('home') }}" method="GET" class="search-bar">
+    <input type="text" name="query" value="{{ $searchQuery ?? '' }}" placeholder="Search for Generic and Branded Medicine">
+    <button type="submit"><i class="fas fa-search"></i></button>
+  </form>
   <div class="header-right">
     <div class="phone-box">
       <i class="fas fa-phone-alt ph-icon"></i>

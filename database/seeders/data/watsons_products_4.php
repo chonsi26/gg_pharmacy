@@ -23,15 +23,19 @@
  *    ingredients line is stored as shown. Origin Germany. Price 38.63 (VAT-exempt, shown without VAT).
  *  - #302 Tapdin Methimazole 20mg: the page's "Ingredients" is blank, so the ingredients line is derived from
  *    the title strength. Origin Philippines.
+ *  - PRICES (#303–#400): every price was read from the live Watsons product page (selling price; #303 and #391 also
+ *    carry the struck-through original price in old_price). No product has a 0.00 price any more.
+ *    EXCEPTIONS (page showed no readable price, ESTIMATED from comparable Watsons items — verify): #323 Glipgludin 100mg/1g (30.00)
+ *    and #388 Ritemed Betahistine 24mg (55.00).
  *  - #303–#340: added without opening the pages. Names come from the product links; descriptions/ingredients are
- *    generic, prices are 0.00 placeholders and image URLs are UNVERIFIED (see JS file). Fill in later as needed.
+ *    generic, prices are the real Watsons prices (see note below) and image URLs are UNVERIFIED (see JS file). Fill in later as needed.
  *  - #304 Allerta and #306 Firialta: the links do not say which active ingredient they contain, so generic_name is
  *    null rather than guessed.
  *  - #307 Allerkast 10mg/5mg: generic_name (montelukast + levocetirizine) is INFERRED from the strengths in the
  *    title; check it against the page.
  *  - #315: the "buy 2 get 50% off" promo in the link was dropped from the name.
  *  - #312 Equal Gold sweetener is filed under 'supplement' (no better fit among the five categories).
- *  - #321–#340: same treatment as #303–#320 (names from the product links; generic text, 0.00 prices, unverified images).
+ *  - #321–#340: same treatment as #303–#320 (names from the product links; generic text, real prices, unverified images).
  *  - #323 Glipgludin 100mg/1g: the link does not say which active ingredient(s) it contains, so generic_name is
  *    the brand name; check it against the page.
  *  - #324 Maxi-Peel Exfoliant Solution #2 and #330 Maxi-Peel Concealing Cream: ingredients not stated -> null.
@@ -39,13 +43,13 @@
  *  - #329 Liverguard and #331 Tempra Forte: form/strength inferred from the name; check against the page.
  *  - #337 Carvid 25mg: generic_name (carvedilol) is taken from #2 Carvid 6.25mg.
  *  - #338 Dermaid gauze swab is filed under 'otc' (same as Mediplast gauze pads, #173).
- *  - #341–#360: same treatment as #303–#340 (names from the product links; generic text, 0.00 prices, unverified images).
+ *  - #341–#360: same treatment as #303–#340 (names from the product links; generic text, real prices, unverified images).
  *  - #344 Pharex B-Complex: form (Capsule) is INFERRED; #348 Noston: form (Tablet) is INFERRED; check against the pages.
  *  - #349 Venocare: the link says "450mg-50ml"; read as 450mg/50mg (diosmin/hesperidin). Check against the page.
  *  - #353 Fortima: the link gives no active ingredient, strength or Rx flag, so generic_name is a generic label, form is null and
  *    category 'healthcare' is a guess.
  *  - #359 Maalox: the link names only aluminum hydroxide 200mg, so that is all that is stored.
- *  - #361–#380: same treatment as #303–#360 (names from the product links; generic text, 0.00 prices, unverified images).
+ *  - #361–#380: same treatment as #303–#360 (names from the product links; generic text, real prices, unverified images).
  *  - #362 Mounjaro KwikPen 5mg/0.6ml: generic_name (tirzepatide) and form are from general knowledge, not the link.
  *  - #364 Watsons Generics Ibuprofen is not flagged Rx in its link -> category 'otc'.
  *  - #369 Watsons Generics Loratadine IS flagged Rx in its link, so it is filed under 'healthcare'.
@@ -54,7 +58,7 @@
  *  - #373 Renalog: the 600mg strength is as given in the link; ingredients are generic.
  *  - #377 Dolcet: the link only gives "37.5mg-325mg"; generic_name (tramadol + paracetamol) is INFERRED. Check against the page.
  *  - #374 Milcu deodorant powder is 'personal'; #378 Watsons pregnancy test is 'otc' (non-Rx test kit).
- *  - #381–#400: same treatment as #303–#380 (names from the product links; generic text, 0.00 prices, unverified images).
+ *  - #381–#400: same treatment as #303–#380 (names from the product links; generic text, real prices, unverified images).
  *  - #383 TMZ MR: brand stored as 'TMZ MR'; form 'Modified-Release Tablet' follows the "MR" in the name. #382 Lipway: sustained-release capsule per the link.
  *  - #384 Levomont: the link says "levocitirizine"; stored as levocetirizine. Strengths read as montelukast 10mg / levocetirizine 5mg.
  *  - #389 Celeteque Dermo Science Hydration Travel Pack: contents not stated in the link -> generic_name is a generic label, ingredients null.
@@ -107,14 +111,14 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 303 · BP_10088176  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 303 · BP_10088176  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ivi Premium Collagen Powder Drink 7g x 1 Sachet',
         'generic_name'  => 'Collagen Powder Drink',
         'form'          => 'Powder (Sachet)',
         'brand'         => 'Ivi',
         'category'      => 'supplement',
-        'price'         => 0.00,
-        'old_price'     => null,
+        'price'         => 106.20,
+        'old_price'     => 118.00,
         'image'         => $W.'WTCPH-10088176-front-zoom.jpg',
         'description'   => 'Collagen powder drink sachet for skin health support.',
         'origin'        => null,
@@ -125,13 +129,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 304 · BP_50043985  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 304 · BP_50043985  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Allerta 10mg Tablet',
         'generic_name'  => null,
         'form'          => 'Tablet',
         'brand'         => 'Allerta',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 128.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50043985-front-zoom.jpg',
         'description'   => 'Allergy relief tablet, 10 mg.',
@@ -143,13 +147,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 305 · BP_10088078  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 305 · BP_10088078  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'pH Care Feminine Wash Floral Clean 50ml',
         'generic_name'  => 'Feminine Wash',
         'form'          => 'Feminine Wash',
         'brand'         => 'pH Care',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 58.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10088078-front-zoom.jpg',
         'description'   => 'Gentle everyday feminine wash with a floral clean scent.',
@@ -161,13 +165,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 306 · BP_50057103  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 306 · BP_50057103  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Firialta 10mg Film-Coated Tablet',
         'generic_name'  => null,
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Firialta',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 82.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50057103-front-zoom.jpg',
         'description'   => 'Prescription medicine, 10 mg film-coated tablet.',
@@ -179,13 +183,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 307 · BP_50044681  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 307 · BP_50044681  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Allerkast 10mg/5mg Film-Coated Tablet',
         'generic_name'  => 'Montelukast + Levocetirizine',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Allerkast',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 33.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50044681-front-zoom.jpg',
         'description'   => 'Combination tablet for allergic rhinitis and asthma symptoms.',
@@ -197,13 +201,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 308 · BP_10099242  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 308 · BP_10099242  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Zarnat Losartan Potassium 50mg 1 Film-Coated Tablet',
         'generic_name'  => 'Losartan Potassium',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Zarnat',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 13.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099242-front-zoom.jpg',
         'description'   => 'Used in the treatment of hypertension.',
@@ -215,13 +219,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 309 · BP_50044680  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 309 · BP_50044680  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Luxe Organix Retinol Gluta Whitening Serum Lotion 350ml',
         'generic_name'  => 'Whitening Serum Lotion',
         'form'          => 'Lotion',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 420.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50044680-front-zoom.jpg',
         'description'   => 'Brightening body serum lotion with retinol and glutathione.',
@@ -233,13 +237,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 310 · BP_10050586  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 310 · BP_10050586  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Gynepro Ultra Protection Feminine Wash 60ml',
         'generic_name'  => 'Feminine Wash',
         'form'          => 'Feminine Wash',
         'brand'         => 'Gynepro',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 113.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10050586-front-zoom.jpg',
         'description'   => 'Feminine wash with ultra protection for daily hygiene.',
@@ -251,13 +255,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 311 · BP_10098582  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 311 · BP_10098582  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Skinoren Azelaic Acid 150mg/g Topical Gel 30g',
         'generic_name'  => 'Azelaic Acid',
         'form'          => 'Topical Gel',
         'brand'         => 'Skinoren',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 1607.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10098582-front-zoom.jpg',
         'description'   => 'Topical azelaic acid gel for acne treatment.',
@@ -269,13 +273,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 312 · BP_50054682  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 312 · BP_50054682  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Equal Gold No Calories Sweetener 50 Sticks x 40g',
         'generic_name'  => 'Sweetener',
         'form'          => 'Sachet (Sticks)',
         'brand'         => 'Equal',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 190.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50054682-front-zoom.jpg',
         'description'   => 'Zero-calorie sweetener sticks.',
@@ -287,13 +291,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 313 · BP_50031343  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 313 · BP_50031343  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Pneumotyl Acetylcysteine 600mg 1 Tablet',
         'generic_name'  => 'Acetylcysteine',
         'form'          => 'Tablet',
         'brand'         => 'Pneumotyl',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 28.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50031343-front-zoom.jpg',
         'description'   => 'Mucolytic that helps loosen and thin sticky phlegm.',
@@ -305,13 +309,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 314 · BP_50031132  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 314 · BP_50031132  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Victus Quetiapine 300mg 1 Tablet',
         'generic_name'  => 'Quetiapine',
         'form'          => 'Tablet',
         'brand'         => 'Victus',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 72.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50031132-front-zoom.jpg',
         'description'   => 'Antipsychotic used in the treatment of schizophrenia and bipolar disorder.',
@@ -323,13 +327,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 315 · BP_50044682  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 315 · BP_50044682  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Luxe Organix Niacinamide Alpha Arbutin Whitening Serum Lotion 350ml',
         'generic_name'  => 'Whitening Serum Lotion',
         'form'          => 'Lotion',
         'brand'         => 'Luxe Organix',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 420.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50044682-front-zoom.jpg',
         'description'   => 'Brightening body serum lotion with niacinamide and alpha arbutin.',
@@ -341,13 +345,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 316 · BP_10097614  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 316 · BP_10097614  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Bisoprolol Fumarate 5mg 1 Tablet',
         'generic_name'  => 'Bisoprolol Fumarate',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 16.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10097614-front-zoom.jpg',
         'description'   => 'Beta blocker used in the treatment of hypertension and angina.',
@@ -359,13 +363,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 317 · BP_10100665  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 317 · BP_10100665  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Gliclazide 30mg 1 Modified-Release Tablet',
         'generic_name'  => 'Gliclazide',
         'form'          => 'Modified-Release Tablet',
         'brand'         => 'Watsons Generics',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 9.45,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10100665-front-zoom.jpg',
         'description'   => 'Used in the treatment of type 2 diabetes mellitus.',
@@ -377,13 +381,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 318 · BP_10067061  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 318 · BP_10067061  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Janumet Sitagliptin 50mg/Metformin 1g 1 Tablet',
         'generic_name'  => 'Sitagliptin + Metformin',
         'form'          => 'Tablet',
         'brand'         => 'Janumet',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 32.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10067061-front-zoom.jpg',
         'description'   => 'Used with diet and exercise to improve blood sugar control in type 2 diabetes.',
@@ -395,13 +399,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 319 · BP_50056288  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 319 · BP_50056288  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Fenofibrate 200mg Capsule',
         'generic_name'  => 'Fenofibrate',
         'form'          => 'Capsule',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 22.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50056288-front-zoom.jpg',
         'description'   => 'Lipid-lowering medicine used to reduce cholesterol and triglycerides.',
@@ -413,13 +417,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 320 · BP_50027103  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 320 · BP_50027103  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Bewell-C Zinc Protect Non-Acidic Vitamin C with Zinc Capsule',
         'generic_name'  => 'Vitamin C + Zinc',
         'form'          => 'Capsule',
         'brand'         => 'Bewell-C',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 8.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50027103-front-zoom.jpg',
         'description'   => 'Non-acidic vitamin C with zinc for immune support.',
@@ -432,13 +436,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 321 · BP_50010275  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 321 · BP_50010275  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Clusivol Multivitamins + Zinc + Copper 1 Film-Coated Tablet',
         'generic_name'  => 'Multivitamins + Zinc + Copper',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Clusivol',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 11.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50010275-front-zoom.jpg',
         'description'   => 'Multivitamin with zinc and copper for daily nutritional support.',
@@ -450,13 +454,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 322 · BP_50020333  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 322 · BP_50020333  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Rosuvastatin 20mg 1 Tablet',
         'generic_name'  => 'Rosuvastatin',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 34.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50020333-front-zoom.jpg',
         'description'   => 'Lipid-lowering medicine used to reduce cholesterol and lower the risk of cardiovascular events.',
@@ -468,13 +472,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 323 · BP_50048205  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 323 · BP_50048205  (UNVERIFIED image URL; price ESTIMATED - not shown on Watsons page, verify)
         'name'          => 'Glipgludin 100mg/1g Film-Coated Tablet',
         'generic_name'  => 'Glipgludin',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Glipgludin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 30.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50048205-front-zoom.jpg',
         'description'   => 'Prescription medicine for blood sugar control in type 2 diabetes.',
@@ -486,13 +490,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 324 · BP_10010087  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 324 · BP_10010087  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Maxi-Peel Exfoliant Solution #2 60ml',
         'generic_name'  => null,
         'form'          => 'Topical Solution',
         'brand'         => 'Maxi-Peel',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 84.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10010087-front-zoom.jpg',
         'description'   => 'Maxi-Peel exfoliant solution #2 for blemish-prone skin.',
@@ -504,13 +508,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 325 · BP_10002974  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 325 · BP_10002974  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Virlix Cetirizine 10mg Film-Coated Tablet',
         'generic_name'  => 'Cetirizine',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Virlix',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 37.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10002974-front-zoom.jpg',
         'description'   => 'Antihistamine for the relief of allergy symptoms such as sneezing, runny nose, itchy eyes and hives.',
@@ -522,13 +526,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 326 · BP_10000507  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 326 · BP_10000507  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Moriamin Multivitamins + Amino Acids',
         'generic_name'  => 'Multivitamins + Amino Acids',
         'form'          => 'Tablet',
         'brand'         => 'Moriamin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 14.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10000507-front-zoom.jpg',
         'description'   => 'Multivitamin and amino acid supplement.',
@@ -540,13 +544,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 327 · BP_50053486  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 327 · BP_50053486  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Telarb Telmisartan + Amlodipine 40mg/5mg Tablet',
         'generic_name'  => 'Telmisartan + Amlodipine',
         'form'          => 'Tablet',
         'brand'         => 'Telarb',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 14.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50053486-front-zoom.jpg',
         'description'   => 'Angiotensin II receptor blocker and calcium channel blocker combination for the treatment of hypertension.',
@@ -558,13 +562,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 328 · BP_10100975  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 328 · BP_10100975  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Lavida Levodopa 250mg + Carbidopa 25mg 1 Tablet',
         'generic_name'  => 'Levodopa + Carbidopa',
         'form'          => 'Tablet',
         'brand'         => 'Lavida',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 45.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10100975-front-zoom.jpg',
         'description'   => 'Used in the treatment of Parkinson\'s disease.',
@@ -576,13 +580,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 329 · BP_10101256  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 329 · BP_10101256  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Liverguard Silymarin + Lecithin',
         'generic_name'  => 'Silymarin + Lecithin',
         'form'          => 'Capsule',
         'brand'         => 'Liverguard',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 15.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10101256-front-zoom.jpg',
         'description'   => 'Liver support supplement containing silymarin and lecithin.',
@@ -594,13 +598,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 330 · BP_10079890  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 330 · BP_10079890  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Maxi-Peel Concealing Cream Fair 10g',
         'generic_name'  => null,
         'form'          => 'Cream',
         'brand'         => 'Maxi-Peel',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 24.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10079890-front-zoom.jpg',
         'description'   => 'Concealing cream in a fair shade that covers blemishes and dark spots.',
@@ -612,13 +616,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 331 · BP_10002832  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 331 · BP_10002832  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Tempra Forte Paracetamol 500mg',
         'generic_name'  => 'Paracetamol',
         'form'          => 'Tablet',
         'brand'         => 'Tempra',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 4.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10002832-front-zoom.jpg',
         'description'   => 'Relief of mild to moderate pain such as headache, toothache and body aches, and reduction of fever.',
@@ -630,13 +634,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 332 · BP_10091112  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 332 · BP_10091112  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Natrapharm Atorvastatin 40mg 1 Tablet',
         'generic_name'  => 'Atorvastatin',
         'form'          => 'Tablet',
         'brand'         => 'Natrapharm',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 32.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10091112-front-zoom.jpg',
         'description'   => 'Lipid-lowering medicine used to reduce cholesterol and lower the risk of cardiovascular events.',
@@ -648,13 +652,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 333 · BP_10041558  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 333 · BP_10041558  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Therabloc Atenolol 100mg 1 Tablet',
         'generic_name'  => 'Atenolol',
         'form'          => 'Tablet',
         'brand'         => 'Therabloc',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 21.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10041558-front-zoom.jpg',
         'description'   => 'Beta blocker used in the treatment of hypertension and angina.',
@@ -666,13 +670,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 334 · BP_10081421  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 334 · BP_10081421  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Celeteque Hydration Gentle Exfoliating Facial Wash 100ml',
         'generic_name'  => 'Facial Wash',
         'form'          => 'Liquid',
         'brand'         => 'Celeteque',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 194.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10081421-front-zoom.jpg',
         'description'   => 'Gentle exfoliating facial wash that cleanses and hydrates skin.',
@@ -684,13 +688,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 335 · BP_50013040  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 335 · BP_50013040  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'ATC Health Fish Oil 1000mg 1 Box Softgel Capsule',
         'generic_name'  => 'Omega-3 Fish Oil',
         'form'          => 'Softgel Capsule',
         'brand'         => 'ATC Health',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 225.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50013040-front-zoom.jpg',
         'description'   => 'Omega-3 fish oil softgel that supports heart health.',
@@ -702,13 +706,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 336 · BP_50035338  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 336 · BP_50035338  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Metformin Hydrochloride 500mg 1 Sustained-Release Tablet',
         'generic_name'  => 'Metformin Hydrochloride',
         'form'          => 'Sustained-Release Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 6.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50035338-front-zoom.jpg',
         'description'   => 'Used with diet and exercise to improve blood sugar control in type 2 diabetes.',
@@ -720,13 +724,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 337 · BP_10085157  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 337 · BP_10085157  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Carvid Carvedilol 25mg 1 Tablet',
         'generic_name'  => 'Carvedilol',
         'form'          => 'Tablet',
         'brand'         => 'Carvid',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 20.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10085157-front-zoom.jpg',
         'description'   => 'Used in the treatment of hypertension and heart failure.',
@@ -738,13 +742,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 338 · BP_50051092  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 338 · BP_50051092  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Dermaid Sterilized Gauze Swab',
         'generic_name'  => 'Gauze Swab',
         'form'          => 'Gauze Swab',
         'brand'         => 'Dermaid',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 4.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50051092-front-zoom.jpg',
         'description'   => 'Sterilized gauze swab for cleaning and dressing minor wounds.',
@@ -756,13 +760,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 339 · BP_50055236  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 339 · BP_50055236  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Glyxera Sitagliptin 100mg Film-Coated Tablet',
         'generic_name'  => 'Sitagliptin',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Glyxera',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 23.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50055236-front-zoom.jpg',
         'description'   => 'Used with diet and exercise to improve blood sugar control in type 2 diabetes.',
@@ -774,13 +778,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 340 · BP_50017691  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 340 · BP_50017691  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Besprin Aspirin 100mg 1 Tablet',
         'generic_name'  => 'Aspirin',
         'form'          => 'Tablet',
         'brand'         => 'Besprin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 2.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50017691-front-zoom.jpg',
         'description'   => 'Low-dose aspirin used for prevention of heart attack and stroke.',
@@ -795,13 +799,13 @@ return [
 
     // ── Batch 22 (links 341–360) ──────────────────────────────────────────
 
-    [   // 341 · BP_10079422  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 341 · BP_10079422  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Buscopan Hyoscine N-Butylbromide 10mg Tablet',
         'generic_name'  => 'Hyoscine N-Butylbromide',
         'form'          => 'Tablet',
         'brand'         => 'Buscopan',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 35.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10079422-front-zoom.jpg',
         'description'   => 'Antispasmodic used for relief of stomach cramps and abdominal pain.',
@@ -813,13 +817,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 342 · BP_50006517  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 342 · BP_50006517  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ator Atorvastatin Calcium 20mg 1 Film-Coated Tablet',
         'generic_name'  => 'Atorvastatin Calcium',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Ator',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 16.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50006517-front-zoom.jpg',
         'description'   => 'Used with diet to lower high cholesterol and reduce cardiovascular risk.',
@@ -831,13 +835,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 343 · BP_10096618  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 343 · BP_10096618  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Propan TLC Syrup 250ml',
         'generic_name'  => 'Multivitamins',
         'form'          => 'Syrup',
         'brand'         => 'Propan TLC',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 409.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10096618-front-zoom.jpg',
         'description'   => 'Multivitamin syrup food supplement.',
@@ -849,13 +853,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 344 · BP_50002653  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 344 · BP_50002653  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Pharex B-Complex 400s Tipid Pack',
         'generic_name'  => 'Vitamin B-Complex',
         'form'          => 'Capsule',
         'brand'         => 'Pharex',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 110.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50002653-front-zoom.jpg',
         'description'   => 'Vitamin B-complex food supplement in a value (tipid) pack of 400.',
@@ -867,13 +871,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 345 · BP_10071196  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 345 · BP_10071196  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Euthyrox Levothyroxine Sodium 150mcg 1 Tablet',
         'generic_name'  => 'Levothyroxine Sodium',
         'form'          => 'Tablet',
         'brand'         => 'Euthyrox',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 35.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10071196-front-zoom.jpg',
         'description'   => 'Thyroid hormone replacement used in hypothyroidism.',
@@ -885,13 +889,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 346 · BP_10097018  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 346 · BP_10097018  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Mepresone Methylprednisolone 16mg 1 Tablet',
         'generic_name'  => 'Methylprednisolone',
         'form'          => 'Tablet',
         'brand'         => 'Mepresone',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 41.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10097018-front-zoom.jpg',
         'description'   => 'Corticosteroid used to treat inflammatory and allergic conditions.',
@@ -903,13 +907,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 347 · BP_10087728  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 347 · BP_10087728  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Co-Altria Montelukast Na + Levocetirizine diHCl 10mg/5mg 1 Tablet',
         'generic_name'  => 'Montelukast Sodium + Levocetirizine Dihydrochloride',
         'form'          => 'Tablet',
         'brand'         => 'Co-Altria',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 30.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10087728-front-zoom.jpg',
         'description'   => 'Used for relief of allergic rhinitis and asthma symptoms.',
@@ -921,13 +925,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 348 · BP_50054786  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 348 · BP_50054786  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Noston Potassium Citrate Antiurolithic',
         'generic_name'  => 'Potassium Citrate',
         'form'          => 'Tablet',
         'brand'         => 'Noston',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 20.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50054786-front-zoom.jpg',
         'description'   => 'Antiurolithic used to help prevent kidney stone formation.',
@@ -939,13 +943,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 349 · BP_50052217  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 349 · BP_50052217  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Venocare Diosmin + Hesperidin 450mg/50mg Film-Coated Tablet',
         'generic_name'  => 'Diosmin + Hesperidin',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Venocare',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 25.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50052217-front-zoom.jpg',
         'description'   => 'Used for chronic venous insufficiency and hemorrhoids.',
@@ -957,13 +961,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 350 · BP_10082748  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 350 · BP_10082748  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Sleepwell Melatonin 3mg',
         'generic_name'  => 'Melatonin',
         'form'          => 'Tablet',
         'brand'         => 'Sleepwell',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 16.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10082748-front-zoom.jpg',
         'description'   => 'Melatonin food supplement to support sleep.',
@@ -975,13 +979,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 351 · BP_50051982  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 351 · BP_50051982  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Carvedilol 6.25mg Tablet',
         'generic_name'  => 'Carvedilol',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 9.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50051982-front-zoom.jpg',
         'description'   => 'Used in the treatment of hypertension and heart failure.',
@@ -993,13 +997,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 352 · BP_10070008  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 352 · BP_10070008  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Skelan Naproxen Sodium 220mg',
         'generic_name'  => 'Naproxen Sodium',
         'form'          => 'Tablet',
         'brand'         => 'Skelan',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 10.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10070008-front-zoom.jpg',
         'description'   => 'Pain reliever and anti-inflammatory for headache, muscle pain and menstrual cramps.',
@@ -1011,13 +1015,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 353 · BP_50061399  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 353 · BP_50061399  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Fortima Film-Coated Tablet 20 Pieces',
         'generic_name'  => 'Film-Coated Tablet',
         'form'          => null,
         'brand'         => 'Fortima',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 250.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50061399-front-zoom.jpg',
         'description'   => 'Film-coated tablets, pack of 20.',
@@ -1029,13 +1033,13 @@ return [
         'per_piece'             => false,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 354 · BP_50037381  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 354 · BP_50037381  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Duvaprine Isoxsuprine Hydrochloride 10mg 1 Tablet',
         'generic_name'  => 'Isoxsuprine Hydrochloride',
         'form'          => 'Tablet',
         'brand'         => 'Duvaprine',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 11.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50037381-front-zoom.jpg',
         'description'   => 'Vasodilator used to improve blood flow in peripheral vascular conditions.',
@@ -1047,13 +1051,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 355 · BP_10003600  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 355 · BP_10003600  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Difflam Benzydamine Hydrochloride 3mg Lozenge x 1',
         'generic_name'  => 'Benzydamine Hydrochloride',
         'form'          => 'Lozenge',
         'brand'         => 'Difflam',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 38.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10003600-front-zoom.jpg',
         'description'   => 'Anti-inflammatory lozenge for relief of sore throat and mouth irritation.',
@@ -1065,13 +1069,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 356 · BP_50005465  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 356 · BP_50005465  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Pregabalin 75mg Capsule',
         'generic_name'  => 'Pregabalin',
         'form'          => 'Capsule',
         'brand'         => 'Watsons Generics',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 33.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50005465-front-zoom.jpg',
         'description'   => 'Used for neuropathic pain, fibromyalgia and as add-on treatment for seizures.',
@@ -1083,13 +1087,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 357 · BP_50018958  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 357 · BP_50018958  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Rosalta Rosuvastatin 10mg 1 Tablet',
         'generic_name'  => 'Rosuvastatin',
         'form'          => 'Tablet',
         'brand'         => 'Rosalta',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 25.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50018958-front-zoom.jpg',
         'description'   => 'Used with diet to lower high cholesterol and reduce cardiovascular risk.',
@@ -1101,13 +1105,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 358 · BP_10087113  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 358 · BP_10087113  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Micardis Plus Telmisartan 40mg + Hydrochlorothiazide 12.5mg',
         'generic_name'  => 'Telmisartan + Hydrochlorothiazide',
         'form'          => 'Tablet',
         'brand'         => 'Micardis Plus',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 27.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10087113-front-zoom.jpg',
         'description'   => 'Used in the treatment of hypertension.',
@@ -1119,13 +1123,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 359 · BP_50007214  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 359 · BP_50007214  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Maalox Aluminum Hydroxide 200mg Chewable Tablet',
         'generic_name'  => 'Aluminum Hydroxide',
         'form'          => 'Chewable Tablet',
         'brand'         => 'Maalox',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 18.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50007214-front-zoom.jpg',
         'description'   => 'Antacid for relief of heartburn, hyperacidity and upset stomach.',
@@ -1137,13 +1141,13 @@ return [
         'per_piece'             => true,
         'width' => null, 'height' => null, 'depth' => null,
     ],
-    [   // 360 · BP_10002468  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 360 · BP_10002468  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Myonal Eperisone Hydrochloride 50mg 1 Tablet',
         'generic_name'  => 'Eperisone Hydrochloride',
         'form'          => 'Tablet',
         'brand'         => 'Myonal',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 34.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10002468-front-zoom.jpg',
         'description'   => 'Muscle relaxant used for muscle stiffness and spasm.',
@@ -1158,13 +1162,13 @@ return [
 
     // ── Batch 23 (links 361–380) ──────────────────────────────────────────
 
-    [   // 361 · BP_10098936  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 361 · BP_10098936  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Zilden Sildenafil Citrate 50mg 1 Film-Coated Tablet',
         'generic_name'  => 'Sildenafil Citrate',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Zilden',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 95.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10098936-front-zoom.jpg',
         'description'   => 'Used for the treatment of erectile dysfunction.',
@@ -1177,13 +1181,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 362 · BP_50057680  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 362 · BP_50057680  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Mounjaro KwikPen 5mg/0.6ml',
         'generic_name'  => 'Tirzepatide',
         'form'          => 'Pre-filled Pen (Injection)',
         'brand'         => 'Mounjaro',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 13550.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50057680-front-zoom.jpg',
         'description'   => 'Once-weekly injection used with diet and exercise for type 2 diabetes and chronic weight management.',
@@ -1196,13 +1200,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 363 · BP_10072481  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 363 · BP_10072481  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Aforbes Amlodipine 5mg 1 Tablet',
         'generic_name'  => 'Amlodipine',
         'form'          => 'Tablet',
         'brand'         => 'Aforbes',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 6.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10072481-front-zoom.jpg',
         'description'   => 'Calcium channel blocker used for hypertension and angina.',
@@ -1215,13 +1219,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 364 · BP_10095466  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 364 · BP_10095466  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Ibuprofen 200mg Tablet',
         'generic_name'  => 'Ibuprofen',
         'form'          => 'Tablet',
         'brand'         => 'Watsons Generics',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 5.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10095466-front-zoom.jpg',
         'description'   => 'Relief of mild to moderate pain, fever and inflammation such as headache, toothache, muscle pain and menstrual cramps.',
@@ -1234,13 +1238,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 365 · BP_10001933  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 365 · BP_10001933  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Cecon 500mg Chewable 1 Tablet',
         'generic_name'  => 'Ascorbic Acid (Vitamin C)',
         'form'          => 'Chewable Tablet',
         'brand'         => 'Cecon',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 10.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10001933-front-zoom.jpg',
         'description'   => 'Vitamin C supplement for immune support and prevention of vitamin C deficiency.',
@@ -1253,13 +1257,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 366 · BP_10090862  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 366 · BP_10090862  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Trajenta Linagliptin 5mg 1 Tablet',
         'generic_name'  => 'Linagliptin',
         'form'          => 'Tablet',
         'brand'         => 'Trajenta',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 55.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10090862-front-zoom.jpg',
         'description'   => 'Used with diet and exercise to improve blood sugar control in type 2 diabetes mellitus.',
@@ -1272,13 +1276,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 367 · BP_10093564  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 367 · BP_10093564  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Dilatair Doxofylline 200mg 1 Tablet',
         'generic_name'  => 'Doxofylline',
         'form'          => 'Tablet',
         'brand'         => 'Dilatair',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 17.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10093564-front-zoom.jpg',
         'description'   => 'Bronchodilator used for asthma and chronic obstructive pulmonary disease (COPD).',
@@ -1291,13 +1295,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 368 · BP_50052598  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 368 · BP_50052598  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Nitroxel Nebivolol 2.5mg Tablet',
         'generic_name'  => 'Nebivolol',
         'form'          => 'Tablet',
         'brand'         => 'Nitroxel',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 13.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50052598-front-zoom.jpg',
         'description'   => 'Beta-blocker used for hypertension and chronic heart failure.',
@@ -1310,13 +1314,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 369 · BP_10096725  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 369 · BP_10096725  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Loratadine 10mg Tablet',
         'generic_name'  => 'Loratadine',
         'form'          => 'Tablet',
         'brand'         => 'Watsons Generics',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 18.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10096725-front-zoom.jpg',
         'description'   => 'Antihistamine for relief of allergy symptoms such as sneezing, runny nose, itchy eyes and hives.',
@@ -1329,13 +1333,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 370 · BP_10096527  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 370 · BP_10096527  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Bactiv Co-Amoxiclav 625mg 1 Tablet',
         'generic_name'  => 'Amoxicillin + Clavulanic Acid (Co-Amoxiclav)',
         'form'          => 'Tablet',
         'brand'         => 'Bactiv',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 46.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10096527-front-zoom.jpg',
         'description'   => 'Antibiotic used for bacterial infections of the respiratory tract, ear, sinus, urinary tract, skin and soft tissue.',
@@ -1348,13 +1352,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 371 · BP_50001941  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 371 · BP_50001941  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Hemarate Tablet 12+3',
         'generic_name'  => 'Hemarate',
         'form'          => 'Tablet',
         'brand'         => 'Hemarate',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 305.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50001941-front-zoom.jpg',
         'description'   => 'Hemarate tablet for the prevention and treatment of iron-deficiency anemia. Pack size read from the link as 12 + 3.',
@@ -1367,13 +1371,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 372 · BP_10096686  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 372 · BP_10096686  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Proglin Vildagliptin + Metformin 50mg/850mg 1 Tablet',
         'generic_name'  => 'Vildagliptin + Metformin',
         'form'          => 'Tablet',
         'brand'         => 'Proglin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 36.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10096686-front-zoom.jpg',
         'description'   => 'Used with diet and exercise to improve blood sugar control in type 2 diabetes mellitus.',
@@ -1386,13 +1390,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 373 · BP_50009031  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 373 · BP_50009031  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Renalog Ketoanalogues + Essential Amino Acids 600mg 1 Tablet',
         'generic_name'  => 'Ketoanalogues + Essential Amino Acids',
         'form'          => 'Tablet',
         'brand'         => 'Renalog',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 30.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50009031-front-zoom.jpg',
         'description'   => 'Used with a low-protein diet in patients with chronic kidney disease.',
@@ -1405,13 +1409,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 374 · BP_10016939  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 374 · BP_10016939  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Milcu Underarm & Foot Deodorant Powder 80g',
         'generic_name'  => 'Deodorant Powder',
         'form'          => 'Powder',
         'brand'         => 'Milcu',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 99.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10016939-front-zoom.jpg',
         'description'   => 'Deodorant powder that helps keep underarms and feet dry, fresh and odor-free.',
@@ -1424,13 +1428,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 375 · BP_10091113  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 375 · BP_10091113  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Natrapharm Atorvastatin 80mg 1 Tablet',
         'generic_name'  => 'Atorvastatin',
         'form'          => 'Tablet',
         'brand'         => 'Natrapharm',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 32.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10091113-front-zoom.jpg',
         'description'   => 'Statin used to lower cholesterol and reduce the risk of heart attack and stroke.',
@@ -1443,13 +1447,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 376 · BP_10099238  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 376 · BP_10099238  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Avator Atorvastatin Calcium 40mg 1 Tablet',
         'generic_name'  => 'Atorvastatin Calcium',
         'form'          => 'Tablet',
         'brand'         => 'Avator',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 24.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099238-front-zoom.jpg',
         'description'   => 'Statin used to lower cholesterol and reduce the risk of heart attack and stroke.',
@@ -1462,13 +1466,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 377 · BP_10083915  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 377 · BP_10083915  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Dolcet Tramadol + Paracetamol 37.5mg/325mg Tablet',
         'generic_name'  => 'Tramadol + Paracetamol',
         'form'          => 'Tablet',
         'brand'         => 'Dolcet',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 64.75,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10083915-front-zoom.jpg',
         'description'   => 'Used for the short-term relief of moderate to severe pain.',
@@ -1481,13 +1485,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 378 · BP_50034976  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 378 · BP_50034976  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Pregnancy Test Cassette 1s',
         'generic_name'  => 'Pregnancy Test',
         'form'          => 'Test Cassette',
         'brand'         => 'Watsons',
         'category'      => 'otc',
-        'price'         => 0.00,
+        'price'         => 65.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50034976-front-zoom.jpg',
         'description'   => 'Rapid home test cassette that detects pregnancy from a urine sample.',
@@ -1500,13 +1504,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 379 · BP_10094552  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 379 · BP_10094552  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Ritemed Cefalexin 500mg 1 Tablet',
         'generic_name'  => 'Cefalexin',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 21.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10094552-front-zoom.jpg',
         'description'   => 'Cephalosporin antibiotic used for bacterial infections of the respiratory tract, skin, bone and urinary tract.',
@@ -1519,13 +1523,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 380 · BP_50055718  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 380 · BP_50055718  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Telarb Plus Telmisartan + Hydrochlorothiazide 80mg/12.5mg Tablet',
         'generic_name'  => 'Telmisartan + Hydrochlorothiazide',
         'form'          => 'Tablet',
         'brand'         => 'Telarb',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 18.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50055718-front-zoom.jpg',
         'description'   => 'Used for hypertension in patients not adequately controlled on telmisartan alone.',
@@ -1540,13 +1544,13 @@ return [
 
     // ── Batch 24 (links 381–400) ──────────────────────────────────────────
 
-    [   // 381 · BP_50017701  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 381 · BP_50017701  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Glimesyn Glimepiride 3mg 1 Tablet',
         'generic_name'  => 'Glimepiride',
         'form'          => 'Tablet',
         'brand'         => 'Glimesyn',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 11.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50017701-front-zoom.jpg',
         'description'   => 'Sulfonylurea used with diet and exercise to lower blood sugar in type 2 diabetes.',
@@ -1559,13 +1563,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 382 · BP_10047741  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 382 · BP_10047741  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Lipway Fenofibrate 250mg 1 Sustained-Release Capsule',
         'generic_name'  => 'Fenofibrate',
         'form'          => 'Sustained-Release Capsule',
         'brand'         => 'Lipway',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 43.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10047741-front-zoom.jpg',
         'description'   => 'Lipid-lowering medicine used to reduce high triglycerides and cholesterol.',
@@ -1578,13 +1582,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 383 · BP_10100938  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 383 · BP_10100938  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'TMZ MR Trimetazidine HCl 35mg 1 Tablet',
         'generic_name'  => 'Trimetazidine HCl',
         'form'          => 'Modified-Release Tablet',
         'brand'         => 'TMZ MR',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 19.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10100938-front-zoom.jpg',
         'description'   => 'Anti-anginal medicine used as add-on therapy for stable angina pectoris.',
@@ -1597,13 +1601,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 384 · BP_50008214  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 384 · BP_50008214  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Levomont Montelukast (as Sodium) + Levocetirizine Hydrochloride 10mg/5mg 1 Film-Coated Tablet',
         'generic_name'  => 'Montelukast + Levocetirizine',
         'form'          => 'Film-Coated Tablet',
         'brand'         => 'Levomont',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 25.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50008214-front-zoom.jpg',
         'description'   => 'Used for allergic rhinitis and asthma symptoms such as sneezing, itching and nasal congestion.',
@@ -1616,13 +1620,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 385 · BP_50001545  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 385 · BP_50001545  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Valcamp Amlodipine Besilate 5mg + Valsartan 160mg 1 Tablet',
         'generic_name'  => 'Amlodipine + Valsartan',
         'form'          => 'Tablet',
         'brand'         => 'Valcamp',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 46.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50001545-front-zoom.jpg',
         'description'   => 'Combination antihypertensive used for hypertension not adequately controlled by a single agent.',
@@ -1635,13 +1639,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 386 · BP_10099046  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 386 · BP_10099046  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Abdin Aripiprazole 10mg 1 Tablet',
         'generic_name'  => 'Aripiprazole',
         'form'          => 'Tablet',
         'brand'         => 'Abdin',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 97.77,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10099046-front-zoom.jpg',
         'description'   => 'Atypical antipsychotic used for schizophrenia and bipolar I disorder.',
@@ -1654,13 +1658,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 387 · BP_10102028  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 387 · BP_10102028  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Allurase Allopurinol 100mg 1 Tablet',
         'generic_name'  => 'Allopurinol',
         'form'          => 'Tablet',
         'brand'         => 'Allurase',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 11.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10102028-front-zoom.jpg',
         'description'   => 'Xanthine oxidase inhibitor used to lower uric acid in gout and to prevent uric acid kidney stones.',
@@ -1673,13 +1677,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 388 · BP_50051756  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 388 · BP_50051756  (UNVERIFIED image URL; price ESTIMATED - not shown on Watsons page, verify)
         'name'          => 'Ritemed Betahistine 24mg Tablet',
         'generic_name'  => 'Betahistine',
         'form'          => 'Tablet',
         'brand'         => 'Ritemed',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 55.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50051756-front-zoom.jpg',
         'description'   => 'Used for vertigo, dizziness and tinnitus associated with Meniere\'s disease.',
@@ -1692,13 +1696,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 389 · BP_10076266  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 389 · BP_10076266  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Celeteque Dermo Science Hydration Travel Pack',
         'generic_name'  => 'Skincare Travel Pack',
         'form'          => 'Travel Pack',
         'brand'         => 'Celeteque',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 163.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10076266-front-zoom.jpg',
         'description'   => 'Travel-size hydration skincare set from the Celeteque Dermo Science range.',
@@ -1711,13 +1715,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 390 · BP_50005888  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 390 · BP_50005888  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Myra E Fresh Glow Glow Whitening Facial Moisturizer 40ml',
         'generic_name'  => 'Whitening Facial Moisturizer',
         'form'          => 'Facial Moisturizer',
         'brand'         => 'Myra E',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 134.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50005888-front-zoom.jpg',
         'description'   => 'Lightweight facial moisturizer that hydrates and brightens for a fresh, glowing look.',
@@ -1730,14 +1734,14 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 391 · BP_50049723  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 391 · BP_50049723  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Bacillus Clausii 2 Billion/5ml Oral Suspension',
         'generic_name'  => 'Bacillus clausii',
         'form'          => 'Oral Suspension',
         'brand'         => 'Watsons Generics',
         'category'      => 'supplement',
-        'price'         => 0.00,
-        'old_price'     => null,
+        'price'         => 26.60,
+        'old_price'     => 38.00,
         'image'         => $W.'WTCPH-50049723-front-zoom.jpg',
         'description'   => 'Probiotic oral suspension that supports digestive health and helps restore gut flora.',
         'origin'        => null,
@@ -1749,13 +1753,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 392 · BP_50038828  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 392 · BP_50038828  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Sovit Ascorbic Acid + Zinc + Cholecalciferol (Vitamin D3) 1 Capsule',
         'generic_name'  => 'Ascorbic Acid + Zinc + Cholecalciferol',
         'form'          => 'Capsule',
         'brand'         => 'Sovit',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 12.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50038828-front-zoom.jpg',
         'description'   => 'Immune-support supplement combining vitamin C, zinc and vitamin D3.',
@@ -1768,13 +1772,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 393 · BP_50000186  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 393 · BP_50000186  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Stresstabs Multivitamins + Iron 30 Tablets',
         'generic_name'  => 'Multivitamins + Iron',
         'form'          => 'Tablet',
         'brand'         => 'Stresstabs',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 358.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50000186-front-zoom.jpg',
         'description'   => 'Multivitamin and iron supplement to help replenish nutrients during periods of stress.',
@@ -1787,13 +1791,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 394 · BP_10088082  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 394 · BP_10088082  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'pH Care Feminine Wash Cooling Comfort 50ml',
         'generic_name'  => 'Feminine Wash',
         'form'          => 'Feminine Wash',
         'brand'         => 'pH Care',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 68.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10088082-front-zoom.jpg',
         'description'   => 'Feminine wash that leaves a cooling, fresh and comfortable feeling for daily hygiene.',
@@ -1806,13 +1810,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 395 · BP_50017053  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 395 · BP_50017053  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Osteogard Glucosamine HCl + Chondroitin Sulfate 1s',
         'generic_name'  => 'Glucosamine HCl + Chondroitin Sulfate',
         'form'          => 'Tablet',
         'brand'         => 'Osteogard',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 17.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50017053-front-zoom.jpg',
         'description'   => 'Joint-health supplement that supports cartilage and helps ease joint stiffness.',
@@ -1825,13 +1829,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 396 · BP_50059014  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 396 · BP_50059014  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Myra E Hydrating Glow Body Lotion 200ml',
         'generic_name'  => 'Body Lotion',
         'form'          => 'Body Lotion',
         'brand'         => 'Myra E',
         'category'      => 'personal',
-        'price'         => 0.00,
+        'price'         => 190.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50059014-front-zoom.jpg',
         'description'   => 'Hydrating body lotion that moisturizes skin and gives a healthy glow.',
@@ -1844,13 +1848,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 397 · BP_10096371  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 397 · BP_10096371  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Metoprolol Tartrate 50mg 1 Tablet',
         'generic_name'  => 'Metoprolol Tartrate',
         'form'          => 'Tablet',
         'brand'         => 'Watsons Generics',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 3.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10096371-front-zoom.jpg',
         'description'   => 'Beta-blocker used for hypertension, angina and to reduce heart-attack risk.',
@@ -1863,13 +1867,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 398 · BP_10055508  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 398 · BP_10055508  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Hytaz Hydrochlorothiazide 25mg 1 Tablet',
         'generic_name'  => 'Hydrochlorothiazide',
         'form'          => 'Tablet',
         'brand'         => 'Hytaz',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 6.50,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10055508-front-zoom.jpg',
         'description'   => 'Thiazide diuretic used for hypertension and fluid retention (edema).',
@@ -1882,13 +1886,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 399 · BP_10002216  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 399 · BP_10002216  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Heraclene Dibencozide 1mg',
         'generic_name'  => 'Dibencozide',
         'form'          => 'Tablet',
         'brand'         => 'Heraclene',
         'category'      => 'healthcare',
-        'price'         => 0.00,
+        'price'         => 22.25,
         'old_price'     => null,
         'image'         => $W.'WTCPH-10002216-front-zoom.jpg',
         'description'   => 'Vitamin B12 coenzyme preparation used for anemia and as a nutritional aid.',
@@ -1901,13 +1905,13 @@ return [
         'width' => null, 'height' => null, 'depth' => null,
     ],
 
-    [   // 400 · BP_50027652  (UNVERIFIED image URL; price is a 0.00 placeholder)
+    [   // 400 · BP_50027652  (UNVERIFIED image URL; price from the Watsons page)
         'name'          => 'Watsons Generics Vitamin A',
         'generic_name'  => 'Vitamin A',
         'form'          => 'Capsule',
         'brand'         => 'Watsons Generics',
         'category'      => 'supplement',
-        'price'         => 0.00,
+        'price'         => 6.00,
         'old_price'     => null,
         'image'         => $W.'WTCPH-50027652-front-zoom.jpg',
         'description'   => 'Vitamin A supplement that supports vision, immunity and skin health.',

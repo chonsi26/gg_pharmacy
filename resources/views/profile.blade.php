@@ -246,7 +246,7 @@
   </div>
   
   <form action="{{ route('home') }}" method="GET" class="search-bar">
-    <input type="text" name="query" placeholder="Search for Generic and Branded Medicine">
+    <input type="text" name="query" value="{{ $searchQuery ?? request('query', '') }}" placeholder="Search for Generic and Branded Medicine">
     <button type="submit"><i class="fas fa-search"></i></button>
   </form>
   
