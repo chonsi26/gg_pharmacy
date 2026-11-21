@@ -186,6 +186,27 @@
   .textarea-icon-wrap { position: relative; }
   .textarea-icon-wrap i { position: absolute; left: 12px; top: 12px; color: #bbb; font-size: 13px; pointer-events: none; }
   .textarea-icon-wrap textarea { padding-left: 36px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 11px; font-weight: 700; color: #555; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; letter-spacing: 0.3px; }
+
+  /* SHOW / HIDE PASSWORD TOGGLE */
+  .pw-wrap { position: relative; }
+  .pw-wrap input, .input-icon-wrap input.has-pw-toggle { padding-right: 42px !important; }
+  .pw-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 6px; padding: 0; }
+  .pw-toggle:hover { background: rgba(0,0,0,0.05); }
+  .pw-toggle:focus-visible { outline: 2px solid var(--red); outline-offset: 1px; }
+  .input-icon-wrap .pw-toggle i, .pw-toggle i { position: static; transform: none; left: auto; top: auto; color: #999; font-size: 14px; pointer-events: none; }
+  .pw-toggle:hover i, .pw-toggle.active i { color: var(--red); }
+
+  @media (max-width: 560px) { .modal-fields-row { grid-template-columns: 1fr; } }
+  @media (max-height: 680px) {
+    .modal-box.wide { padding: 20px 28px 18px; }
+    .reg-avatar-ring { width: 70px; height: 70px; }
+    .modal-box.wide .modal-logo { margin-bottom: 8px; }
+    .modal-box.wide .modal-subtitle { margin-bottom: 16px; }
+    .modal-field { margin-bottom: 10px; }
+  }
+
   .input-error { border-color: var(--red) !important; background: #fff5f5 !important; }
   .modal-alert-error { background: #fff0f0; border: 1px solid #ffc5c5; border-radius: 6px; padding: 10px 14px; margin-bottom: 16px; font-size: 12px; color: var(--red); display: flex; flex-direction: column; gap: 4px; }
   .modal-alert-error i { margin-right: 5px; }
@@ -1001,14 +1022,14 @@
       <div class="reg-section-label">Personal Information</div>
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regFirstName">First Name</label>
+          <label for="regFirstName">First Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regFirstName" name="first_name" placeholder="Juan" value="{{ old('first_name') }}" class="{{ $errors->getBag('register')->has('first_name') ? 'input-error' : '' }}">
           </div>
         </div>
         <div class="modal-field">
-          <label for="regLastName">Last Name</label>
+          <label for="regLastName">Last Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regLastName" name="last_name" placeholder="dela Cruz" value="{{ old('last_name') }}" class="{{ $errors->getBag('register')->has('last_name') ? 'input-error' : '' }}">
@@ -1038,7 +1059,7 @@
         </div>
       </div>
       <div class="modal-field">
-        <label for="regAddress">Address</label>
+        <label for="regAddress">Address <small style="font-weight:400;opacity:.7">(optional)</small></label>
         <div class="textarea-icon-wrap">
           <i class="fas fa-map-marker-alt"></i>
           <textarea id="regAddress" name="address" rows="2" placeholder="House No., Street, Barangay, City/Municipality, Province" class="{{ $errors->getBag('register')->has('address') ? 'input-error' : '' }}">{{ old('address') }}</textarea>
@@ -1050,14 +1071,26 @@
           <label for="regPassword">Password</label>
           <div class="input-icon-wrap">
             <i class="fas fa-lock"></i>
-            <input type="password" id="regPassword" name="password" placeholder="Create a strong password" class="{{ $errors->getBag('register')->has('password') ? 'input-error' : '' }}">
+            <input type="password" id="regPassword" name="password"
+                   placeholder="Create a strong password"
+                   autocomplete="new-password"
+                   class="has-pw-toggle {{ $errors->getBag('register')->has('password') ? 'input-error' : '' }}">
+            <button type="button" class="pw-toggle" data-target="regPassword" aria-label="Show password" aria-pressed="false" title="Show password">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
         <div class="modal-field">
           <label for="regPasswordConfirm">Confirm Password</label>
           <div class="input-icon-wrap">
             <i class="fas fa-lock"></i>
-            <input type="password" id="regPasswordConfirm" name="password_confirmation" placeholder="Repeat your password">
+            <input type="password" id="regPasswordConfirm" name="password_confirmation"
+                   placeholder="Repeat your password"
+                   autocomplete="new-password"
+                   class="has-pw-toggle">
+            <button type="button" class="pw-toggle" data-target="regPasswordConfirm" aria-label="Show password" aria-pressed="false" title="Show password">
+              <i class="fas fa-eye"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -1279,7 +1312,41 @@
     document.addEventListener('DOMContentLoaded', () => openModal(registerModal));
   @endif
 
-  // Profile picture preview
+  // ── Show / hide password toggles (login + register modals) ────────────────
+  function setPasswordVisibility(btn, visible) {
+    const input = document.getElementById(btn.dataset.target);
+    if (!input) return;
+    input.type = visible ? 'text' : 'password';
+    const icon = btn.querySelector('i');
+    if (icon) icon.className = visible ? 'fas fa-eye-slash' : 'fas fa-eye';
+    const label = visible ? 'Hide password' : 'Show password';
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('aria-pressed', visible ? 'true' : 'false');
+    btn.title = label;
+    btn.classList.toggle('active', visible);
+  }
+
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    // keep focus/caret in the input when the toggle is clicked
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    btn.addEventListener('click', () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      setPasswordVisibility(btn, input.type === 'password');
+    });
+  });
+
+  // Hide passwords again whenever a modal is closed, so they aren't left exposed.
+  [loginModal, registerModal].forEach(modal => {
+    if (!modal) return;
+    new MutationObserver(() => {
+      if (!modal.classList.contains('open')) {
+        modal.querySelectorAll('.pw-toggle').forEach(b => setPasswordVisibility(b, false));
+      }
+    }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+  });
+
+  // Profile picture preview (register modal)
   const profilePicInput = document.getElementById('profilePicInput');
   if (profilePicInput) {
     profilePicInput.addEventListener('change', function() {

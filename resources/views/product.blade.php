@@ -1119,14 +1119,14 @@
       <div class="reg-section-label">Personal Information</div>
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regFirstName">First Name</label>
+          <label for="regFirstName">First Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regFirstName" name="first_name" placeholder="Juan" value="{{ old('first_name') }}" class="{{ $errors->getBag('register')->has('first_name') ? 'input-error' : '' }}">
           </div>
         </div>
         <div class="modal-field">
-          <label for="regLastName">Last Name</label>
+          <label for="regLastName">Last Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regLastName" name="last_name" placeholder="dela Cruz" value="{{ old('last_name') }}" class="{{ $errors->getBag('register')->has('last_name') ? 'input-error' : '' }}">
@@ -1156,7 +1156,7 @@
         </div>
       </div>
       <div class="modal-field">
-        <label for="regAddress">Address</label>
+        <label for="regAddress">Address <small style="font-weight:400;opacity:.7">(optional)</small></label>
         <div class="textarea-icon-wrap">
           <i class="fas fa-map-marker-alt"></i>
           <textarea id="regAddress" name="address" rows="2" placeholder="House No., Street, Barangay, City/Municipality, Province" class="{{ $errors->getBag('register')->has('address') ? 'input-error' : '' }}">{{ old('address') }}</textarea>

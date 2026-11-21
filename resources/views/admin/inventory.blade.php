@@ -1742,7 +1742,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="card" style="padding-bottom:20px;">
     <div class="card-head">
-      <h3>All Medicines</h3>
+      <h3>All Products</h3>
       <div class="card-head-right">
         <div class="sort-chip-wrap" id="sortChipWrap">
           <button class="btn-chip" onclick="toggleSortMenu()" id="sortChipBtn">
@@ -1909,7 +1909,7 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="modal">
     <div class="modal-head-bar">
       <div>
-        <div style="font-size:15px;font-weight:700;color:var(--text);">Add New Medicine</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);">Add New Product</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px;">Fill in the product details</div>
       </div>
       <button class="modal-close" onclick="closeModal()">
@@ -1932,7 +1932,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div class="id-block">
-          <div class="panel-label">MEDICINE ID</div>
+          <div class="panel-label">PRODUCT ID</div>
           <div class="med-id-badge" id="autoMedId">MED-0001</div>
           <div style="font-size:10px;color:var(--subtle);">Auto-generated · PK</div>
         </div>
@@ -2066,7 +2066,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="modal-foot-bar">
           <button class="btn" onclick="closeModal()">Cancel</button>
-          <button class="btn primary" onclick="saveMedicine()">Save Medicine</button>
+          <button class="btn primary" onclick="saveMedicine()">Save Product</button>
         </div>
       </div>
     </div>

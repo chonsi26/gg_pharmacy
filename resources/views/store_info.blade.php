@@ -1135,7 +1135,7 @@
 
       <div class="modal-fields-row">
         <div class="modal-field">
-          <label for="regFirstName">First Name</label>
+          <label for="regFirstName">First Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regFirstName" name="first_name"
@@ -1145,7 +1145,7 @@
           </div>
         </div>
         <div class="modal-field">
-          <label for="regLastName">Last Name</label>
+          <label for="regLastName">Last Name <small style="font-weight:400;opacity:.7">(optional)</small></label>
           <div class="input-icon-wrap">
             <i class="fas fa-user"></i>
             <input type="text" id="regLastName" name="last_name"
@@ -1180,7 +1180,7 @@
       </div>
 
       <div class="modal-field">
-        <label for="regAddress">Address</label>
+        <label for="regAddress">Address <small style="font-weight:400;opacity:.7">(optional)</small></label>
         <div class="textarea-icon-wrap">
           <i class="fas fa-map-marker-alt"></i>
           <textarea id="regAddress" name="address" rows="2"
